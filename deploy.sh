@@ -1,3 +1,4 @@
 #!/bin/bash
 
-docker-compose up --scale proxy=$1
+docker compose build
+docker compose up --scale proxy=$1

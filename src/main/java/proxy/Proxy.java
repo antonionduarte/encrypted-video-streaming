@@ -12,8 +12,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 class Proxy {
+	private static final String CONFIG_PATH = "config/proxy/config.properties";
+
 	public static void main(String[] args) throws Exception {
-		InputStream inputStream = new FileInputStream("config.properties");
+		InputStream inputStream = new FileInputStream(CONFIG_PATH);
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String remote = properties.getProperty("remote");
