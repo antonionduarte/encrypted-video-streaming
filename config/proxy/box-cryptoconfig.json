@@ -1,16 +1,8 @@
 {
-  "cars.dat.encrypted": {
+  "127.0.0.1:6666": {
     "cipher": "AES/CBC/PKCS5Padding",
     "key": 1823182371293173921731231,
     "iv": 1823182371293173921731231123,
     "integrity": "SHA256"
-  },
-
-  "monsters.dat.encrypted": {
-    "cipher": "RC6/CTR/NoPadding",
-    "key": 1302193721937612931,
-    "iv": 12361382163812631,
-    "integrity": "HMAC-SHA256",
-    "mackey": "6af3417102381237"
   }
 }

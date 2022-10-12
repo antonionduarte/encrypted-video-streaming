@@ -1,7 +1,8 @@
 FROM openjdk:17
 
 COPY target/ciphered-video-server.jar ciphered-video-server.jar
+# TODO: Send ciphered movies
 COPY movies/plain/* .
-COPY movies/cryptoconfig.json .
+COPY movies/ciphered/* .
 
-CMD java -cp ciphered-video-server.jar server.StreamServer cars.dat localhost 7777
+CMD java -cp ciphered-video-server.jar Server cars.dat localhost 7777

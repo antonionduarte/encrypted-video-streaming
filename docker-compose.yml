@@ -8,7 +8,6 @@ services:
       - box_server
     environment:
       CRYPTO_CONFIG_KEY: "${CRYPTO_CONFIG_KEY}"
-
   # Proxy containers
   proxy:
     build:
@@ -18,7 +17,6 @@ services:
       - box_server
     ports:
       - "7700-7710:70" # port 70 within container mapped to port range 7700-7710 of the host machine
-
 networks:
   box_server:
     driver: bridge

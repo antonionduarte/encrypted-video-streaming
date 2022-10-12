@@ -6,17 +6,17 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class ParseCryptoConfig {
+public class ParseCipherConfig {
 	private final Gson gson;
 	private final String json;
 
-	public ParseCryptoConfig(String config) {
+	public ParseCipherConfig(String config) {
 		this.gson = new Gson();
 		this.json = config;
 	}
 
-	public Map<String, CryptoConfig> parseConfig() {
-		Type mapType = new TypeToken<Map<String, CryptoConfig>>() {}.getType();
+	public Map<String, CipherConfig> parseConfig() {
+		Type mapType = new TypeToken<Map<String, CipherConfig>>() {}.getType();
 		return gson.fromJson(json, mapType);
 	}
 }

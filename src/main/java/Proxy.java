@@ -1,5 +1,3 @@
-package proxy;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.DatagramPacket;
@@ -13,13 +11,15 @@ import java.util.stream.Collectors;
 
 public class Proxy {
 	private static final String CONFIG_PATH = "config/proxy/config.properties";
+	private static final String PROPERTY_REMOTE = "remote";
+	private static final String PROPERTY_DESTINATIONS = "localdelivery";
 
 	public static void main(String[] args) throws Exception {
 		InputStream inputStream = new FileInputStream(CONFIG_PATH);
 		Properties properties = new Properties();
 		properties.load(inputStream);
-		String remote = properties.getProperty("remote");
-		String destinations = properties.getProperty("localdelivery");
+		String remote = properties.getProperty(PROPERTY_REMOTE);
+		String destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 
 		SocketAddress inSocketAddress = parseSocketAddress(remote);
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Proxy::parseSocketAddress).collect(Collectors.toSet());

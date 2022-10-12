@@ -4,11 +4,10 @@ import encryptiontool.CryptoException;
 import encryptiontool.EncryptionTool;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class CipherConfig {
+public class EncryptConfig {
 	private static final String CIPHER_CONFIG = "AES/ECB/PKCS5Padding";
 	private static final String ALGORITHM = "AES";
 

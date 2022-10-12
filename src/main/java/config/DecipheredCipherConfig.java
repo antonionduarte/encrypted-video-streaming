@@ -11,17 +11,17 @@ import java.util.Map;
 /**
  * Responsible for opening, deciphering and parsing MovieConfig.
  */
-public class DecipheredCryptoConfig {
-	private final Map<String, CipherConfig> cryptoConfig;
+public class DecipheredCipherConfig {
+	private final Map<String, CipherConfig> cipherConfig;
 
-	public DecipheredCryptoConfig(String key, String path) throws CryptoException {
+	public DecipheredCipherConfig(String key, String path) throws CryptoException {
 		var cryptoConfigCiphered = new File(path);
 		var deciphered = new String(EncryptConfig.decipherConfig(key, cryptoConfigCiphered));
 		var parseMoviesConfig = new ParseCipherConfig(deciphered);
-		this.cryptoConfig = parseMoviesConfig.parseConfig();
+		this.cipherConfig = parseMoviesConfig.parseConfig();
 	}
 
-	public Map<String, CipherConfig> getCryptoConfig() {
-		return cryptoConfig;
+	public Map<String, CipherConfig> getCipherConfig() {
+		return cipherConfig;
 	}
 }

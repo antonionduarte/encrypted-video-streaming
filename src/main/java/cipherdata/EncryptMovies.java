@@ -1,4 +1,8 @@
 package cipherdata;
 
-public class CipherMovies {
+public class EncryptMovies {
+
+	public static void main(String[] args) {
+
+	}
 }
