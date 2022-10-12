@@ -11,7 +11,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class Proxy {
+public class Proxy {
 	private static final String CONFIG_PATH = "config/proxy/config.properties";
 
 	public static void main(String[] args) throws Exception {
