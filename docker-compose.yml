@@ -10,23 +10,14 @@ services:
       CRYPTO_CONFIG_AES_KEY: "123456789"
 
   # Proxy containers
-  proxy_1:
+  proxy:
     build:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
     networks:
       - box_server
     ports:
-      - "7000:70" # port 70 within container mapped to port 7000 of the host machine
-
-  proxy_2:
-    build:
-      context: .
-      dockerfile: ./docker/proxy/Dockerfile
-    networks:
-      - box_server
-    ports:
-      - "7001:70"
+      - "7000-7100:70" # port 70 within container mapped to port 7000 of the host machine
 
 networks:
   box_server:
