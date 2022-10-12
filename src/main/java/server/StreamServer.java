@@ -54,14 +54,14 @@ class StreamServer {
 
 				s.send(p);
 
-				// Just for awareness ... (debug)
+				// Just for awareness... (debug)
 
 				System.out.print(".");
 			}
 
 			long tend = System.nanoTime(); // "The end" time
 			System.out.println();
-			System.out.println("DONE! all frames sent: " + count);
+			System.out.println("Done! all frames sent: " + count);
 
 			long duration = (tend - t0) / 1000000000;
 			System.out.println("Movie duration " + duration + " s");
