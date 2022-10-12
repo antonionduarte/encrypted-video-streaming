@@ -1,8 +1,33 @@
 services:
-  proxy:
-    context: .
-    dockerfile: ./docker/proxy/Dockerfile
-
+  # Server container
   server:
-    context: .
-    dockerfile: ./docker/server/Dockerfile
+    build:
+      context: .
+      dockerfile: ./docker/server/Dockerfile
+    networks:
+      - box_server
+    environment:
+      CRYPTO_CONFIG_AES_KEY: "123456789"
+
+  # Proxy containers
+  proxy_1:
+    build:
+      context: .
+      dockerfile: ./docker/proxy/Dockerfile
+    networks:
+      - box_server
+    ports:
+      - "7000:70" # port 70 within container mapped to port 7000 of the host machine
+
+  proxy_2:
+    build:
+      context: .
+      dockerfile: ./docker/proxy/Dockerfile
+    networks:
+      - box_server
+    ports:
+      - "7001:70"
+
+networks:
+  box_server:
+    driver: bridge
