@@ -1,0 +1,8 @@
+services:
+  proxy:
+    context: .
+    dockerfile: ./docker/proxy/Dockerfile
+
+  server:
+    context: .
+    dockerfile: ./docker/server/Dockerfile
