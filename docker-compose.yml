@@ -7,7 +7,7 @@ services:
     networks:
       - box_server
     environment:
-      CRYPTO_CONFIG_AES_KEY: "123456789"
+      CRYPTO_CONFIG_KEY: "${CRYPTO_CONFIG_KEY}"
 
   # Proxy containers
   proxy:
