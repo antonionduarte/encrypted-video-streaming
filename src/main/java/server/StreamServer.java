@@ -1,6 +1,6 @@
 package server;
 
-import config.DecipheredCipherConfig;
+import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
 import encryptiontool.CryptoException;
 
@@ -25,7 +25,7 @@ public class StreamServer {
 		this.movie = movie;
 		this.address = address;
 		this.port = port;
-		this.moviesConfig = new DecipheredCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
+		this.moviesConfig = new DecipherCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
 	}
 
 	public void run() throws Exception {
