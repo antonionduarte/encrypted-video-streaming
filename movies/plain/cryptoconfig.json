@@ -6,7 +6,6 @@
     "integrity": "SHA256",
     "integrity-check": "9123496ab52311a4762a3efe110176233abff246ab52311a4762a3efe1101762"
   },
-
   "monsters.dat.enc": {
     "cipher": "RC6/CTR/NoPadding",
     "key": "476e67a34e5571897612391bcce24512",

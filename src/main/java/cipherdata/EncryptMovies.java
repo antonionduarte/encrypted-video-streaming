@@ -1,17 +1,27 @@
 package cipherdata;
 
+import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import encryptiontool.CryptoException;
 import encryptiontool.EncryptionTool;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class EncryptMovies {
 	public static final String MOVIE_PATH = "movies/plain/";
 	public static final String CIPHERED_MOVIE_PATH = "movies/ciphered/";
 	public static final String MOVIE_CIPHER_CONFIG_PATH = "movies/plain/cryptoconfig.json";
+
+	public static byte[] decryptMovie(CipherConfig cipher, String filename) throws CryptoException {
+		var file = new File(filename);
+		var cipherConfig = cipher.getCipher();
+		var iv = cipher.getIv().getBytes();
+		var key = cipher.getKey();
+		return EncryptionTool.decrypt(key, iv, cipherConfig, file);
+	}
 
 	public static void main(String[] args) throws IOException, CryptoException {
 		try (FileInputStream fileInputStream = new FileInputStream(MOVIE_CIPHER_CONFIG_PATH)) {

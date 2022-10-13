@@ -1,9 +1,11 @@
 package server;
 
+import cipherdata.EncryptMovies;
 import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
 import encryptiontool.CryptoException;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.net.DatagramPacket;
@@ -29,18 +31,21 @@ public class StreamServer {
 	}
 
 	public void run() throws Exception {
+		System.out.println("Server running");
+		var plainMovie = EncryptMovies.decryptMovie(moviesConfig.get(movie.split("/")[2]), movie);
+
 		int size;
-		int csize = 0;
-		int count = 0;
+		var csize = 0;
+		var count = 0;
 		long time;
 
-		byte[] buff = new byte[4096];
+		var buff = new byte[4096];
 
-		DataInputStream g = new DataInputStream(new FileInputStream(movie));
+		DataInputStream g = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
 		try (DatagramSocket s = new DatagramSocket()) {
-			InetSocketAddress addr = new InetSocketAddress(address, Integer.parseInt(port));
-			DatagramPacket p = new DatagramPacket(buff, buff.length, addr);
+			InetSocketAddress address = new InetSocketAddress(this.address, Integer.parseInt(port));
+			DatagramPacket p = new DatagramPacket(buff, buff.length, address);
 
 			long t0 = System.nanoTime(); // Ref. time
 			long q0 = 0;
@@ -57,7 +62,7 @@ public class StreamServer {
 				count += 1;
 				g.readFully(buff, 0, size);
 				p.setData(buff, 0, size);
-				p.setSocketAddress(addr);
+				p.setSocketAddress(address);
 
 				long t = System.nanoTime(); // what time is it?
 				// Decision about the right time to transmit

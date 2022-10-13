@@ -15,6 +15,7 @@ public class Proxy {
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
 
 	public static void main(String[] args) throws Exception {
+		System.out.println("Proxy Running");
 		InputStream inputStream = new FileInputStream(CONFIG_PATH);
 		Properties properties = new Properties();
 		properties.load(inputStream);
