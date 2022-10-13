@@ -9,17 +9,16 @@ import java.io.IOException;
 
 public class EncryptConfig {
 	private static final String CIPHER_CONFIG = "AES/ECB/PKCS5Padding";
-	private static final String ALGORITHM = "AES";
 
 	private static final String ARGS_CIPHER = "cipher";
 	private static final String ARGS_DECIPHER = "decipher";
 
 	public static byte[] decipherConfig(String key, File inputFile) throws CryptoException {
-		return EncryptionTool.decrypt(key, null, ALGORITHM, CIPHER_CONFIG, inputFile);
+		return EncryptionTool.decrypt(key, null, CIPHER_CONFIG, inputFile);
 	}
 
 	public static byte[] cipherConfig(String key, File inputFile) throws CryptoException {
-		return EncryptionTool.encrypt(key, null, ALGORITHM, CIPHER_CONFIG, inputFile);
+		return EncryptionTool.encrypt(key, null, CIPHER_CONFIG, inputFile);
 	}
 
 	public static void writeToFile(byte[] bytes, File file) throws IOException {

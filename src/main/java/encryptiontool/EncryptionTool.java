@@ -7,6 +7,8 @@ package encryptiontool;
 // more clear and correct the utilization and generalization of
 // use ...
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -16,10 +18,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 
 
 public class EncryptionTool {
@@ -40,15 +39,20 @@ public class EncryptionTool {
 	// private static final String TRANSFORMATION = "AES/CTR/PKCS5Padding";
 	// private static final String ALGORITHM = "AES";
 
-	public static byte[] encrypt(String key, byte[] iv, String algorithm, String cipherConfig,  File inputFile) throws CryptoException {
+	public static byte[] encrypt(String key, byte[] iv, String cipherConfig,  File inputFile) throws CryptoException {
+		var algorithm = cipherConfig.split("/")[0];
 		return doCrypto(Cipher.ENCRYPT_MODE, key, iv, algorithm, cipherConfig, inputFile);
 	}
 
-	public static byte[] decrypt(String key, byte[] iv, String algorithm, String cipherConfig, File inputFile) throws CryptoException {
+	public static byte[] decrypt(String key, byte[] iv, String cipherConfig, File inputFile) throws CryptoException {
+		var algorithm = cipherConfig.split("/")[0];
 		return doCrypto(Cipher.DECRYPT_MODE, key, iv, algorithm, cipherConfig, inputFile);
 	}
 
 	private static byte[] doCrypto(int cipherMode, String key, byte[] iv, String algorithm, String cipherConfig, File inputFile) throws CryptoException {
+		Security.setProperty("crypto.policy", "unlimited");
+		Security.addProvider(new BouncyCastleProvider());
+
 		try {
 			Key secretKey = new SecretKeySpec(key.getBytes(), algorithm);
 			Cipher cipher = Cipher.getInstance(cipherConfig);
