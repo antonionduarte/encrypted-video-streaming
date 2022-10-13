@@ -13,11 +13,11 @@ public class EncryptConfig {
 	private static final String ARGS_CIPHER = "cipher";
 	private static final String ARGS_DECIPHER = "decipher";
 
-	public static byte[] decipherConfig(String key, File inputFile) throws CryptoException {
+	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException {
 		return EncryptionTool.decrypt(key, null, CIPHER_CONFIG, inputFile);
 	}
 
-	public static byte[] cipherConfig(String key, File inputFile) throws CryptoException {
+	public static byte[] encryptConfig(String key, File inputFile) throws CryptoException {
 		return EncryptionTool.encrypt(key, null, CIPHER_CONFIG, inputFile);
 	}
 
@@ -39,10 +39,10 @@ public class EncryptConfig {
 		var outputFile = new File(args[3]);
 
 		if (args[0].equals(ARGS_CIPHER)) {
-			var ciphered = cipherConfig(key, inputFile);
+			var ciphered = encryptConfig(key, inputFile);
 			writeToFile(ciphered, outputFile);
 		} else if (args[0].equals(ARGS_DECIPHER)) {
-			var deciphered = decipherConfig(key, inputFile);
+			var deciphered = decryptConfig(key, inputFile);
 			writeToFile(deciphered, outputFile);
 		} else {
 			System.err.println("Error in cipher mode, must be either 'cipher' or 'decipher'");

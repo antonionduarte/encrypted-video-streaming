@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class EncryptMovies {
-
 	public static final String MOVIE_PATH = "movies/plain/";
 	public static final String CIPHERED_MOVIE_PATH = "movies/ciphered/";
 	public static final String MOVIE_CIPHER_CONFIG_PATH = "movies/plain/cryptoconfig.json";

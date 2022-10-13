@@ -16,7 +16,7 @@ public class DecipherCipherConfig {
 
 	public DecipherCipherConfig(String key, String path) throws CryptoException {
 		var cryptoConfigCiphered = new File(path);
-		var deciphered = new String(EncryptConfig.decipherConfig(key, cryptoConfigCiphered));
+		var deciphered = new String(EncryptConfig.decryptConfig(key, cryptoConfigCiphered));
 		var parseMoviesConfig = new ParseCipherConfig(deciphered);
 		this.cipherConfig = parseMoviesConfig.parseConfig();
 	}
