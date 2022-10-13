@@ -181,6 +181,7 @@ local.properties
 #.project
 
 # Random stuff
+temp
 .vagrant*
 bin
 docker/docker
