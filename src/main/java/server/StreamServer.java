@@ -43,9 +43,9 @@ public class StreamServer {
 
 		DataInputStream g = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
-		try (DatagramSocket s = new DatagramSocket()) {
+		try (DatagramSocket socket = new DatagramSocket()) {
 			InetSocketAddress address = new InetSocketAddress(this.address, Integer.parseInt(port));
-			DatagramPacket p = new DatagramPacket(buff, buff.length, address);
+			DatagramPacket packet = new DatagramPacket(buff, buff.length, address);
 
 			long t0 = System.nanoTime(); // Ref. time
 			long q0 = 0;
@@ -61,15 +61,15 @@ public class StreamServer {
 
 				count += 1;
 				g.readFully(buff, 0, size);
-				p.setData(buff, 0, size);
-				p.setSocketAddress(address);
+				packet.setData(buff, 0, size);
+				packet.setSocketAddress(address);
 
 				long t = System.nanoTime(); // what time is it?
 				// Decision about the right time to transmit
 				Thread.sleep(Math.max(0, ((time - q0) - (t - t0)) / 1000000));
 				// Send datagram (udp packet) w/ payload frame)
 				// Frames sent in clear (no encryption)
-				s.send(p);
+				socket.send(packet);
 				// Just for awareness... (debug)
 				System.out.print(".");
 			}
