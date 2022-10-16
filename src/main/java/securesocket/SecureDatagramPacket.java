@@ -2,12 +2,14 @@ package securesocket;
 
 import config.parser.CipherConfig;
 
+import javax.crypto.Cipher;
 import java.net.InetSocketAddress;
 
 public class SecureDatagramPacket {
 
-	private byte[] buffer;
-	private final InetSocketAddress address;
+	private byte[] data;
+	private CipherConfig cipherConfig;
+	private InetSocketAddress address;
 
 	/**
 	 * New SecureDatagramPacket, to be used by the SecureSocket.
@@ -15,21 +17,33 @@ public class SecureDatagramPacket {
 	 * to the received cipherConfig.
 	 * The DatagramPacket is directly encapsulated in this class because it needs a seqNumber which is going
 	 * to be controlled by the SecureSocket.
-	 * @param buffer The bytes to be sent.
+	 * @param data The bytes to be sent.
 	 * @param length The length of the buffer.
 	 * @param address The address to be sent.
 	 * @param cipherConfig The cipherConfig to be used to correctly encrypt the buffer.
 	 */
-	public SecureDatagramPacket(byte[] buffer, int length, InetSocketAddress address, CipherConfig cipherConfig) {
+	public SecureDatagramPacket(byte[] data, int length, InetSocketAddress address, CipherConfig cipherConfig) {
 		this.address = address;
 		// TODO...
 	}
 
-	public byte[] getBuffer() {
-		return buffer;
+	public void setData(byte[] data) {
+		this.data = data;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public void setAddress(InetSocketAddress address) {
+		this.address = address;
 	}
 
 	public InetSocketAddress getAddress() {
 		return address;
+	}
+
+	private void cipherData() {
+
 	}
 }
