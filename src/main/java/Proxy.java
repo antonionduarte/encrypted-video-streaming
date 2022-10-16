@@ -13,7 +13,6 @@ public class Proxy {
 	private static final String CONFIG_PATH = "config/proxy/config.properties";
 	private static final String PROPERTY_REMOTE = "remote";
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
-	private static final String REMOTE_ADDRESS = "172.17.0.1:7777";
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Proxy Running");
@@ -21,9 +20,7 @@ public class Proxy {
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String remote = properties.getProperty(PROPERTY_REMOTE);
-
-		// String destinations = properties.getProperty(PROPERTY_DESTINATIONS);
-		String destinations = REMOTE_ADDRESS;
+		String destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 
 		SocketAddress inSocketAddress = parseSocketAddress(remote);
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Proxy::parseSocketAddress).collect(Collectors.toSet());

@@ -13,7 +13,3 @@ services:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
     network_mode: host
-    # ports:
-    #  - "7777:7777/udp"
-    # ports:
-    #  - "7555-7565:7777/udp" # port 70 within container mapped to port range 7700-7710 of the host machine

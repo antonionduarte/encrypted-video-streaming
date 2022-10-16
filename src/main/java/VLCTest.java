@@ -17,6 +17,7 @@ public class VLCTest {
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String destinations = properties.getProperty(PROPERTY_DESTINATIONS);
+		destinations = "224.42.0.3:7777";
 
 		SocketAddress inSocketAddress = parseSocketAddress(destinations);
 		try (DatagramSocket inSocket = new DatagramSocket(inSocketAddress)) {
@@ -24,7 +25,6 @@ public class VLCTest {
 			while (true) {
 				DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);
 				inSocket.receive(inPacket);  // if remote is unicast
-
 				System.out.print("-");
 			}
 		} catch (IOException e) {
