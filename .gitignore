@@ -202,5 +202,7 @@ bundles/
 .git/
 vendor/pkg/
 pyenv
+.classpath
+.project
 Vagrantfile
 .env
