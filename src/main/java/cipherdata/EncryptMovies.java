@@ -9,18 +9,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class EncryptMovies {
 	public static final String MOVIE_PATH = "movies/plain/";
 	public static final String CIPHERED_MOVIE_PATH = "movies/ciphered/";
 	public static final String MOVIE_CIPHER_CONFIG_PATH = "movies/plain/cryptoconfig.json";
 
-	public static byte[] decryptMovie(CipherConfig cipher, String filename) throws CryptoException {
-		var file = new File(filename);
-		var cipherConfig = cipher.getCipher();
-		var iv = cipher.getIv().getBytes();
-		var key = cipher.getKey();
-		return EncryptionTool.decrypt(key, iv, cipherConfig, file);
+	public static byte[] decryptMovie(CipherConfig config, String filename) throws CryptoException, IOException {
+		return EncryptionTool.decrypt(config, Files.readAllBytes(Path.of(filename)));
 	}
 
 	public static void main(String[] args) throws IOException, CryptoException {
@@ -32,10 +30,7 @@ public class EncryptMovies {
 				var split = cipheredName.split("\\.");
 				var filename = split[0] + "." + split[1];
 				var cipherConfig = config.get(cipheredName);
-				var key = cipherConfig.getKey();
-				var iv = cipherConfig.getIv().getBytes();
-				var cipher = cipherConfig.getCipher();
-				var outputBytes = EncryptionTool.encrypt(key, iv, cipher, new File(MOVIE_PATH + filename));
+				var outputBytes = EncryptionTool.encrypt(cipherConfig, Files.readAllBytes(Path.of(MOVIE_PATH + filename)));
 				EncryptConfig.writeToFile(outputBytes, new File(CIPHERED_MOVIE_PATH + cipheredName));
 			}
 		}

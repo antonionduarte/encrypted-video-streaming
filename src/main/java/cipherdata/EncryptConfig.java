@@ -1,24 +1,28 @@
 package cipherdata;
 
+import config.parser.CipherConfig;
 import encryptiontool.CryptoException;
 import encryptiontool.EncryptionTool;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class EncryptConfig {
-	private static final String CIPHER_CONFIG = "AES/ECB/PKCS5Padding";
+	private static final String CIPHER_SUITE = "AES/ECB/PKCS5Padding";
 
 	private static final String ARGS_CIPHER = "cipher";
 	private static final String ARGS_DECIPHER = "decipher";
 
-	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException {
-		return EncryptionTool.decrypt(key, null, CIPHER_CONFIG, inputFile);
+	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException, IOException {
+		var config = new CipherConfig(CIPHER_SUITE, key, null, null, null, null);
+		return EncryptionTool.decrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}
 
-	public static byte[] encryptConfig(String key, File inputFile) throws CryptoException {
-		return EncryptionTool.encrypt(key, null, CIPHER_CONFIG, inputFile);
+	public static byte[] encryptConfig(String key, File inputFile) throws CryptoException, IOException {
+		var config = new CipherConfig(CIPHER_SUITE, key, null, null, null, null);
+		return EncryptionTool.encrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}
 
 	public static void writeToFile(byte[] bytes, File file) throws IOException {
