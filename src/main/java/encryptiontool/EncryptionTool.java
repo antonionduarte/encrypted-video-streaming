@@ -7,6 +7,7 @@ package encryptiontool;
 // more clear and correct the utilization and generalization of
 // use ...
 
+import config.parser.CipherConfig;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
@@ -39,41 +40,38 @@ public class EncryptionTool {
 	// private static final String TRANSFORMATION = "AES/CTR/PKCS5Padding";
 	// private static final String ALGORITHM = "AES";
 
-	public static byte[] encrypt(String key, byte[] iv, String cipherConfig,  File inputFile) throws CryptoException {
-		var algorithm = cipherConfig.split("/")[0];
-		return doCrypto(Cipher.ENCRYPT_MODE, key, iv, algorithm, cipherConfig, inputFile);
+	public static byte[] encrypt(CipherConfig config,  byte[] plaintext) throws CryptoException {
+		return doCrypto(Cipher.ENCRYPT_MODE, config, plaintext);
 	}
 
-	public static byte[] decrypt(String key, byte[] iv, String cipherConfig, File inputFile) throws CryptoException {
-		var algorithm = cipherConfig.split("/")[0];
-		return doCrypto(Cipher.DECRYPT_MODE, key, iv, algorithm, cipherConfig, inputFile);
+	public static byte[] decrypt(CipherConfig config, byte[] ciphertext) throws CryptoException {
+		return doCrypto(Cipher.DECRYPT_MODE, config, ciphertext);
 	}
 
-	private static byte[] doCrypto(int cipherMode, String key, byte[] iv, String algorithm, String cipherConfig, File inputFile) throws CryptoException {
+	private static byte[] doCrypto(int cipherMode, CipherConfig config, byte[] text) throws CryptoException {
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());
 
+		var algorithm = config.getCipher().split("/")[0];
+		var key = config.getKey();
+		var cipherSuite = config.getCipher();
+		var iv = config.getIv();
+
 		try {
 			Key secretKey = new SecretKeySpec(key.getBytes(), algorithm);
-			Cipher cipher = Cipher.getInstance(cipherConfig);
+			Cipher cipher = Cipher.getInstance(cipherSuite);
 
 			if (iv == null) {
 				cipher.init(cipherMode, secretKey);
 			} else {
-				IvParameterSpec ivSpec = new IvParameterSpec(iv);
+				IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes());
 				cipher.init(cipherMode, secretKey, ivSpec);
 			}
 
-			FileInputStream inputStream = new FileInputStream(inputFile);
-			byte[] inputBytes = new byte[(int) inputFile.length()];
-			inputStream.read(inputBytes);
+			return cipher.doFinal(text);
 
-			byte[] outputBytes = cipher.doFinal(inputBytes);
-			inputStream.close();
-
-			return outputBytes;
 		} catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException |
-		         IllegalBlockSizeException | InvalidAlgorithmParameterException | IOException ex) {
+		         IllegalBlockSizeException | InvalidAlgorithmParameterException ex) {
 			throw new CryptoException("Error encrypting/decrypting file", ex);
 		}
 	}

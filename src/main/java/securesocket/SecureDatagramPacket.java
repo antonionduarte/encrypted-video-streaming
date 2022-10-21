@@ -1,14 +1,15 @@
 package securesocket;
 
 import config.parser.CipherConfig;
+import encryptiontool.CryptoException;
+import encryptiontool.EncryptionTool;
 
-import javax.crypto.Cipher;
 import java.net.InetSocketAddress;
 
 public class SecureDatagramPacket {
 
 	private byte[] data;
-	private CipherConfig cipherConfig;
+	private final CipherConfig cipherConfig;
 	private InetSocketAddress address;
 
 	/**
@@ -24,7 +25,10 @@ public class SecureDatagramPacket {
 	 */
 	public SecureDatagramPacket(byte[] data, int length, InetSocketAddress address, CipherConfig cipherConfig) {
 		this.address = address;
-		// TODO...
+		this.cipherConfig = cipherConfig;
+		this.data = data;
+
+		encryptData();
 	}
 
 	public void setData(byte[] data) {
@@ -43,7 +47,21 @@ public class SecureDatagramPacket {
 		return address;
 	}
 
-	private void cipherData() {
+	//call this before sending?
+	public void encryptData() {
+		try {
+			data = EncryptionTool.encrypt(cipherConfig, data);
+		} catch (CryptoException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
+	//call this when receiving?
+	public void decryptData() {
+		try {
+			data = EncryptionTool.decrypt(cipherConfig, data);
+		} catch (CryptoException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
