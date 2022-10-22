@@ -79,23 +79,19 @@ public class SecureDatagramPacket {
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
 			var dataWithSize = outputStream.toByteArray();
 
-			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMac or Hash)
-			byte[] integrity = null;
+			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
+			byte[] integrity;
 
-			if (cipherConfig.getMackey() != null) {
-				integrity = IntegrityTool.buildIntegrity(cipherConfig, cipherText);
-			} else if (cipherConfig.getIntegrity() != null) {
-				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainText);
-			}
+			if (cipherConfig.getIntegrity() != null) {
+				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainText, cipherText);
 
-			if (integrity != null) {
 				outputStream.reset();
 				outputStream.write(dataWithSize);
 				outputStream.write(integrity);
 				this.data = outputStream.toByteArray();
-			} else {
+			} else
 				this.data = dataWithSize;
-			}
+
 		} catch (CryptoException | IOException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
