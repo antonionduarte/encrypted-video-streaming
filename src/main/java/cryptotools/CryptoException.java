@@ -1,4 +1,4 @@
-package encryptiontool;
+package cryptotools;
 
 public class CryptoException extends Exception {
 

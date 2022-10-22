@@ -1,6 +1,8 @@
+import config.parser.CipherConfig;
+import securesocket.SecureDatagramPacket;
+import securesocket.SecureSocket;
+
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -16,26 +18,28 @@ public class Proxy {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Proxy Running");
-		InputStream inputStream = new FileInputStream(CONFIG_PATH);
-		Properties properties = new Properties();
+		var inputStream = new FileInputStream(CONFIG_PATH);
+		var properties = new Properties();
 		properties.load(inputStream);
-		String remote = properties.getProperty(PROPERTY_REMOTE);
-		String destinations = properties.getProperty(PROPERTY_DESTINATIONS);
+		var remote = properties.getProperty(PROPERTY_REMOTE);
+		var destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 
 		SocketAddress inSocketAddress = parseSocketAddress(remote);
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Proxy::parseSocketAddress).collect(Collectors.toSet());
 
-		try (DatagramSocket inSocket = new DatagramSocket(inSocketAddress)) {
+		CipherConfig cipherConfig = null; // TODO: Get correct cipherConfig.
+
+		try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
 			try (DatagramSocket outSocket = new DatagramSocket()) {
 				byte[] buffer = new byte[4 * 1024];
 
 				while (true) {
-					DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);
-					inSocket.receive(inPacket);  // if remote is unicast
+					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
+					inSocket.receive(inPacket);
 
 					System.out.print("*");
 					for (SocketAddress outSocketAddress : outSocketAddressSet) {
-						outSocket.send(new DatagramPacket(buffer, inPacket.getLength(), outSocketAddress));
+						outSocket.send(inPacket.toDatagramPacket());
 					}
 				}
 			}

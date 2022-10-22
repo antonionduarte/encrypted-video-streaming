@@ -3,7 +3,7 @@ package config;
 import cipherdata.EncryptConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
-import encryptiontool.CryptoException;
+import cryptotools.CryptoException;
 
 import java.io.File;
 import java.io.IOException;

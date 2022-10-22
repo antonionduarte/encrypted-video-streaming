@@ -1,4 +1,4 @@
-package encryptiontool;
+package cryptotools;
 
 
 // This is version 2 of CryptoStuff class (ex 3, Lab 1)
@@ -16,9 +16,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.security.*;
 
 
@@ -36,11 +33,7 @@ public class EncryptionTool {
 	// Initialization vector ... See this according to the cryptoconfig
 	// of Streaming Server
 
-	// private static final byte[] ivBytes = new byte[]{ 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00, 0x0f, 0x0d, 0x0e, 0x0c, 0x0b, 0x0a, 0x09, 0x08 };
-	// private static final String TRANSFORMATION = "AES/CTR/PKCS5Padding";
-	// private static final String ALGORITHM = "AES";
-
-	public static byte[] encrypt(CipherConfig config,  byte[] plaintext) throws CryptoException {
+	public static byte[] encrypt(CipherConfig config, byte[] plaintext) throws CryptoException {
 		return doCrypto(Cipher.ENCRYPT_MODE, config, plaintext);
 	}
 
