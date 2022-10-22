@@ -4,13 +4,20 @@ import config.parser.CipherConfig;
 import encryptiontool.CryptoException;
 import encryptiontool.EncryptionTool;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 public class SecureDatagramPacket {
 
 	private byte[] data;
 	private final CipherConfig cipherConfig;
 	private InetSocketAddress address;
+	private final SecureRandom random;
 
 	/**
 	 * New SecureDatagramPacket, to be used by the SecureSocket.
@@ -19,16 +26,14 @@ public class SecureDatagramPacket {
 	 * The DatagramPacket is directly encapsulated in this class because it needs a seqNumber which is going
 	 * to be controlled by the SecureSocket.
 	 * @param data The bytes to be sent.
-	 * @param length The length of the buffer.
 	 * @param address The address to be sent.
 	 * @param cipherConfig The cipherConfig to be used to correctly encrypt the buffer.
 	 */
-	public SecureDatagramPacket(byte[] data, int length, InetSocketAddress address, CipherConfig cipherConfig) {
+	public SecureDatagramPacket(byte[] data, InetSocketAddress address, CipherConfig cipherConfig) throws NoSuchAlgorithmException {
 		this.address = address;
 		this.cipherConfig = cipherConfig;
-		this.data = data;
-
-		encryptData();
+		this.data = data ;
+		this.random = SecureRandom.getInstanceStrong();
 	}
 
 	public void setData(byte[] data) {
@@ -47,21 +52,30 @@ public class SecureDatagramPacket {
 		return address;
 	}
 
-	//call this before sending?
 	public void encryptData() {
 		try {
-			data = EncryptionTool.encrypt(cipherConfig, data);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			var nonce = random.nextInt();
+
+			outputStream.write(nonce);
+			outputStream.write(data);
+
+			//E(k, nonce || M)
+			data = EncryptionTool.encrypt(cipherConfig, outputStream.toByteArray());
+		} catch (CryptoException | IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public byte[] decryptData() {
+		try {
+			return EncryptionTool.decrypt(cipherConfig, data);
 		} catch (CryptoException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	//call this when receiving?
-	public void decryptData() {
-		try {
-			data = EncryptionTool.decrypt(cipherConfig, data);
-		} catch (CryptoException e) {
-			throw new RuntimeException(e);
-		}
+	public DatagramPacket toDatagramPacket() {
+		return new DatagramPacket(data, data.length);
 	}
 }

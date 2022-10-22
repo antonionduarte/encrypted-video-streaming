@@ -9,6 +9,7 @@ import securesocket.SecureDatagramPacket;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -24,7 +25,7 @@ public class StreamServer {
 	private static final String CIPHER_CONFIG_ENV = "CRYPTO_CONFIG_KEY";
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
 
-	public StreamServer(String movie, String address, String port) throws CryptoException {
+	public StreamServer(String movie, String address, String port) throws CryptoException, IOException {
 		this.movie = movie;
 		this.address = address;
 		this.port = port;
