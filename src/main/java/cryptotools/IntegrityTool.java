@@ -13,10 +13,11 @@ public class IntegrityTool {
 
 	public static boolean checkIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) {
 		try {
-			if (cipherConfig.getMackey() == null)
+			if (cipherConfig.getMackey() == null) {
 				return checkHashIntegrity(cipherConfig, data, integrity);
-			else
+			} else {
 				return checkHMacIntegrity(cipherConfig, data, integrity);
+			}
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
 		}
@@ -24,10 +25,11 @@ public class IntegrityTool {
 
 	public static byte[] buildIntegrity(CipherConfig cipherConfig, byte[] plainText, byte[] cipherText) {
 		try {
-			if (cipherConfig.getMackey() == null)
+			if (cipherConfig.getMackey() == null) {
 				return buildHashIntegrity(cipherConfig, plainText);
-			else
+			} else {
 				return buildHMacIntegrity(cipherConfig, cipherText);
+			}
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
 		}

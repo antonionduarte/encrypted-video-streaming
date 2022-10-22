@@ -16,7 +16,8 @@ public class ParseCipherConfig {
 	}
 
 	public Map<String, CipherConfig> parseConfig() {
-		Type mapType = new TypeToken<Map<String, CipherConfig>>() {}.getType();
+		Type mapType = new TypeToken<Map<String, CipherConfig>>() {
+		}.getType();
 		return gson.fromJson(json, mapType);
 	}
 }

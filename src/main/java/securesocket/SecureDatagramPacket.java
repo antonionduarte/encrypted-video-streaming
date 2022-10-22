@@ -89,8 +89,9 @@ public class SecureDatagramPacket {
 				outputStream.write(dataWithSize);
 				outputStream.write(integrity);
 				this.data = outputStream.toByteArray();
-			} else
+			} else {
 				this.data = dataWithSize;
+			}
 
 		} catch (CryptoException | IOException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);

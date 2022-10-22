@@ -9,7 +9,7 @@ public class CipherConfig {
 	private final String integrity;
 	private final String mackey;
 
-	 @SerializedName("integrity-check")
+	@SerializedName("integrity-check")
 	private final String integrityCheck;
 
 	public CipherConfig(String cipher, String key, String iv, String integrity, String mackey, String integrityCheck) {
