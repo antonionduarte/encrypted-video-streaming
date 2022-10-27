@@ -14,6 +14,6 @@ Repository for the Stream Ciphering Project of the Network Security Course @ FCT
  - ChaCha20/.../...
 
 # TODO:
- - [ ] **Environment**
-   - [ ] Dockerfile which needs to:
-     - [ ] In the case of the server: copy  
+ - [ ] Finish the Dockerfile / Docker setup plus writing the README.md to easily run the project.
+ - [ ] Detect the final message on the Proxy side.
+ - [ ] Calculate the Metrics.

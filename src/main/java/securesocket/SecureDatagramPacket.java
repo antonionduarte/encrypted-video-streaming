@@ -66,20 +66,20 @@ public class SecureDatagramPacket {
 			outputStream.write(nonce);
 			outputStream.write(data);
 
-			// Format: nonce || M
+			// Format: TYPE_MESSAGE || nonce || M
 			var plainText = outputStream.toByteArray();
 
-			// Format: E(k, nonce || M)
+			// Format: E(k, TYPE_MESSAGE || nonce || M)
 			var cipherText = EncryptionTool.encrypt(cipherConfig, plainText);
 
 			outputStream.reset();
 			outputStream.write(cipherText.length);
 			outputStream.write(cipherText);
 
-			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
+			// Format: size(E(k, TYPE_MESSAGE || nonce || M)) || E(k, nonce || M)
 			var dataWithSize = outputStream.toByteArray();
 
-			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
+			// Format: size(E(k, TYPE_MESSAGE || nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
 			byte[] integrity;
 
 			if (cipherConfig.getIntegrity() != null) {
