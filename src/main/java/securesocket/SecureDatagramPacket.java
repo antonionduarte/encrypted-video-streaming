@@ -31,7 +31,7 @@ public class SecureDatagramPacket {
 		this.address = address;
 		this.cipherConfig = cipherConfig;
 		this.data = data;
-		this.encryptData(); // TODO: Check if you can do this uwu :3
+		this.encryptData();
 	}
 
 	public SecureDatagramPacket(CipherConfig cipherConfig) {

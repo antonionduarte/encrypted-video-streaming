@@ -29,7 +29,6 @@ public class SecureSocket implements Closeable {
 	}
 
 	public void send(SecureDatagramPacket secureDatagramPacket) throws IOException {
-		secureDatagramPacket.encryptData();
 		datagramSocket.send(secureDatagramPacket.toDatagramPacket());
 	}
 
