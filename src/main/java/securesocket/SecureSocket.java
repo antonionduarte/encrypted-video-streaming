@@ -33,7 +33,7 @@ public class SecureSocket implements Closeable {
 	}
 
 	public void receive(SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, CryptoException {
-		var buffer = new byte[1024 * 4];
+		var buffer = new byte[1024 * 8];
 		var inPacket = new DatagramPacket(buffer, buffer.length);
 		datagramSocket.receive(inPacket);
 
@@ -68,12 +68,12 @@ public class SecureSocket implements Closeable {
 			throw new IntegrityException();
 		}
 
-		receivedNonces.add(nonce);
+		this.receivedNonces.add(nonce);
 		secureDatagramPacket.setData(inputStream.readAllBytes());
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		datagramSocket.close();
 	}
 }

@@ -66,20 +66,20 @@ public class SecureDatagramPacket {
 			outputStream.write(nonce);
 			outputStream.write(data);
 
-			// Format: TYPE_MESSAGE || nonce || M
+			// Format: nonce || M
 			var plainText = outputStream.toByteArray();
 
-			// Format: E(k, TYPE_MESSAGE || nonce || M)
+			// Format: E(k, nonce || M)
 			var cipherText = EncryptionTool.encrypt(cipherConfig, plainText);
 
 			outputStream.reset();
 			outputStream.write(cipherText.length);
 			outputStream.write(cipherText);
 
-			// Format: size(E(k, TYPE_MESSAGE || nonce || M)) || E(k, nonce || M)
+			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
 			var dataWithSize = outputStream.toByteArray();
 
-			// Format: size(E(k, TYPE_MESSAGE || nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
+			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
 			byte[] integrity;
 
 			if (cipherConfig.getIntegrity() != null) {
@@ -99,6 +99,8 @@ public class SecureDatagramPacket {
 	}
 
 	public DatagramPacket toDatagramPacket() {
-		return new DatagramPacket(data, data.length);
+		var packet = new DatagramPacket(data, data.length);
+		packet.setSocketAddress(address);
+		return packet;
 	}
 }

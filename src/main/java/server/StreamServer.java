@@ -3,13 +3,12 @@ package server;
 import cipherdata.EncryptMovies;
 import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
+import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
+import securesocket.SecureDatagramPacket;
+import securesocket.SecureSocket;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -22,12 +21,25 @@ public class StreamServer {
 
 	private static final String CIPHER_CONFIG_ENV = "CRYPTO_CONFIG_KEY";
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
+	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
 
 	public StreamServer(String movie, String address, String port) throws CryptoException, IOException {
 		this.movie = movie;
 		this.address = address;
 		this.port = port;
 		this.moviesConfig = new DecipherCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
+	}
+
+	public enum MESSAGE_TYPE {
+		FRAME,
+		END
+	}
+
+	public byte[] appendMessageType(MESSAGE_TYPE messageType, byte[] data) throws IOException {
+		var outputStream = new ByteArrayOutputStream();
+		outputStream.write(messageType == MESSAGE_TYPE.FRAME ? 0 : 1);
+		outputStream.write(data);
+		return outputStream.toByteArray();
 	}
 
 	public void run() throws Exception {
@@ -39,43 +51,47 @@ public class StreamServer {
 		var count = 0;
 		long time;
 
-		var buff = new byte[4096];
+		var buff = new byte[8192];
 
-		DataInputStream g = new DataInputStream(new ByteArrayInputStream(plainMovie));
+		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
+		CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 
-		try (DatagramSocket socket = new DatagramSocket()) { // TODO: replace with SecureDatagramSocket
-			InetSocketAddress address = new InetSocketAddress(this.address, Integer.parseInt(port));
-			DatagramPacket packet = new DatagramPacket(buff, buff.length, address); // TODO: replace with SecureDatagramPacket
+		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
-			long t0 = System.nanoTime(); // Ref. time
-			long q0 = 0;
+		InetSocketAddress address = new InetSocketAddress(this.address, Integer.parseInt(port));
+		try (SecureSocket socket = new SecureSocket(address)) {
+			SecureDatagramPacket packet = new SecureDatagramPacket(buff, address, cipherConfig);
 
-			while (g.available() > 0) {
-				size = g.readShort(); // size of the frame
-				csize = csize + size;
-				time = g.readLong();  // timestamp of the frame
 
-				if (count == 0) {
+			long beginningTime = System.nanoTime(); // ref. time
+			long q0 = 0; // time of the last packet sent
+
+			while (dataStream.available() > 0) {
+				size = dataStream.readShort(); // size of the frame
+				csize = csize + size; // cumulative size of the frames sent
+				time = dataStream.readLong();  // timestamp of the frame
+
+				if (count == 0) { // first packet
 					q0 = time; // ref. time in the stream
 				}
 
-				count += 1;
-				g.readFully(buff, 0, size);
-				packet.setData(buff, 0, size); // TODO: replace with SecureDatagramPacket
-				packet.setSocketAddress(address); // TODO: replace with SecureDatagramPacket
+				count += 1; // number of frames
+				dataStream.readFully(buff, 0, size); // read the frame
+				buff = appendMessageType(MESSAGE_TYPE.FRAME, buff);
 
-				long t = System.nanoTime(); // what time is it?
 				// Decision about the right time to transmit
-				Thread.sleep(Math.max(0, ((time - q0) - (t - t0)) / 1000000));
-				// Send datagram (udp packet) w/ payload frame)
-				// Frames sent in clear (no encryption)
-				socket.send(packet); // TODO: replace with SecureDatagramSocket
-				// Just for awareness... (debug)
+				long t = System.nanoTime(); // what time is it?
+				Thread.sleep(Math.max(0, ((time - q0) - (t - beginningTime)) / 1000000)); // sleep until the right time
+				socket.send(packet);
 				System.out.print(".");
 			}
 
+			// send the end of the stream
+			buff = appendMessageType(MESSAGE_TYPE.END, buff);
+			socket.send(packet);
+
 			long tend = System.nanoTime(); // "The end" time
-			long duration = (tend - t0) / 1000000000;
+			long duration = (tend - beginningTime) / 1000000000; // duration of the transmission
 
 			System.out.println();
 			System.out.println("Done! all frames sent: " + count);
