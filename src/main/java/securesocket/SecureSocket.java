@@ -13,32 +13,30 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
 public class SecureSocket implements Closeable {
 
 	private final DatagramSocket datagramSocket;
-	private final SocketAddress socketAddress;
 	private final Set<Integer> receivedNonces;
 
 	public SecureSocket(SocketAddress socketAddress) throws SocketException {
-		this.datagramSocket = new DatagramSocket();
+		this.datagramSocket = new DatagramSocket(socketAddress);
 		this.receivedNonces = new HashSet<>();
-		this.socketAddress = socketAddress;
 	}
 
 	public void send(SecureDatagramPacket secureDatagramPacket) throws IOException {
 		datagramSocket.send(secureDatagramPacket.toDatagramPacket());
 	}
 
-	public void receive(SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, CryptoException {
-		var buffer = new byte[1024 * 8];
+	public void receive(byte[] buffer, SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, CryptoException {
 		var inPacket = new DatagramPacket(buffer, buffer.length);
 		datagramSocket.receive(inPacket);
 
-		var inputStream = new ByteArrayInputStream(secureDatagramPacket.getData());
-		var size = new BigInteger(inputStream.readNBytes(4)).intValue();
+		var inputStream = new ByteArrayInputStream(inPacket.getData());
+		var size = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
 		var cipherText = inputStream.readNBytes(size);
 		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();

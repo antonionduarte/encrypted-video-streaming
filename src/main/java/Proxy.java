@@ -10,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
@@ -46,12 +47,12 @@ public class Proxy {
 
 				while (true) {
 					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
-					inSocket.receive(inPacket);
+					inSocket.receive(buffer, inPacket);
 
 					InputStream dataInputStream = new ByteArrayInputStream(inPacket.getData());
-					var type = dataInputStream.readNBytes(1); // 0 = FRAME, 1 = END
+					var type = ByteBuffer.wrap(dataInputStream.readNBytes(4)).getInt(); // 0 = FRAME, 1 = END
 					var data = dataInputStream.readAllBytes(); // data
-					var messageType = type[0] == 0 ? MESSAGE_TYPE.FRAME : MESSAGE_TYPE.END; // convert to enum
+					var messageType = MESSAGE_TYPE.values()[type];// convert to enum
 
 					if (messageType == MESSAGE_TYPE.END) {
 						break; // stream ended.

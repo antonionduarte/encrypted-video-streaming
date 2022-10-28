@@ -13,8 +13,8 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 
 public class StreamServer {
-	private final String address;
-	private final String port;
+	private final InetSocketAddress serverAddress;
+	private final InetSocketAddress remoteAddress;
 	private final String movie;
 
 	private final Map<String, CipherConfig> moviesConfig;
@@ -23,10 +23,10 @@ public class StreamServer {
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
 	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
 
-	public StreamServer(String movie, String address, String port) throws CryptoException, IOException {
+	public StreamServer(String movie, String serverAddressStr, String serverPort, String remoteAddressStr, String remotePort) throws CryptoException, IOException {
 		this.movie = movie;
-		this.address = address;
-		this.port = port;
+		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));;
+		this.remoteAddress = new InetSocketAddress(remoteAddressStr, Integer.parseInt(remotePort));;
 		this.moviesConfig = new DecipherCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
 	}
 
@@ -58,9 +58,8 @@ public class StreamServer {
 
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
-		InetSocketAddress address = new InetSocketAddress(this.address, Integer.parseInt(port));
-		try (SecureSocket socket = new SecureSocket(address)) {
-			SecureDatagramPacket packet = new SecureDatagramPacket(buff, address, cipherConfig);
+		try (SecureSocket socket = new SecureSocket(serverAddress)) {
+			SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
 
 
 			long beginningTime = System.nanoTime(); // ref. time
