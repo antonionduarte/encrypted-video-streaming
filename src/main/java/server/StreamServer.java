@@ -79,8 +79,8 @@ public class StreamServer {
 				SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
 
 				// Decision about the right time to transmit
-				//long t = System.nanoTime(); // what time is it?
-				//Thread.sleep(Math.max(0, ((time - q0) - (t - beginningTime)) / 1000000)); // sleep until the right time
+				long t = System.nanoTime(); // what time is it?
+				Thread.sleep(Math.max(0, ((time - q0) - (t - beginningTime)) / 1000000)); // sleep until the right time
 				socket.send(packet);
 				System.out.print(".");
 			}
