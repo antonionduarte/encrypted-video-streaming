@@ -37,7 +37,7 @@ public class StreamServer {
 
 	public byte[] appendMessageType(MESSAGE_TYPE messageType, byte[] data) throws IOException {
 		var outputStream = new ByteArrayOutputStream();
-		outputStream.write(messageType == MESSAGE_TYPE.FRAME ? 0 : 1);
+		outputStream.write(messageType.ordinal());
 		outputStream.write(data);
 		return outputStream.toByteArray();
 	}
@@ -51,7 +51,6 @@ public class StreamServer {
 		var count = 0;
 		long time;
 
-		var buff = new byte[8192];
 
 		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
 		CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
@@ -59,8 +58,7 @@ public class StreamServer {
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
 		try (SecureSocket socket = new SecureSocket(serverAddress)) {
-			SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
-
+			byte[] buff;
 
 			long beginningTime = System.nanoTime(); // ref. time
 			long q0 = 0; // time of the last packet sent
@@ -75,8 +73,10 @@ public class StreamServer {
 				}
 
 				count += 1; // number of frames
+				buff = new byte[8192];
 				dataStream.readFully(buff, 0, size); // read the frame
 				buff = appendMessageType(MESSAGE_TYPE.FRAME, buff);
+				SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
 
 				// Decision about the right time to transmit
 				long t = System.nanoTime(); // what time is it?
@@ -86,7 +86,8 @@ public class StreamServer {
 			}
 
 			// send the end of the stream
-			buff = appendMessageType(MESSAGE_TYPE.END, buff);
+			buff = appendMessageType(MESSAGE_TYPE.END, new byte[8192]);
+			SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
 			socket.send(packet);
 
 			long tend = System.nanoTime(); // "The end" time

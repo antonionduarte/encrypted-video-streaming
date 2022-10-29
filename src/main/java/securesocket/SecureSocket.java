@@ -37,7 +37,9 @@ public class SecureSocket implements Closeable {
 
 		var inputStream = new ByteArrayInputStream(inPacket.getData());
 		var size = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
+		System.out.println(size);
 		var cipherText = inputStream.readNBytes(size);
+		System.out.println(cipherText.length);
 		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();
 
@@ -61,7 +63,7 @@ public class SecureSocket implements Closeable {
 
 		// Check nonce
 		inputStream = new ByteArrayInputStream(plainText);
-		var nonce = new BigInteger(inputStream.readNBytes(4)).intValue();
+		var nonce = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
 		if (receivedNonces.contains(nonce)) {
 			throw new IntegrityException();
 		}

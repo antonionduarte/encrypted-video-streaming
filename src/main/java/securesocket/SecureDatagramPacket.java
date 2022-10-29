@@ -5,12 +5,16 @@ import cryptotools.CryptoException;
 import cryptotools.EncryptionTool;
 import cryptotools.IntegrityTool;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class SecureDatagramPacket {
 
@@ -63,7 +67,7 @@ public class SecureDatagramPacket {
 			var outputStream = new ByteArrayOutputStream();
 			var nonce = SecureRandom.getInstanceStrong().nextInt();
 
-			outputStream.write(nonce);
+			outputStream.write(ByteBuffer.allocate(4).putInt(nonce).array());
 			outputStream.write(data);
 
 			// Format: nonce || M
@@ -72,12 +76,10 @@ public class SecureDatagramPacket {
 			// Format: E(k, nonce || M)
 			var cipherText = EncryptionTool.encrypt(cipherConfig, plainText);
 
-			outputStream.reset();
-			outputStream.write(cipherText.length);
-			outputStream.write(cipherText);
-
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
-			var dataWithSize = outputStream.toByteArray();
+			outputStream.reset();
+			outputStream.write(ByteBuffer.allocate(4).putInt(cipherText.length).array());
+			outputStream.write(cipherText);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
 			byte[] integrity;
@@ -85,13 +87,10 @@ public class SecureDatagramPacket {
 			if (cipherConfig.getIntegrity() != null) {
 				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainText, cipherText);
 
-				outputStream.reset();
-				outputStream.write(dataWithSize);
 				outputStream.write(integrity);
-				this.data = outputStream.toByteArray();
-			} else {
-				this.data = dataWithSize;
+
 			}
+			this.data = outputStream.toByteArray();
 
 		} catch (CryptoException | IOException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
