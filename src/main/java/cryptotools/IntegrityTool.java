@@ -46,14 +46,14 @@ public class IntegrityTool {
 	}
 
 	private static byte[] buildHMacIntegrity(CipherConfig cipherConfig, byte[] cipherText) throws NoSuchAlgorithmException, InvalidKeyException {
-		var hmacAlgorithm = cipherConfig.getIntegrity();
-		var hMacKey = new SecretKeySpec(cipherConfig.getMackey().getBytes(), hmacAlgorithm);
-		var hMac = Mac.getInstance(hmacAlgorithm);
+		var macAlgorithm = cipherConfig.getIntegrity();
+		var macKey = new SecretKeySpec(cipherConfig.getMackey().getBytes(), macAlgorithm);
+		var mac = Mac.getInstance(macAlgorithm);
 
-		hMac.init(hMacKey);
-		hMac.update(cipherText);
+		mac.init(macKey);
+		mac.update(cipherText);
 
-		return hMac.doFinal();
+		return mac.doFinal();
 	}
 
 	private static byte[] buildHashIntegrity(CipherConfig cipherConfig, byte[] plainText) throws NoSuchAlgorithmException {
