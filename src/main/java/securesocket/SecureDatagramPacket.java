@@ -63,7 +63,8 @@ public class SecureDatagramPacket {
 
 	public void encryptData(byte[] plainText) {
 		try {
-			var outputStream = new ByteArrayOutputStream();
+			//TODO maybe create one instance and reuse it for all packets
+			var outputStream = new ByteArrayOutputStream(plainText.length + 4);
 			var nonce = SecureRandom.getInstanceStrong().nextInt();
 
 			outputStream.write(ByteBuffer.allocate(4).putInt(nonce).array());
@@ -80,7 +81,7 @@ public class SecureDatagramPacket {
 			outputStream.write(ByteBuffer.allocate(4).putInt(cipherText.length).array());
 			outputStream.write(cipherText, 0, cipherText.length);
 
-			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || ( HMAC(E(k, nonce || M)) or H(nonce || M) )
+			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || ( MAC(E(k, nonce || M)) or H(nonce || M) )
 			byte[] integrity;
 			if (cipherConfig.getIntegrity() != null) {
 				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainTextWithNonce, cipherText);
@@ -94,8 +95,6 @@ public class SecureDatagramPacket {
 	}
 
 	public DatagramPacket toDatagramPacket() {
-		var packet = new DatagramPacket(data, data.length);
-		packet.setSocketAddress(address);
-		return packet;
+		return new DatagramPacket(data, data.length, address);
 	}
 }

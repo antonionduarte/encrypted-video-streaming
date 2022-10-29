@@ -44,7 +44,7 @@ public class Proxy {
 
 		try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
 			try (DatagramSocket outSocket = new DatagramSocket()) {
-				byte[] buffer = new byte[8192];
+				byte[] buffer = new byte[4096]; // prev 8192
 
 				while (true) {
 					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);

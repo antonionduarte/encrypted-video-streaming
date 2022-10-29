@@ -36,10 +36,11 @@ public class SecureSocket implements Closeable {
 		var inPacket = new DatagramPacket(buffer, buffer.length);
 		datagramSocket.receive(inPacket);
 
-		var inputStream = new ByteArrayInputStream(inPacket.getData());
+		//TODO maybe create one instance and reuse it for all packets (prob not here?)
+		var inputStream = new ByteArrayInputStream(inPacket.getData(), 0, inPacket.getLength());
 		var size = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
 		var cipherText = inputStream.readNBytes(size);
-		var integrity = inputStream.readNBytes(inPacket.getLength() - size - 4);
+		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();
 
 		byte[] plainText = null;
