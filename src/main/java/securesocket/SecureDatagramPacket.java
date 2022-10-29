@@ -34,8 +34,7 @@ public class SecureDatagramPacket {
 	public SecureDatagramPacket(byte[] data, InetSocketAddress address, CipherConfig cipherConfig) throws NoSuchAlgorithmException {
 		this.address = address;
 		this.cipherConfig = cipherConfig;
-		this.data = data;
-		this.encryptData();
+		this.encryptData(data);
 	}
 
 	public SecureDatagramPacket(CipherConfig cipherConfig) {
@@ -62,13 +61,13 @@ public class SecureDatagramPacket {
 		return address;
 	}
 
-	public void encryptData() {
+	public void encryptData(byte[] plaintext) {
 		try {
 			var outputStream = new ByteArrayOutputStream();
 			var nonce = SecureRandom.getInstanceStrong().nextInt();
 
 			outputStream.write(ByteBuffer.allocate(4).putInt(nonce).array());
-			outputStream.write(data);
+			outputStream.write(plaintext);
 
 			// Format: nonce || M
 			var plainText = outputStream.toByteArray();
@@ -79,16 +78,13 @@ public class SecureDatagramPacket {
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
 			outputStream.reset();
 			outputStream.write(ByteBuffer.allocate(4).putInt(cipherText.length).array());
-			outputStream.write(cipherText);
+			outputStream.write(cipherText, 0, cipherText.length);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
 			byte[] integrity;
-
 			if (cipherConfig.getIntegrity() != null) {
 				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainText, cipherText);
-
 				outputStream.write(integrity);
-
 			}
 			this.data = outputStream.toByteArray();
 

@@ -1,5 +1,6 @@
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
+import cryptotools.IntegrityException;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 
@@ -47,20 +48,25 @@ public class Proxy {
 
 				while (true) {
 					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
-					inSocket.receive(buffer, inPacket);
+					try {
+						inSocket.receive(buffer, inPacket);
 
-					InputStream dataInputStream = new ByteArrayInputStream(inPacket.getData());
-					var type = ByteBuffer.wrap(dataInputStream.readNBytes(1)).getInt(); // 0 = FRAME, 1 = END
-					var data = dataInputStream.readAllBytes(); // data
-					var messageType = MESSAGE_TYPE.values()[type];// convert to enum
+						InputStream dataInputStream = new ByteArrayInputStream(inPacket.getData());
+						var type = ByteBuffer.wrap(dataInputStream.readNBytes(1)).getInt(); // 0 = FRAME, 1 = END
+						var messageType = MESSAGE_TYPE.values()[type];// convert to enum
 
-					if (messageType == MESSAGE_TYPE.END) {
-						break; // stream ended.
-					}
+						if (messageType == MESSAGE_TYPE.END) {
+							break; // stream ended.
+						}
 
-					System.out.print("*"); // print a dot for each frame received.
-					for (SocketAddress outSocketAddress : outSocketAddressSet) {
-						outSocket.send(new DatagramPacket(data, data.length, outSocketAddress));
+						var data = dataInputStream.readAllBytes(); // data
+
+						System.out.print("*"); // print an asterisk for each frame received.
+						for (SocketAddress outSocketAddress : outSocketAddressSet) {
+							outSocket.send(new DatagramPacket(data, data.length, outSocketAddress));
+						}
+					} catch (IntegrityException e) {
+						System.out.print("-"); // print a dash for denied frame
 					}
 				}
 			}

@@ -14,6 +14,7 @@ import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,9 +39,6 @@ public class SecureSocket implements Closeable {
 		var inputStream = new ByteArrayInputStream(inPacket.getData());
 		var size = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
 		var cipherText = inputStream.readNBytes(size);
-		//TODO sizes are coming out different :(
-		System.out.println(size);
-		System.out.println(cipherText.length);
 		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();
 

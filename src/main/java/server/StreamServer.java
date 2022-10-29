@@ -71,9 +71,8 @@ public class StreamServer {
 				if (count == 0) { // first packet
 					q0 = time; // ref. time in the stream
 				}
-
 				count += 1; // number of frames
-				buff = new byte[8192];
+				buff = new byte[size];
 				dataStream.readFully(buff, 0, size); // read the frame
 				buff = appendMessageType(MESSAGE_TYPE.FRAME, buff);
 				SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
@@ -86,7 +85,7 @@ public class StreamServer {
 			}
 
 			// send the end of the stream
-			buff = appendMessageType(MESSAGE_TYPE.END, new byte[8192]);
+			buff = appendMessageType(MESSAGE_TYPE.END, new byte[0]);
 			SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
 			socket.send(packet);
 
