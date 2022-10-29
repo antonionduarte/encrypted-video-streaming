@@ -10,6 +10,7 @@ import securesocket.SecureSocket;
 
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 public class StreamServer {
@@ -37,7 +38,7 @@ public class StreamServer {
 
 	public byte[] appendMessageType(MESSAGE_TYPE messageType, byte[] data) throws IOException {
 		var outputStream = new ByteArrayOutputStream();
-		outputStream.write(messageType.ordinal());
+		outputStream.write(ByteBuffer.allocate(4).putInt(messageType.ordinal()).array());
 		outputStream.write(data);
 		return outputStream.toByteArray();
 	}
@@ -78,8 +79,8 @@ public class StreamServer {
 				SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
 
 				// Decision about the right time to transmit
-				long t = System.nanoTime(); // what time is it?
-				Thread.sleep(Math.max(0, ((time - q0) - (t - beginningTime)) / 1000000)); // sleep until the right time
+				//long t = System.nanoTime(); // what time is it?
+				//Thread.sleep(Math.max(0, ((time - q0) - (t - beginningTime)) / 1000000)); // sleep until the right time
 				socket.send(packet);
 				System.out.print(".");
 			}

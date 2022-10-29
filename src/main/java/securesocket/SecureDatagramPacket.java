@@ -61,29 +61,29 @@ public class SecureDatagramPacket {
 		return address;
 	}
 
-	public void encryptData(byte[] plaintext) {
+	public void encryptData(byte[] plainText) {
 		try {
 			var outputStream = new ByteArrayOutputStream();
 			var nonce = SecureRandom.getInstanceStrong().nextInt();
 
 			outputStream.write(ByteBuffer.allocate(4).putInt(nonce).array());
-			outputStream.write(plaintext);
+			outputStream.write(plainText);
 
 			// Format: nonce || M
-			var plainText = outputStream.toByteArray();
+			var plainTextWithNonce = outputStream.toByteArray();
 
 			// Format: E(k, nonce || M)
-			var cipherText = EncryptionTool.encrypt(cipherConfig, plainText);
+			var cipherText = EncryptionTool.encrypt(cipherConfig, plainTextWithNonce);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
 			outputStream.reset();
 			outputStream.write(ByteBuffer.allocate(4).putInt(cipherText.length).array());
 			outputStream.write(cipherText, 0, cipherText.length);
 
-			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || (HMAC(E(k, nonce || M)) or Hash(nonce || M))
+			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || ( HMAC(E(k, nonce || M)) or H(nonce || M) )
 			byte[] integrity;
 			if (cipherConfig.getIntegrity() != null) {
-				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainText, cipherText);
+				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainTextWithNonce, cipherText);
 				outputStream.write(integrity);
 			}
 			this.data = outputStream.toByteArray();

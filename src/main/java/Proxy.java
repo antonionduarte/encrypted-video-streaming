@@ -52,7 +52,7 @@ public class Proxy {
 						inSocket.receive(buffer, inPacket);
 
 						InputStream dataInputStream = new ByteArrayInputStream(inPacket.getData());
-						var type = ByteBuffer.wrap(dataInputStream.readNBytes(1)).getInt(); // 0 = FRAME, 1 = END
+						var type = ByteBuffer.wrap(dataInputStream.readNBytes(4)).getInt(); // 0 = FRAME, 1 = END
 						var messageType = MESSAGE_TYPE.values()[type];// convert to enum
 
 						if (messageType == MESSAGE_TYPE.END) {
