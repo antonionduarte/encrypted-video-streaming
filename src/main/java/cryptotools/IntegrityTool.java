@@ -16,7 +16,7 @@ public class IntegrityTool {
 			if (cipherConfig.getMackey() == null) {
 				return checkHashIntegrity(cipherConfig, data, integrity);
 			} else {
-				return checkHMacIntegrity(cipherConfig, data, integrity);
+				return checkMacIntegrity(cipherConfig, data, integrity);
 			}
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
@@ -28,16 +28,16 @@ public class IntegrityTool {
 			if (cipherConfig.getMackey() == null) {
 				return buildHashIntegrity(cipherConfig, plainText);
 			} else {
-				return buildHMacIntegrity(cipherConfig, cipherText);
+				return buildMacIntegrity(cipherConfig, cipherText);
 			}
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private static boolean checkHMacIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) throws NoSuchAlgorithmException, InvalidKeyException {
-		var hmacBytes = buildHMacIntegrity(cipherConfig, data);
-		return Arrays.equals(hmacBytes, integrity);
+	private static boolean checkMacIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) throws NoSuchAlgorithmException, InvalidKeyException {
+		var macBytes = buildMacIntegrity(cipherConfig, data);
+		return Arrays.equals(macBytes, integrity);
 	}
 
 	private static boolean checkHashIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) throws NoSuchAlgorithmException {
@@ -45,7 +45,7 @@ public class IntegrityTool {
 		return Arrays.equals(hashBytes, integrity);
 	}
 
-	private static byte[] buildHMacIntegrity(CipherConfig cipherConfig, byte[] cipherText) throws NoSuchAlgorithmException, InvalidKeyException {
+	private static byte[] buildMacIntegrity(CipherConfig cipherConfig, byte[] cipherText) throws NoSuchAlgorithmException, InvalidKeyException {
 		var macAlgorithm = cipherConfig.getIntegrity();
 		var macKey = new SecretKeySpec(cipherConfig.getMackey().getBytes(), macAlgorithm);
 		var mac = Mac.getInstance(macAlgorithm);
