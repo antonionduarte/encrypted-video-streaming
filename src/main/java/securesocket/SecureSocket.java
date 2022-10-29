@@ -37,8 +37,9 @@ public class SecureSocket implements Closeable {
 
 		var inputStream = new ByteArrayInputStream(inPacket.getData());
 		var size = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
-		System.out.println(size);
 		var cipherText = inputStream.readNBytes(size);
+		//TODO sizes are coming out different :(
+		System.out.println(size);
 		System.out.println(cipherText.length);
 		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();
