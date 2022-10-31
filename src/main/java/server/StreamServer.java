@@ -5,6 +5,8 @@ import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
+import cryptotools.IntegrityException;
+import cryptotools.IntegrityTool;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 
@@ -45,16 +47,23 @@ public class StreamServer {
 
 	public void run() throws Exception {
 		System.out.println("Server running");
-		var plainMovie = EncryptMovies.decryptMovie(moviesConfig.get(movie.split("/")[2]), movie);
 
-		int size;
+		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
+		var plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, movie);
+
+		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
+        CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
+
+        if ( !IntegrityTool.checkIntegrity(movieCipherConfig, plainMovie,
+                cipherConfig.getIntegrityCheck().getBytes())) {
+            System.err.println("Movie integrity not checked");
+            System.exit(1);
+        }
+
+        int size;
 		var csize = 0;
 		var count = 0;
 		long time;
-
-
-		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
-		CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
