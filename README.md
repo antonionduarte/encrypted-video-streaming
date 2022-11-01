@@ -20,14 +20,14 @@ export CRYPTO_CONFIG_KEY = <your key>
 If you want to use the already ciphered movies:
 
 ```bash
-export CRYPTO_CONFIG_KEY"aaaaaaaabbbbbbbbccccccccdddddddd"
+export CRYPTO_CONFIG_KEY = "aaaaaaaabbbbbbbbccccccccdddddddd"
 ```
 
 ### Docker compose
 
 The docker compose alternative runs two containers, one for the server and one for the proxy.
 In order for the Host to be able to receive UDP packets from the proxy container, the containers run in `network_mode=host`.
-Given that this network mode is not available in macOS, this alternative only works in a Linux environment.
+Given that this network mode is not available in macOS, **this alternative only works in a Linux environment**.
 
 To run the project using docker compose, run the following command:
 
@@ -43,6 +43,14 @@ and runs the project:
 ./scripts/build-and-deploy.sh
 ```
 
+**Note:** by default the docker version will run the movie `cars.dat.enc`. If you wish to run another one you must change it in
+the `docker/server/Dockerfile` file.
+You can do so by changing the line:
+
+```Dockerfile
+CMD java -cp ciphered-video-server.jar Server movies/ciphered/<movie-you-want-to-watch>
+```
+
 ### Locally
 
 To run it locally, you need to compile the project and simply run, for the **Proxy**:
@@ -52,7 +60,7 @@ java -cp target/ciphered-video-server.jar Proxy
 
 And for the server:
 ```bash
-java -cp target/ciphered-video-server.jar Server
+java -cp target/ciphered-video-server.jar Server <encrypted-movie-filename>
 ```
 
 # Configuration 
@@ -60,7 +68,7 @@ java -cp target/ciphered-video-server.jar Server
 There are two types of configuration files, the ones present in the `movies` directory and the ones in the `config` directory.
 There are two JSON files, and one properties file in `config/proxy/config.properties`.
 
-### Movies Ciphersuite
+### Movies Cipher Suite
 
 In the `movies` directory, we have a folder which contains everything already encrypted. 
 If you want to see the plaintext version of the movies and the configuration file you can see it in
