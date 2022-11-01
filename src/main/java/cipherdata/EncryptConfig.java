@@ -3,11 +3,13 @@ package cipherdata;
 import config.parser.CipherConfig;
 import cryptotools.CryptoException;
 import cryptotools.EncryptionTool;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.security.Security;
 
 public class EncryptConfig {
 	private static final String CIPHER_SUITE = "AES/ECB/PKCS5Padding";
@@ -37,6 +39,9 @@ public class EncryptConfig {
 			System.err.println("Use: CipherConfig <cipher | decipher> <AES-key> <input-file> <output-file>");
 			System.exit(-1);
 		}
+
+		Security.setProperty("crypto.policy", "unlimited");
+		Security.addProvider(new BouncyCastleProvider());
 
 		var key = args[1];
 		var inputFile = new File(args[2]);

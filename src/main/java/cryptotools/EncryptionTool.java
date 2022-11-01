@@ -42,9 +42,6 @@ public class EncryptionTool {
 	}
 
 	private static byte[] doCrypto(int cipherMode, CipherConfig config, byte[] text) throws CryptoException {
-		Security.setProperty("crypto.policy", "unlimited");
-		Security.addProvider(new BouncyCastleProvider());
-
 		var algorithm = config.getCipher().split("/")[0];
 		var key = config.getKey();
 		var cipherSuite = config.getCipher();

@@ -1,15 +1,11 @@
 package config.parser;
 
-import com.google.gson.annotations.SerializedName;
-
 public class CipherConfig {
 	private final String cipher;
 	private final String key;
 	private final String iv;
 	private final String integrity;
 	private final String mackey;
-
-	@SerializedName(value="integrity-check")
 	private final String integrityCheck;
 
 	public CipherConfig(String cipher, String key, String iv, String integrity, String mackey, String integrityCheck) {

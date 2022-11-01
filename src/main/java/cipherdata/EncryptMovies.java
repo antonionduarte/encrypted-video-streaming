@@ -4,12 +4,14 @@ import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
 import cryptotools.EncryptionTool;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.Security;
 
 public class EncryptMovies {
 	public static final String MOVIE_PATH = "movies/plain/";
@@ -21,6 +23,9 @@ public class EncryptMovies {
 	}
 
 	public static void main(String[] args) throws IOException, CryptoException {
+		Security.setProperty("crypto.policy", "unlimited");
+		Security.addProvider(new BouncyCastleProvider());
+
 		try (FileInputStream fileInputStream = new FileInputStream(MOVIE_CIPHER_CONFIG_PATH)) {
 			var configJson = new String(fileInputStream.readAllBytes());
 			var config = new ParseCipherConfig(configJson).parseConfig();

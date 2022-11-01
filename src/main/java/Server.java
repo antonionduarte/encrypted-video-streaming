@@ -1,4 +1,7 @@
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import server.StreamServer;
+
+import java.security.Security;
 
 public class Server {
 
@@ -9,6 +12,9 @@ public class Server {
 			System.out.println("Error, use: StreamServer <movie>");
 			System.exit(-1);
 		}
+
+		Security.setProperty("crypto.policy", "unlimited");
+		Security.addProvider(new BouncyCastleProvider());
 
 		var streamServer = new StreamServer(args[0], ADDRESS, PORT);
 		streamServer.run();

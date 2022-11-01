@@ -1,6 +1,7 @@
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.IntegrityException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 
@@ -12,6 +13,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
@@ -28,6 +30,9 @@ public class Proxy {
 	}
 
 	public static void main(String[] args) throws Exception {
+		Security.setProperty("crypto.policy", "unlimited");
+		Security.addProvider(new BouncyCastleProvider());
+
 		System.out.println("Proxy Running");
 		var inputStream = new FileInputStream(CONFIG_PATH);
 		var properties = new Properties();
