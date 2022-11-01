@@ -42,6 +42,8 @@ and runs the project:
 ```bash
 ./scripts/build-and-deploy.sh
 ```
+If docker doesn't have compose command built-in, use `docker-compose` instead.
+
 
 **Note:** by default the docker version will run the movie `cars.dat.enc`. If you wish to run another one you must change it in
 the `docker/server/Dockerfile` file.
