@@ -5,6 +5,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.PrintStats;
+import utils.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -42,65 +43,60 @@ public class Proxy {
 		var remote = properties.getProperty(PROPERTY_REMOTE);
 		var destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 
-		SocketAddress inSocketAddress = parseSocketAddress(remote);
-		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Proxy::parseSocketAddress).collect(Collectors.toSet());
-		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
-		CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
+		SocketAddress inSocketAddress = Utils.parseSocketAddress(remote);
+		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
+		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG)) {
+			String json = new String(fis.readAllBytes());
+			CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 
-		System.out.println("Remote: " + remote);
+			System.out.println("Remote: " + remote);
 
-		try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
-			try (DatagramSocket outSocket = new DatagramSocket()) {
-				byte[] buffer = new byte[4096]; // prev 8192
+			try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
+				try (DatagramSocket outSocket = new DatagramSocket()) {
+					byte[] buffer = new byte[4096]; // prev 8192
 
-				int size;
-				var csize = 0;
-				var count = 0;
-				long beginningTime = -1; // ref. time
+					int size;
+					var csize = 0;
+					var count = 0;
+					long beginningTime = -1; // ref. time
 
-				while (true) {
-					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
-					try {
-						inSocket.receive(buffer, inPacket);
+					while (true) {
+						SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
+						try {
+							inSocket.receive(buffer, inPacket);
 
-						DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(inPacket.getData()));
-						var type = dataInputStream.readInt(); // 0 = FRAME, 1 = END
-						var messageType = MESSAGE_TYPE.values()[type];// convert to enum
+							DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(inPacket.getData()));
+							var type = dataInputStream.readInt(); // 0 = FRAME, 1 = END
+							var messageType = MESSAGE_TYPE.values()[type];// convert to enum
 
-						if (messageType == MESSAGE_TYPE.END) {
-							break; // stream ended.
+							if (messageType == MESSAGE_TYPE.END) {
+								break; // stream ended.
+							}
+
+							var data = dataInputStream.readAllBytes(); // data
+
+							if (beginningTime == -1) beginningTime = System.nanoTime();
+							size = data.length; // size of the frame
+							csize = csize + size; // cumulative size of the frames sent
+							// can't know timestamp of the frame
+							count += 1; // number of frames
+
+							System.out.print("*"); // print an asterisk for each frame received.
+							for (SocketAddress outSocketAddress : outSocketAddressSet) {
+								outSocket.send(new DatagramPacket(data, data.length, outSocketAddress));
+							}
+						} catch (IntegrityException e) {
+							System.out.print("-"); // print a dash for denied frame
 						}
-
-						var data = dataInputStream.readAllBytes(); // data
-
-						if (beginningTime == -1) beginningTime = System.nanoTime();
-						size = data.length; // size of the frame
-						csize = csize + size; // cumulative size of the frames sent
-						// can't know timestamp of the frame
-						count += 1; // number of frames
-
-						System.out.print("*"); // print an asterisk for each frame received.
-						for (SocketAddress outSocketAddress : outSocketAddressSet) {
-							outSocket.send(new DatagramPacket(data, data.length, outSocketAddress));
-						}
-					} catch (IntegrityException e) {
-						System.out.print("-"); // print a dash for denied frame
 					}
-				}
-				long tend = System.nanoTime(); // "The end" time
-				int duration = (int) ((tend - beginningTime) / 1000000000); // duration of the transmission
+					long tend = System.nanoTime(); // "The end" time
+					int duration = (int) ((tend - beginningTime) / 1000000000); // duration of the transmission
 
-				PrintStats.printStats(cipherConfig, count, csize / count, csize, duration, count/duration, (8 * (csize) / duration) / 1000);
+					PrintStats.printStats(cipherConfig, count, csize / count, csize, duration, count / duration, (8 * (csize) / duration) / 1000);
+				}
 			}
 		}
 
 		System.out.println("Stream ended.");
-	}
-
-	private static InetSocketAddress parseSocketAddress(String socketAddress) {
-		String[] split = socketAddress.split(":");
-		String host = split[0];
-		int port = Integer.parseInt(split[1]);
-		return new InetSocketAddress(host, port);
 	}
 }
