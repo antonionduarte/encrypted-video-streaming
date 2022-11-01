@@ -5,10 +5,7 @@ import cryptotools.CryptoException;
 import cryptotools.EncryptionTool;
 import cryptotools.IntegrityTool;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -63,23 +60,23 @@ public class SecureDatagramPacket {
 
 	public void encryptData(byte[] plainText) {
 		try {
-			//TODO maybe create one instance and reuse it for all packets
-			var outputStream = new ByteArrayOutputStream(plainText.length + 4);
+			var byteArrayOutputStream = new ByteArrayOutputStream();
+			var outputStream = new DataOutputStream(byteArrayOutputStream);
 			var nonce = SecureRandom.getInstanceStrong().nextInt();
 
-			outputStream.write(ByteBuffer.allocate(4).putInt(nonce).array());
+			outputStream.writeInt(nonce);
 			outputStream.write(plainText);
 
 			// Format: nonce || M
-			var plainTextWithNonce = outputStream.toByteArray();
+			var plainTextWithNonce = byteArrayOutputStream.toByteArray();
 
 			// Format: E(k, nonce || M)
 			var cipherText = EncryptionTool.encrypt(cipherConfig, plainTextWithNonce);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
-			outputStream.reset();
-			outputStream.write(ByteBuffer.allocate(4).putInt(cipherText.length).array());
-			outputStream.write(cipherText, 0, cipherText.length);
+			byteArrayOutputStream.reset();
+			outputStream.writeInt(cipherText.length);
+			outputStream.write(cipherText);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || ( MAC(E(k, nonce || M)) or H(nonce || M) )
 			byte[] integrity;
@@ -87,7 +84,7 @@ public class SecureDatagramPacket {
 				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainTextWithNonce, cipherText);
 				outputStream.write(integrity);
 			}
-			this.data = outputStream.toByteArray();
+			this.data = byteArrayOutputStream.toByteArray();
 
 		} catch (CryptoException | IOException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);

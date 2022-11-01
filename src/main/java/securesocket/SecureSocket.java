@@ -7,14 +7,12 @@ import cryptotools.IntegrityTool;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,9 +34,8 @@ public class SecureSocket implements Closeable {
 		var inPacket = new DatagramPacket(buffer, buffer.length);
 		datagramSocket.receive(inPacket);
 
-		//TODO maybe create one instance and reuse it for all packets (prob not here?)
-		var inputStream = new ByteArrayInputStream(inPacket.getData(), 0, inPacket.getLength());
-		var size = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
+		var inputStream = new DataInputStream(new ByteArrayInputStream(inPacket.getData(), 0, inPacket.getLength()));
+		var size = inputStream.readInt();
 		var cipherText = inputStream.readNBytes(size);
 		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();
@@ -62,8 +59,8 @@ public class SecureSocket implements Closeable {
 		}
 
 		// Check nonce
-		inputStream = new ByteArrayInputStream(plainText);
-		var nonce = ByteBuffer.wrap(inputStream.readNBytes(4)).getInt();
+		inputStream = new DataInputStream(new ByteArrayInputStream(plainText));
+		var nonce = inputStream.readInt();
 		if (!receivedNonces.add(nonce)) {
 			throw new IntegrityException();
 		}

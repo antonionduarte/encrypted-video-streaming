@@ -5,7 +5,9 @@ import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
+import cryptotools.IntegrityException;
 import cryptotools.IntegrityTool;
+import org.bouncycastle.util.encoders.Base64;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.PrintStats;
@@ -19,8 +21,8 @@ import java.util.Map;
 
 public class StreamServer {
 	private final InetSocketAddress serverAddress;
-	private InetSocketAddress remoteAddress;
-	private final String movie;
+	private final InetSocketAddress remoteAddress;
+	private final String moviePath;
 
 	private final Map<String, CipherConfig> moviesConfig;
 
@@ -28,22 +30,16 @@ public class StreamServer {
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
 	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
 
-	public StreamServer(String movie, String serverAddressStr, String serverPort) throws CryptoException, IOException {
-		this.movie = movie;
+	public StreamServer(String moviePath, String serverAddressStr, String serverPort, String remoteAddressStr, String remotePort) throws CryptoException, IOException {
+		this.moviePath = moviePath;
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));;
+		this.remoteAddress = new InetSocketAddress(remoteAddressStr, Integer.parseInt(remotePort));;
 		this.moviesConfig = new DecipherCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
 	}
 
 	public enum MESSAGE_TYPE {
 		FRAME,
 		END
-	}
-
-	private static InetSocketAddress parseSocketAddress(String socketAddress) {
-		String[] split = socketAddress.split(":");
-		String host = split[0];
-		int port = Integer.parseInt(split[1]);
-		return new InetSocketAddress(host, port);
 	}
 
 	public byte[] appendMessageType(MESSAGE_TYPE messageType, byte[] data) throws IOException {
@@ -56,25 +52,22 @@ public class StreamServer {
 	public void run() throws Exception {
 		System.out.println("Server running");
 
-		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
+		var movieCipherConfig = moviesConfig.get(moviePath.split("/")[2]);
 
-		var json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
-        var cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
-		var address = new ParseCipherConfig(json).parseConfig().keySet().iterator().next();
-
-		this.remoteAddress = parseSocketAddress(address);
-
-		int size;
-		var csize = 0;
-		var count = 0;
-		long time;
-
-		if (!IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(movie)))) {
+		// check integrity of dat.enc file
+		if (!IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(moviePath)))) {
 			System.err.println("Movie integrity not checked");
 			System.exit(1);
 		}
 
-		byte[] plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, movie);
+		byte[] plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, moviePath);
+        int size;
+		var csize = 0;
+		var count = 0;
+		long time;
+
+		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
+		CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 

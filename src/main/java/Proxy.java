@@ -4,8 +4,10 @@ import cryptotools.IntegrityException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
+import statistics.PrintStats;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.DatagramPacket;
@@ -51,13 +53,18 @@ public class Proxy {
 			try (DatagramSocket outSocket = new DatagramSocket()) {
 				byte[] buffer = new byte[4096]; // prev 8192
 
+				int size;
+				var csize = 0;
+				var count = 0;
+				long beginningTime = -1; // ref. time
+
 				while (true) {
 					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
 					try {
 						inSocket.receive(buffer, inPacket);
 
-						InputStream dataInputStream = new ByteArrayInputStream(inPacket.getData());
-						var type = ByteBuffer.wrap(dataInputStream.readNBytes(4)).getInt(); // 0 = FRAME, 1 = END
+						DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(inPacket.getData()));
+						var type = dataInputStream.readInt(); // 0 = FRAME, 1 = END
 						var messageType = MESSAGE_TYPE.values()[type];// convert to enum
 
 						if (messageType == MESSAGE_TYPE.END) {
@@ -65,6 +72,12 @@ public class Proxy {
 						}
 
 						var data = dataInputStream.readAllBytes(); // data
+
+						if (beginningTime == -1) beginningTime = System.nanoTime();
+						size = data.length; // size of the frame
+						csize = csize + size; // cumulative size of the frames sent
+						// can't know timestamp of the frame
+						count += 1; // number of frames
 
 						System.out.print("*"); // print an asterisk for each frame received.
 						for (SocketAddress outSocketAddress : outSocketAddressSet) {
@@ -74,6 +87,10 @@ public class Proxy {
 						System.out.print("-"); // print a dash for denied frame
 					}
 				}
+				long tend = System.nanoTime(); // "The end" time
+				int duration = (int) ((tend - beginningTime) / 1000000000); // duration of the transmission
+
+				PrintStats.printStats(cipherConfig, count, csize / count, csize, duration, count/duration, (8 * (csize) / duration) / 1000);
 			}
 		}
 
