@@ -29,30 +29,30 @@ package statistics;/*
 
 import config.parser.CipherConfig;
 
-import java.util.Arrays;
+import java.util.HexFormat;
 
 public class PrintStats {
-	public static void printStats(CipherConfig config, int numFrames, int avgFrameSize, int movieSize, int elapsedTime,
-								  int frameRate, int throughPut) {
-		System.out.println("---------------------------------------------");
-		System.out.println("Streaming Server observed Indicators and Statistics");
-		System.out.println("---------------------------------------------");
-		System.out.println("Streamed Movie and used Cryptographic Configs");
-		System.out.println("---------------------------------------------");
-		System.out.println("Used ciphersuite ALG/MODE/PADDING: " + config.getCipher());
-		System.out.println("Used Key (hexadecimal rep.): " + Arrays.toString(config.getKey().getBytes()));
-		System.out.println("Used Keysize: (bytes)" + config.getKey());
-		System.out.println("Used Hash or Mac for integrity checks: " + config.getIntegrity());
-		System.out.println();
-		System.out.println("---------------------------------------------");
-		System.out.println("Performance indicators of streaming");
-		System.out.println("delivered to receiver Box(es)");
-		System.out.println("---------------------------------------------");
-		System.out.println("Nr of sent frames: " + numFrames);
-		System.out.println("Average frame size (bytes): " + avgFrameSize);
-		System.out.println("Movie size sent (all frames): " + movieSize);
-		System.out.println("Total elapsed time of streamed movie (sec): " + elapsedTime);
-		System.out.println("Average sent frame rate (frames/sec): " + frameRate);
-		System.out.println("Observed throughput (KBytes/sec): " + throughPut);
-	}
+    public static void printStats(CipherConfig config, int numFrames, int avgFrameSize, int movieSize, int elapsedTime,
+                                  int frameRate, int throughPut) {
+        System.out.println("---------------------------------------------");
+        System.out.println("Streaming Server observed Indicators and Statistics");
+        System.out.println("---------------------------------------------");
+        System.out.println("Streamed Movie and used Cryptographic Configs");
+        System.out.println("---------------------------------------------");
+        System.out.println("Used ciphersuite ALG/MODE/PADDING: " + config.getCipher());
+        System.out.println("Used Key (hexadecimal rep.): " + HexFormat.of().formatHex(config.getKey().getBytes()));
+        System.out.println("Used Keysize: (bytes)" + config.getKey().length());
+        System.out.println("Used Hash or Mac for integrity checks: " + config.getIntegrity());
+        System.out.println();
+        System.out.println("---------------------------------------------");
+        System.out.println("Performance indicators of streaming");
+        System.out.println("delivered to receiver Box(es)");
+        System.out.println("---------------------------------------------");
+        System.out.println("Nr of sent frames: " + numFrames);
+        System.out.println("Average frame size (bytes): " + avgFrameSize);
+        System.out.println("Movie size sent (all frames): " + movieSize);
+        System.out.println("Total elapsed time of streamed movie (sec): " + elapsedTime);
+        System.out.println("Average sent frame rate (frames/sec): " + frameRate);
+        System.out.println("Observed throughput (KBytes/sec): " + throughPut);
+    }
 }
