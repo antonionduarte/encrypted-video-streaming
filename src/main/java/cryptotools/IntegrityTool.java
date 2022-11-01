@@ -8,6 +8,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Base64;
 
 public class IntegrityTool {
 
@@ -33,6 +34,10 @@ public class IntegrityTool {
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static boolean checkMovieIntegrity(CipherConfig movieCipherConfig, byte[] data) {
+		return checkIntegrity(movieCipherConfig, data, Base64.getDecoder().decode(movieCipherConfig.getIntegrityCheck()));
 	}
 
 	private static boolean checkMacIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) throws NoSuchAlgorithmException, InvalidKeyException {

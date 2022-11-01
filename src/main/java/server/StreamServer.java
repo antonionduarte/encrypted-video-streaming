@@ -7,18 +7,22 @@ import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
 import cryptotools.IntegrityException;
 import cryptotools.IntegrityTool;
+import org.bouncycastle.util.encoders.Base64;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
+import statistics.PrintStats;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class StreamServer {
 	private final InetSocketAddress serverAddress;
 	private final InetSocketAddress remoteAddress;
-	private final String movie;
+	private final String moviePath;
 
 	private final Map<String, CipherConfig> moviesConfig;
 
@@ -26,8 +30,8 @@ public class StreamServer {
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
 	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
 
-	public StreamServer(String movie, String serverAddressStr, String serverPort, String remoteAddressStr, String remotePort) throws CryptoException, IOException {
-		this.movie = movie;
+	public StreamServer(String moviePath, String serverAddressStr, String serverPort, String remoteAddressStr, String remotePort) throws CryptoException, IOException {
+		this.moviePath = moviePath;
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));;
 		this.remoteAddress = new InetSocketAddress(remoteAddressStr, Integer.parseInt(remotePort));;
 		this.moviesConfig = new DecipherCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
@@ -48,22 +52,22 @@ public class StreamServer {
 	public void run() throws Exception {
 		System.out.println("Server running");
 
-		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
-		var plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, movie);
+		var movieCipherConfig = moviesConfig.get(moviePath.split("/")[2]);
 
-		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
-        CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
+		// check integrity of dat.enc file
+		if (!IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(moviePath)))) {
+			System.err.println("Movie integrity not checked");
+			System.exit(1);
+		}
 
-        if ( !IntegrityTool.checkIntegrity(movieCipherConfig, plainMovie,
-                cipherConfig.getIntegrityCheck().getBytes())) {
-            System.err.println("Movie integrity not checked");
-            System.exit(1);
-        }
-
+		byte[] plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, moviePath);
         int size;
 		var csize = 0;
 		var count = 0;
 		long time;
+
+		String json = new String(new FileInputStream(STREAM_CIPHER_CONFIG).readAllBytes());
+		CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
@@ -100,14 +104,9 @@ public class StreamServer {
 			socket.send(packet);
 
 			long tend = System.nanoTime(); // "The end" time
-			long duration = (tend - beginningTime) / 1000000000; // duration of the transmission
+			int duration = (int) ((tend - beginningTime) / 1000000000); // duration of the transmission
 
-			System.out.println();
-			System.out.println("Done! all frames sent: " + count);
-
-			System.out.println("Movie duration " + duration + " s");
-			System.out.println("Throughput " + count / duration + " fps");
-			System.out.println("Throughput " + (8L * (csize) / duration) / 1000 + " Kbps");
+			PrintStats.printStats(cipherConfig, count, csize / count, csize, duration, count/duration, (8 * (csize) / duration) / 1000);
 		}
 	}
 }
