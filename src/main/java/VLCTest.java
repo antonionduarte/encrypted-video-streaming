@@ -17,7 +17,7 @@ public class VLCTest {
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String destinations = properties.getProperty(PROPERTY_DESTINATIONS);
-		destinations = "127.0.0.1:8888";
+		destinations = "127.0.0.1:7576";
 
 		SocketAddress inSocketAddress = parseSocketAddress(destinations);
 		try (DatagramSocket inSocket = new DatagramSocket(inSocketAddress)) {

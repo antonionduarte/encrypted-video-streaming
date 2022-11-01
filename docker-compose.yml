@@ -7,6 +7,7 @@ services:
     environment:
       CRYPTO_CONFIG_KEY: "${CRYPTO_CONFIG_KEY}"
     network_mode: host
+
   # Proxy containers
   proxy:
     build:
