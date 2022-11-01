@@ -1,7 +1,7 @@
 # Video-Stream Ciphering
 Repository for the Stream Ciphering Project of the Network Security Course @ FCT-UNL.
 
-# How to compile
+# How To Compile
 
 We're using maven to compile the project. To compile the project, run the following command:
 ```
