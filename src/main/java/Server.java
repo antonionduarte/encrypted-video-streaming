@@ -5,13 +5,12 @@ public class Server {
 	private static final String ADDRESS = "127.0.0.1", PORT = "5000";
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 3) {
-			System.out.println("Error, use: StreamServer <movie> <ip-multicast-address> <port>");
-			System.out.println("        or: StreamServer <movie> <ip-unicast-address> <port>");
+		if (args.length != 1) {
+			System.out.println("Error, use: StreamServer <movie>");
 			System.exit(-1);
 		}
 
-		var streamServer = new StreamServer(args[0], ADDRESS, PORT, args[1], args[2]);
+		var streamServer = new StreamServer(args[0], ADDRESS, PORT);
 		streamServer.run();
 	}
 }
