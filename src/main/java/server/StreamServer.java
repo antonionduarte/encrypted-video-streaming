@@ -13,6 +13,8 @@ import statistics.PrintStats;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class StreamServer {
@@ -62,17 +64,17 @@ public class StreamServer {
 
 		this.remoteAddress = parseSocketAddress(address);
 
-		byte[] plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, movie);
 		int size;
 		var csize = 0;
 		var count = 0;
 		long time;
 
-        if (!IntegrityTool.checkIntegrity(movieCipherConfig, plainMovie,
-                cipherConfig.getIntegrityCheck().getBytes())) {
-            System.err.println("Movie integrity not checked");
-            System.exit(1);
-        }
+		if (!IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(movie)))) {
+			System.err.println("Movie integrity not checked");
+			System.exit(1);
+		}
+
+		byte[] plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, movie);
 
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
