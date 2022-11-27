@@ -6,12 +6,12 @@ import handshake.exceptions.NoCiphersuiteException;
 import java.io.IOException;
 import java.net.*;
 
-public class TLSHandshake implements Handshake {
+public class RtssHandshake implements Handshake {
 
     private byte[] secret;
     private final InetSocketAddress selfAddress;
 
-    public TLSHandshake(InetSocketAddress selfAddress) {
+    public RtssHandshake(InetSocketAddress selfAddress) {
         this.selfAddress = selfAddress;
     }
 
@@ -19,17 +19,13 @@ public class TLSHandshake implements Handshake {
     public void start(InetSocketAddress targetAddress) throws AuthenticationException {
         try (var clientSocket = new Socket(selfAddress.getAddress().getHostAddress(), selfAddress.getPort())) {
             clientSocket.connect(targetAddress);
-            byte[] msg1 = generateFirstMessage();
-            clientSocket.getOutputStream().write(msg1);
+            byte[] firstMessage = generateFirstMessage();
+            clientSocket.getOutputStream().write(firstMessage);
             waitServer();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-
 
     @Override
     public InetSocketAddress waitClient() throws AuthenticationException, NoCiphersuiteException {
