@@ -21,6 +21,7 @@ public class TLSHandshake implements Handshake {
             clientSocket.connect(targetAddress);
             byte[] msg1 = generateFirstMessage();
             clientSocket.getOutputStream().write(msg1);
+            waitServer();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {

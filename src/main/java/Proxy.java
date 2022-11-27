@@ -23,7 +23,7 @@ public class Proxy {
     private static final String CONFIG_PATH = "config/proxy/config.properties";
     private static final String PROPERTY_REMOTE = "remote";
     private static final String PROPERTY_DESTINATIONS = "localdelivery";
-    private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
+    private static final String STREAM_CIPHER_CONFIG = "config/cryptoconfig.json";
 
     public static void main(String[] args) throws Exception {
         Security.setProperty("crypto.policy", "unlimited");
