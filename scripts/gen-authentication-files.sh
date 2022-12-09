@@ -1,24 +1,36 @@
 #input: alg key_size
 #ex: RSA 2048
-
-config_folder="../config/"
-box_config_folder=$config_folder"box/"
-server_config_folder=$config_folder"server/"
-ca_config_folder=$config_folder"ca/"
-common_config_folder=$config_folder"common/"
-certs_folder="certs/"
-csr_folder="csr/"
+#CHANGE HERE (prob put in env)
 ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 
+config_folder="../config/"
+mkdir $config_folder &> /dev/null
+box_config_folder=$config_folder"box/"
+mkdir $box_config_folder &> /dev/null
+server_config_folder=$config_folder"server/"
+mkdir $server_config_folder &> /dev/null
+ca_config_folder=$config_folder"ca/"
+mkdir $ca_config_folder &> /dev/null
+common_config_folder=$config_folder"common/"
+mkdir $common_config_folder &> /dev/null
+certs_folder="certs/"
+csr_folder="cert_requests/"
+mkdir $box_config_folder$certs_folder &> /dev/null
+mkdir $server_config_folder$certs_folder &> /dev/null
+mkdir $common_config_folder$certs_folder &> /dev/null
+mkdir $box_config_folder$csr_folder &> /dev/null
+mkdir $server_config_folder$csr_folder &> /dev/null
+mkdir $common_config_folder$csr_folder &> /dev/null
+
 alg=$(echo $1 | tr 'a-z' 'A-Z')
 key_size=$2
-ca_alias="CA_"$alg"_"$key_size
+ca_alias="ca_"$alg"_"$key_size
 box_alias="box_"$alg"_"$key_size
 server_alias="server_"$alg"_"$key_size
 ca_ks=$ca_config_folder"ca.pkcs12"
-ca_cert=$common_config_folder"ca_root.cer"
+ca_cert=$common_config_folder$certs_folder$ca_alias".cer"
 box_ks=$box_config_folder"box.pkcs12"
 box_cert=$box_config_folder$certs_folder$box_alias".cer"
 box_csr=$box_config_folder$csr_folder$box_alias".csr"
@@ -39,12 +51,11 @@ keytool -genkeypair -noprompt \
   -ext bc=ca:true
 
 #Generate CA root certificate
-keytool -gencert -noprompt \
-  -keystore $ca_ks \
-  -storepass $ca_password \
-  -storetype PKCS12 \aaaaaaaabbbbbbbbccccccccdddddddd
+keytool -export -noprompt \
   -alias $ca_alias \
-  -outfile $ca_cert
+  -storepass $ca_password \
+  -file $ca_cert \
+  -keystore $ca_ks
 
 #Then, generate a key pair where the certificate of it will be signed by the CA above.
 keytool -genkeypair -noprompt \
@@ -65,18 +76,20 @@ keytool -genkeypair -noprompt \
   -storepass $server_password
 
 #Next, a certificate request for the "CN=Leaf" certificate needs to be created.
-keytool -certreq -noprompt \
-  -keystore $server_ks \
-  -storepass $server_password \
-  -storetype PKCS12 \
-  -alias $server_alias \
-  -file $server_csr
+
 keytool -certreq -noprompt \
   -keystore $box_ks \
   -storepass $box_password \
   -storetype PKCS12 \
   -alias $box_alias \
   -file $box_csr
+keytool -certreq -noprompt \
+  -keystore $server_ks \
+  -storepass $server_password \
+  -storetype PKCS12 \
+  -alias $server_alias \
+  -file $server_csr
+
 
 #Now creating the certificate with the certificate request generated above.
 keytool -gencert -noprompt \
