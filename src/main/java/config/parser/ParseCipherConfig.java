@@ -9,19 +9,19 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 public class ParseCipherConfig {
-    private final Gson gson;
-    private final String json;
+	private final Gson gson;
+	private final String json;
 
-    public ParseCipherConfig(String config) {
-        this.gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES).create();
-        this.json = config;
-    }
+	public ParseCipherConfig(String config) {
+		this.gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES).create();
+		this.json = config;
+	}
 
-    public Map<String, CipherConfig> parseConfig() {
-        Type mapType = new TypeToken<Map<String, CipherConfig>>() {
-        }.getType();
-        return gson.fromJson(json, mapType);
-    }
+	public Map<String, CipherConfig> parseConfig() {
+		Type mapType = new TypeToken<Map<String, CipherConfig>>() {
+		}.getType();
+		return gson.fromJson(json, mapType);
+	}
 }
 
 

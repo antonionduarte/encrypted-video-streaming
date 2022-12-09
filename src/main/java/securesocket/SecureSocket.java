@@ -18,58 +18,58 @@ import java.util.Set;
 
 public class SecureSocket implements Closeable {
 
-    private final DatagramSocket datagramSocket;
-    private final Set<Integer> receivedNonces;
+	private final DatagramSocket datagramSocket;
+	private final Set<Integer> receivedNonces;
 
-    public SecureSocket(SocketAddress socketAddress) throws SocketException {
-        this.datagramSocket = new DatagramSocket(socketAddress);
-        this.receivedNonces = new HashSet<>();
-    }
+	public SecureSocket(SocketAddress socketAddress) throws SocketException {
+		this.datagramSocket = new DatagramSocket(socketAddress);
+		this.receivedNonces = new HashSet<>();
+	}
 
-    public void send(SecureDatagramPacket secureDatagramPacket) throws IOException {
-        datagramSocket.send(secureDatagramPacket.toDatagramPacket());
-    }
+	public void send(SecureDatagramPacket secureDatagramPacket) throws IOException {
+		datagramSocket.send(secureDatagramPacket.toDatagramPacket());
+	}
 
-    public void receive(byte[] buffer, SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, CryptoException {
-        var inPacket = new DatagramPacket(buffer, buffer.length);
-        datagramSocket.receive(inPacket);
+	public void receive(byte[] buffer, SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, CryptoException {
+		var inPacket = new DatagramPacket(buffer, buffer.length);
+		datagramSocket.receive(inPacket);
 
-        var inputStream = new DataInputStream(new ByteArrayInputStream(inPacket.getData(), 0, inPacket.getLength()));
-        var size = inputStream.readInt();
-        var cipherText = inputStream.readNBytes(size);
-        var integrity = inputStream.readAllBytes();
-        var cipherConfig = secureDatagramPacket.getCipherConfig();
+		var inputStream = new DataInputStream(new ByteArrayInputStream(inPacket.getData(), 0, inPacket.getLength()));
+		var size = inputStream.readInt();
+		var cipherText = inputStream.readNBytes(size);
+		var integrity = inputStream.readAllBytes();
+		var cipherConfig = secureDatagramPacket.getCipherConfig();
 
-        byte[] plainText = null;
-        var isVerified = true;
+		byte[] plainText = null;
+		var isVerified = true;
 
-        // Check integrity
-        if (cipherConfig.getMackey() != null) {
-            isVerified = IntegrityTool.checkIntegrity(cipherConfig, cipherText, integrity);
-        } else if (cipherConfig.getIntegrity() != null) {
-            plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
-            isVerified = IntegrityTool.checkIntegrity(cipherConfig, plainText, integrity);
-        }
-        if (plainText == null) {
-            plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
-        }
+		// Check integrity
+		if (cipherConfig.getMackey() != null) {
+			isVerified = IntegrityTool.checkIntegrity(cipherConfig, cipherText, integrity);
+		} else if (cipherConfig.getIntegrity() != null) {
+			plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
+			isVerified = IntegrityTool.checkIntegrity(cipherConfig, plainText, integrity);
+		}
+		if (plainText == null) {
+			plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
+		}
 
-        if (!isVerified) {
-            throw new IntegrityException();
-        }
+		if (!isVerified) {
+			throw new IntegrityException();
+		}
 
-        // Check nonce
-        inputStream = new DataInputStream(new ByteArrayInputStream(plainText));
-        var nonce = inputStream.readInt();
-        if (!receivedNonces.add(nonce)) {
-            throw new IntegrityException();
-        }
+		// Check nonce
+		inputStream = new DataInputStream(new ByteArrayInputStream(plainText));
+		var nonce = inputStream.readInt();
+		if (!receivedNonces.add(nonce)) {
+			throw new IntegrityException();
+		}
 
-        secureDatagramPacket.setData(inputStream.readAllBytes());
-    }
+		secureDatagramPacket.setData(inputStream.readAllBytes());
+	}
 
-    @Override
-    public void close() {
-        datagramSocket.close();
-    }
+	@Override
+	public void close() {
+		datagramSocket.close();
+	}
 }
