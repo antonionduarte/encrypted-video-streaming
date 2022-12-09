@@ -1,5 +1,8 @@
 #input: alg key_size
-#ex: RSA 2048
+#example: RSA 2048
+#example: DSA 2048
+#example: EC 256
+
 #CHANGE HERE (prob put in env)
 ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
@@ -96,14 +99,14 @@ keytool -gencert -noprompt \
   -keystore $ca_ks \
   -storepass $ca_password \
   -storetype PKCS12 \
-  -alias $box_alias \
+  -alias $ca_alias \
   -infile $box_csr \
   -outfile $box_cert
 keytool -gencert -noprompt \
   -keystore $ca_ks \
   -storepass $ca_password \
   -storetype PKCS12 \
-  -alias $server_alias \
+  -alias $ca_alias \
   -infile $server_csr \
   -outfile $server_cert
 
