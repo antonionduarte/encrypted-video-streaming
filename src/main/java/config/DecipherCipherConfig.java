@@ -1,9 +1,9 @@
 package config;
 
-import utils.cipherutils.EncryptConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
+import utils.cipherutils.EncryptConfig;
 
 import java.io.File;
 import java.io.IOException;

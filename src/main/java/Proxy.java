@@ -1,4 +1,3 @@
-import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.integrity.IntegrityException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -16,7 +15,6 @@ import java.net.SocketAddress;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Proxy {

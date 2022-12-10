@@ -8,6 +8,17 @@ public class SecretGenerator {
 
 	private final KeyAgreement keyAgreement;
 
+	/**
+	 * Generates a key agreement using the specified algorithm.
+	 *
+	 * @param agreementType The type of the agreement, something such as "DH" for Diffie-Hellman.
+	 * @param keyPair       The key pair to use for the agreement at this node.
+	 */
+	public SecretGenerator(String agreementType, KeyPair keyPair) throws NoSuchAlgorithmException, InvalidKeyException {
+		this.keyAgreement = KeyAgreement.getInstance(agreementType);
+		this.keyAgreement.init(keyPair.getPrivate());
+	}
+
 	public static KeyPair generateKeyPair(String keyType, int size) throws Exception {
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(keyType);
 		keyPairGenerator.initialize(size);
@@ -15,17 +26,8 @@ public class SecretGenerator {
 	}
 
 	/**
-	 * Generates a key agreement using the specified algorithm.
-	 * @param agreementType The type of the agreement, something such as "DH" for Diffie-Hellman.
-	 * @param keyPair The key pair to use for the agreement at this node.
-	 */
-	public SecretGenerator(String agreementType, KeyPair keyPair) throws NoSuchAlgorithmException, InvalidKeyException {
-		this.keyAgreement = KeyAgreement.getInstance(agreementType);
-		this.keyAgreement.init(keyPair.getPrivate());
-	}
-
-	/**
 	 * Generates a secret key using the specified algorithm.
+	 *
 	 * @param publicKey The public key of the other node.
 	 * @return The secret value.
 	 */

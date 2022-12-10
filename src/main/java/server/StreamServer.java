@@ -1,7 +1,5 @@
 package server;
 
-import statistics.Stats;
-import utils.cipherutils.EncryptMovies;
 import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
@@ -9,7 +7,9 @@ import cryptotools.CryptoException;
 import cryptotools.integrity.IntegrityTool;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
+import statistics.Stats;
 import utils.Utils;
+import utils.cipherutils.EncryptMovies;
 
 import java.io.*;
 import java.net.InetSocketAddress;
