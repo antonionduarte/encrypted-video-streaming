@@ -1,9 +1,9 @@
-#input: alg key_size
-#example: RSA 2048
-#example: DSA 2048
-#example: EC 256
+# input: alg key_size
+# example: RSA 2048
+# example: DSA 2048
+# example: EC 256
 
-#CHANGE HERE (prob put in env)
+# CHANGE HERE (prob put in env)
 ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
@@ -41,8 +41,8 @@ server_ks=$server_config_folder"server.pkcs12"
 server_cert=$server_config_folder$certs_folder$server_alias".cer"
 server_csr=$server_config_folder$csr_folder$server_alias".csr"
 
-#To begin, we first generate a key pair which will be used as the CA,
- #ts private key will be used to sign the certificate it issues.
+# To begin, we first generate a key pair which will be used as the CA,
+# its private key will be used to sign the certificate it issues.
 keytool -genkeypair -noprompt \
   -dname "CN=CA" \
   -keysize $key_size \
@@ -53,14 +53,14 @@ keytool -genkeypair -noprompt \
   -storepass $ca_password \
   -ext bc=ca:true
 
-#Generate CA root certificate
+# Generate CA root certificate
 keytool -export -noprompt \
   -alias $ca_alias \
   -storepass $ca_password \
   -file $ca_cert \
   -keystore $ca_ks
 
-#Then, generate a key pair where the certificate of it will be signed by the CA above.
+# Then, generate a key pair where the certificate of it will be signed by the CA above.
 keytool -genkeypair -noprompt \
   -dname "CN=Box" \
   -keysize $key_size \
@@ -78,8 +78,7 @@ keytool -genkeypair -noprompt \
   -keystore $server_ks \
   -storepass $server_password
 
-#Next, a certificate request for the "CN=Leaf" certificate needs to be created.
-
+# Next, a certificate request for the "CN=Leaf" certificate needs to be created.
 keytool -certreq -noprompt \
   -keystore $box_ks \
   -storepass $box_password \
@@ -94,7 +93,7 @@ keytool -certreq -noprompt \
   -file $server_csr
 
 
-#Now creating the certificate with the certificate request generated above.
+# Now creating the certificate with the certificate request generated above.
 keytool -gencert -noprompt \
   -keystore $ca_ks \
   -storepass $ca_password \
