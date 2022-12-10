@@ -1,10 +1,10 @@
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
-import cryptotools.IntegrityException;
+import cryptotools.integrity.IntegrityException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
-import statistics.PrintStats;
+import statistics.Stats;
 import utils.Utils;
 
 import java.io.ByteArrayInputStream;
@@ -30,17 +30,20 @@ public class Proxy {
 		Security.addProvider(new BouncyCastleProvider());
 
 		System.out.println("Proxy Running");
+
 		var inputStream = new FileInputStream(CONFIG_PATH);
 		var properties = new Properties();
-		properties.load(inputStream);
 		var remote = properties.getProperty(PROPERTY_REMOTE);
 		var destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 
-		SocketAddress inSocketAddress = Utils.parseSocketAddress(remote);
-		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
+		properties.load(inputStream);
+
+		var inSocketAddress = Utils.parseSocketAddress(remote);
+		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
+
 		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG)) {
-			String json = new String(fis.readAllBytes());
-			CipherConfig cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
+			var json = new String(fis.readAllBytes());
+			var cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 
 			System.out.println("Remote: " + remote);
 
@@ -49,8 +52,8 @@ public class Proxy {
 					byte[] buffer = new byte[4096]; // prev 8192
 
 					int size;
-					var csize = 0;
-					var count = 0;
+					int cumulativeSize = 0;
+					int frameCount = 0;
 					long beginningTime = -1; // ref. time
 
 					while (true) {
@@ -72,9 +75,8 @@ public class Proxy {
 								beginningTime = System.nanoTime();
 							}
 							size = data.length; // size of the frame
-							csize = csize + size; // cumulative size of the frames sent
-							// can't know timestamp of the frame
-							count += 1; // number of frames
+							cumulativeSize = cumulativeSize + size; // cumulative size of the frames sent
+							frameCount += 1; // number of frames
 
 							System.out.print("*"); // print an asterisk for each frame received.
 							for (SocketAddress outSocketAddress : outSocketAddressSet) {
@@ -84,10 +86,20 @@ public class Proxy {
 							System.out.print("-"); // print a dash for denied frame
 						}
 					}
-					long tend = System.nanoTime(); // "The end" time
-					int duration = (int) ((tend - beginningTime) / 1000000000); // duration of the transmission
 
-					PrintStats.printStats(cipherConfig, count, csize / count, csize, duration, count / duration, (8 * (csize) / duration) / 1000);
+					long endTime = System.nanoTime(); // "The end" time
+					int duration = (int) ((endTime - beginningTime) / 1000000000); // duration of the transmission
+
+					var stats = new Stats.StatsBuilder()
+							.withConfig(cipherConfig)
+							.withNumFrames(frameCount)
+							.withAvgFrameSize(cumulativeSize / frameCount)
+							.withMovieSize(cumulativeSize)
+							.withElapsedTime(duration)
+							.withFrameRate(frameCount / duration)
+							.withThroughPut((8 * (cumulativeSize / duration)) / 1000000)
+							.build();
+					stats.printStats();
 				}
 			}
 		}

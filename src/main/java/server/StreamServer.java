@@ -1,14 +1,14 @@
 package server;
 
-import cipherdata.EncryptMovies;
+import statistics.Stats;
+import utils.cipherutils.EncryptMovies;
 import config.DecipherCipherConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
-import cryptotools.IntegrityTool;
+import cryptotools.integrity.IntegrityTool;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
-import statistics.PrintStats;
 import utils.Utils;
 
 import java.io.*;
@@ -22,9 +22,11 @@ public class StreamServer {
 	private static final String CIPHER_CONFIG_ENV = "CRYPTO_CONFIG_KEY";
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
 	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
+
 	private final InetSocketAddress serverAddress;
 	private final String movie;
 	private final Map<String, CipherConfig> moviesConfig;
+
 	private InetSocketAddress remoteAddress;
 
 	public StreamServer(String movie, String serverAddressStr, String serverPort) throws CryptoException, IOException {
@@ -40,9 +42,7 @@ public class StreamServer {
 		return outputStream.toByteArray();
 	}
 
-	public void run() throws Exception {
-		System.out.println("Server running");
-
+	private byte[] getMovieBytes() throws IOException, CryptoException {
 		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
 
 		// check integrity of dat.enc file
@@ -51,57 +51,74 @@ public class StreamServer {
 			System.exit(1);
 		}
 
-		byte[] plainMovie = EncryptMovies.decryptMovie(movieCipherConfig, movie);
+		return EncryptMovies.decryptMovie(movieCipherConfig, movie);
+	}
 
-		int size;
-		var csize = 0;
-		var count = 0;
-		long time;
+	public void run() throws Exception {
+		System.out.println("Server running");
 
-		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG)) {
-			var json = new String(fis.readAllBytes());
+		byte[] plainMovie = getMovieBytes();
+
+		int frameSize;
+		var cumulativeSize = 0;
+		var frameCount = 0;
+		long frameTimestamp;
+
+		try (var fileInputStream = new FileInputStream(STREAM_CIPHER_CONFIG)) {
+			var json = new String(fileInputStream.readAllBytes());
 			var cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
 			var address = new ParseCipherConfig(json).parseConfig().keySet().iterator().next();
+
 			this.remoteAddress = Utils.parseSocketAddress(address);
 
 			DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
 			try (SecureSocket socket = new SecureSocket(serverAddress)) {
-				byte[] buff;
+				byte[] frameData;
 
 				long beginningTime = System.nanoTime(); // ref. time
-				long q0 = 0; // time of the last packet sent
+				long timeOfLastPacketSent = 0; // time of the last packet sent
 
 				while (dataStream.available() > 0) {
-					size = dataStream.readShort(); // size of the frame
-					csize = csize + size; // cumulative size of the frames sent
-					time = dataStream.readLong();  // timestamp of the frame
+					frameSize = dataStream.readShort(); // size of the frame
+					cumulativeSize += frameSize; // cumulative size of the frames sent
+					frameTimestamp = dataStream.readLong();  // timestamp of the frame
 
-					if (count == 0) { // first packet
-						q0 = time; // ref. time in the stream
+					if (frameCount == 0) { // first packet
+						timeOfLastPacketSent = frameTimestamp; // ref. time in the stream
 					}
-					count += 1; // number of frames
-					buff = new byte[size];
-					dataStream.readFully(buff, 0, size); // read the frame
-					buff = appendMessageType(MESSAGE_TYPE.FRAME, buff);
-					SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
+
+					frameCount++; // number of frames
+					frameData = new byte[frameSize];
+					dataStream.readFully(frameData, 0, frameSize); // read the frame
+					frameData = appendMessageType(MESSAGE_TYPE.FRAME, frameData);
+					SecureDatagramPacket packet = new SecureDatagramPacket(frameData, remoteAddress, cipherConfig);
 
 					// Decision about the right time to transmit
-					long t = System.nanoTime(); // what time is it?
-					Thread.sleep(Math.max(0, ((time - q0) - (t - beginningTime)) / 1000000)); // sleep until the right time
+					long currentTime = System.nanoTime(); // what time is it?
+					Thread.sleep(Math.max(0, ((frameTimestamp - timeOfLastPacketSent) - (currentTime - beginningTime)) / 1000000)); // sleep until the right time
 					socket.send(packet);
 					System.out.print(".");
 				}
 
 				// send the end of the stream
-				buff = appendMessageType(MESSAGE_TYPE.END, new byte[0]);
-				SecureDatagramPacket packet = new SecureDatagramPacket(buff, remoteAddress, cipherConfig);
+				frameData = appendMessageType(MESSAGE_TYPE.END, new byte[0]);
+				SecureDatagramPacket packet = new SecureDatagramPacket(frameData, remoteAddress, cipherConfig);
 				socket.send(packet);
 
-				long tend = System.nanoTime(); // "The end" time
-				int duration = (int) ((tend - beginningTime) / 1000000000); // duration of the transmission
+				long transmissionEndTime = System.nanoTime(); // "The end" time
+				int duration = (int) ((transmissionEndTime - beginningTime) / 1000000000); // duration of the transmission
 
-				PrintStats.printStats(cipherConfig, count, csize / count, csize, duration, count / duration, (8 * (csize) / duration) / 1000);
+				var stats = new Stats.StatsBuilder()
+						.withConfig(cipherConfig)
+						.withNumFrames(frameCount)
+						.withAvgFrameSize(cumulativeSize / frameCount)
+						.withMovieSize(cumulativeSize)
+						.withElapsedTime(duration)
+						.withFrameRate(frameCount / duration)
+						.withThroughPut((8 * (cumulativeSize / duration)) / 1000000)
+						.build();
+				stats.printStats();
 			}
 		}
 	}
