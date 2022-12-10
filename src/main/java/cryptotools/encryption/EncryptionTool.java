@@ -1,13 +1,7 @@
-package cryptotools;
-
-
-// This is version 2 of CryptoStuff class (ex 3, Lab 1)
-// In this version we separate the definition of ALGORITHM
-// and the definition of CIPHERSUITE parameterization to be
-// more clear and correct the utilization and generalization of
-// use ...
+package cryptotools.encryption;
 
 import config.parser.CipherConfig;
+import cryptotools.CryptoException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -20,21 +14,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
-
 public class EncryptionTool {
-
-	// For use in your TP1 implementation you must have the crytoconfigs
-	// according to the StreamingServer crypto configs
-	// because this is just an illustrative example with specific
-	// defined configurations... Remember that for TP1 you
-	// must have your own tool to encrypt the movie files that can
-	// be used by your StreamingServer implementation
-
-
-	// See this according to the configuration of StreamingServer
-	// Initialization vector ... See this according to the cryptoconfig
-	// of Streaming Server
-
 	public static byte[] encrypt(CipherConfig config, byte[] plaintext) throws CryptoException {
 		return doCrypto(Cipher.ENCRYPT_MODE, config, plaintext);
 	}

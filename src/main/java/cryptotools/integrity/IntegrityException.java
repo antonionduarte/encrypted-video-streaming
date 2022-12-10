@@ -1,4 +1,4 @@
-package cryptotools;
+package cryptotools.integrity;
 
 public class IntegrityException extends Exception {
 

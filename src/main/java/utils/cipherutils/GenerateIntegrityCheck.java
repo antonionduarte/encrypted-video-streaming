@@ -1,4 +1,4 @@
-package cipherdata;
+package utils.cipherutils;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 

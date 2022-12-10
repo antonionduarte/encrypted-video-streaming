@@ -1,6 +1,6 @@
 package config;
 
-import cipherdata.EncryptConfig;
+import utils.cipherutils.EncryptConfig;
 import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;

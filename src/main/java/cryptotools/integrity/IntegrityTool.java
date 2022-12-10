@@ -1,4 +1,4 @@
-package cryptotools;
+package cryptotools.integrity;
 
 import config.parser.CipherConfig;
 

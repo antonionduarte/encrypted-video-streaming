@@ -1,8 +1,8 @@
-package cipherdata;
+package utils.cipherutils;
 
 import config.parser.CipherConfig;
 import cryptotools.CryptoException;
-import cryptotools.EncryptionTool;
+import cryptotools.encryption.EncryptionTool;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.File;

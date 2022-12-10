@@ -1,25 +1,32 @@
 package handshake;
 
+import cryptotools.key_agreement.SecretGenerator;
 import handshake.exceptions.AuthenticationException;
 import handshake.exceptions.NoCiphersuiteException;
 
 import java.io.IOException;
 import java.net.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
-public class RtssHandshake implements Handshake {
+public class RtssHandshake {
+    public static final String KEY_AGREEMENT = "DH"; // TODO: Replace this with something taken from a CipherSuite object
 
     private byte[] secret;
     private final InetSocketAddress selfAddress;
+    private final SecretGenerator secretGenerator;
 
-    public RtssHandshake(InetSocketAddress selfAddress) {
+    public RtssHandshake(InetSocketAddress selfAddress) throws Exception {
+        var keyPair = SecretGenerator.generateKeyPair(KEY_AGREEMENT, 2048);
+
         this.selfAddress = selfAddress;
+        this.secretGenerator = new SecretGenerator(KEY_AGREEMENT, keyPair);
     }
 
-    @Override
     public void start(InetSocketAddress targetAddress) throws AuthenticationException {
         try (var clientSocket = new Socket(selfAddress.getAddress().getHostAddress(), selfAddress.getPort())) {
             clientSocket.connect(targetAddress);
-            byte[] firstMessage = generateFirstMessage();
+            var firstMessage = generateFirstMessage();
             clientSocket.getOutputStream().write(firstMessage);
             waitServer();
         } catch (IOException e) {
@@ -27,7 +34,6 @@ public class RtssHandshake implements Handshake {
         }
     }
 
-    @Override
     public InetSocketAddress waitClient() throws AuthenticationException, NoCiphersuiteException {
         try (var serverSocket = new ServerSocket(selfAddress.getPort())) {
             var clientSocket = serverSocket.accept();
@@ -37,7 +43,6 @@ public class RtssHandshake implements Handshake {
         return null;
     }
 
-    @Override
     public byte[] getSecret() {
         return secret;
     }
