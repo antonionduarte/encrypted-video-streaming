@@ -1,9 +1,9 @@
 package securesocket;
 
 import cryptotools.CryptoException;
-import cryptotools.EncryptionTool;
-import cryptotools.IntegrityException;
-import cryptotools.IntegrityTool;
+import cryptotools.encryption.EncryptionTool;
+import cryptotools.integrity.IntegrityException;
+import cryptotools.integrity.IntegrityTool;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -40,33 +40,30 @@ public class SecureSocket implements Closeable {
 		var integrity = inputStream.readAllBytes();
 		var cipherConfig = secureDatagramPacket.getCipherConfig();
 
-		byte[] plainText = null;
-		var isVerified = true;
+		var plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
+		var verified = true;
 
 		// Check integrity
 		if (cipherConfig.getMackey() != null) {
-			isVerified = IntegrityTool.checkIntegrity(cipherConfig, cipherText, integrity);
+			verified = IntegrityTool.checkIntegrity(cipherConfig, cipherText, integrity);
 		} else if (cipherConfig.getIntegrity() != null) {
-			plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
-			isVerified = IntegrityTool.checkIntegrity(cipherConfig, plainText, integrity);
-		}
-		if (plainText == null) {
-			plainText = EncryptionTool.decrypt(cipherConfig, cipherText);
+			verified = IntegrityTool.checkIntegrity(cipherConfig, plainText, integrity);
 		}
 
-		if (!isVerified) {
+		if (!verified) {
 			throw new IntegrityException();
 		}
 
 		// Check nonce
-		inputStream = new DataInputStream(new ByteArrayInputStream(plainText));
-		var nonce = inputStream.readInt();
+		var nonceInputStream = new DataInputStream(new ByteArrayInputStream(plainText));
+		var nonce = nonceInputStream.readInt();
 		if (!receivedNonces.add(nonce)) {
 			throw new IntegrityException();
 		}
 
-		secureDatagramPacket.setData(inputStream.readAllBytes());
+		secureDatagramPacket.setData(nonceInputStream.readAllBytes());
 	}
+
 
 	@Override
 	public void close() {

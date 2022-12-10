@@ -2,14 +2,12 @@ package securesocket;
 
 import config.parser.CipherConfig;
 import cryptotools.CryptoException;
-import cryptotools.EncryptionTool;
-import cryptotools.IntegrityTool;
+import cryptotools.encryption.EncryptionTool;
+import cryptotools.integrity.IntegrityTool;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -60,33 +58,29 @@ public class SecureDatagramPacket {
 
 	public void encryptData(byte[] plainText) {
 		try {
-			var byteArrayOutputStream = new ByteArrayOutputStream();
-			var outputStream = new DataOutputStream(byteArrayOutputStream);
+			// Generate nonce
 			var nonce = SecureRandom.getInstanceStrong().nextInt();
 
-			outputStream.writeInt(nonce);
-			outputStream.write(plainText);
-
 			// Format: nonce || M
-			var plainTextWithNonce = byteArrayOutputStream.toByteArray();
+			var plainTextWithNonce = new byte[4 + plainText.length];
+			ByteBuffer.wrap(plainTextWithNonce).putInt(nonce).put(plainText);
 
 			// Format: E(k, nonce || M)
 			var cipherText = EncryptionTool.encrypt(cipherConfig, plainTextWithNonce);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M)
-			byteArrayOutputStream.reset();
-			outputStream.writeInt(cipherText.length);
-			outputStream.write(cipherText);
+			var cipherTextWithSize = new byte[4 + cipherText.length];
+			ByteBuffer.wrap(cipherTextWithSize).putInt(cipherText.length).put(cipherText);
 
 			// Format: size(E(k, nonce || M)) || E(k, nonce || M) || ( MAC(E(k, nonce || M)) or H(nonce || M) )
-			byte[] integrity;
 			if (cipherConfig.getIntegrity() != null) {
-				integrity = IntegrityTool.buildIntegrity(cipherConfig, plainTextWithNonce, cipherText);
-				outputStream.write(integrity);
+				var integrity = IntegrityTool.buildIntegrity(cipherConfig, plainTextWithNonce, cipherText);
+				this.data = new byte[cipherTextWithSize.length + integrity.length];
+				ByteBuffer.wrap(this.data).put(cipherTextWithSize).put(integrity);
+			} else {
+				this.data = cipherTextWithSize;
 			}
-			this.data = byteArrayOutputStream.toByteArray();
-
-		} catch (CryptoException | IOException | NoSuchAlgorithmException e) {
+		} catch (CryptoException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
 	}
