@@ -1,7 +1,7 @@
 package server;
 
-import config.DecipherCipherConfig;
 import config.CipherConfig;
+import config.DecipherCipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
 import cryptotools.integrity.IntegrityTool;
