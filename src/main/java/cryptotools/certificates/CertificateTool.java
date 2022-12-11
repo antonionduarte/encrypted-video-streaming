@@ -1,16 +1,28 @@
 package cryptotools.certificates;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.security.Principal;
-import java.security.PublicKey;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 public class CertificateTool {
-
 	public static final String ROOT_CERTIFICATE = "config/common/certs/ca_RSA_2048.cer";
-	public static final String CERT_TYPE = "X509";
+	public static final String CERT_TYPE = "X509"; // TODO: Make this a param maybe?
 
+	/**
+	 * Gets a certificate from a byte array.
+	 */
+	public static X509Certificate certificateFromBytes(byte[] certificateBytes) throws CertificateException {
+		CertificateFactory factory = CertificateFactory.getInstance(CERT_TYPE);
+		return (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certificateBytes));
+	}
+
+	/**
+	 * Verifies a chain certificate.
+	 */
 	public static boolean verifyCertificates(X509Certificate rootCertificate, X509Certificate signedCertificate) {
 		try {
 			// Load the local copy of the root certificate
@@ -32,8 +44,8 @@ public class CertificateTool {
 			signedCertificate.checkValidity();
 
 			// Check if the signed certificate's issuer is the same as the root certificate's subject
-			Principal rootSubject = rootCertificate.getSubjectDN();
-			Principal signedIssuer = signedCertificate.getIssuerDN();
+			Principal rootSubject = rootCertificate.getSubjectX500Principal();
+			Principal signedIssuer = signedCertificate.getIssuerX500Principal();
 			return signedIssuer.equals(rootSubject);
 
 			// If all checks pass, the certificates are valid
@@ -42,5 +54,4 @@ public class CertificateTool {
 			return false;
 		}
 	}
-
 }
