@@ -1,5 +1,9 @@
+import config.CipherConfig;
 import config.parser.ParseCipherConfig;
+import cryptotools.certificates.CertificateChain;
+import cryptotools.certificates.CertificateTool;
 import cryptotools.integrity.IntegrityException;
+import handshake.RtssHandshake;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
@@ -9,24 +13,47 @@ import utils.Utils;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.Security;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class Proxy {
-	private static final String CONFIG_PATH = "config/proxy/config.properties";
 	private static final String PROPERTY_REMOTE = "remote";
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
-	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
+	private static final String CONFIG_PATH = "config/proxy/config.properties";
+	private static final String STREAM_CIPHER_CONFIG_PATH = "config/box-cryptoconfig.json";
+	private static final String BOX_CERTIFICATE_PATH = "certs/box/box_RSA_2048.cer";
+	private static final String CA_CERTIFICATE_PATH = "certs/common/ca_RSA_2048.cer";
+
+	/**
+	 * Reads the box and ca certificates, and returns a certificate chain object.
+	 */
+	private static CertificateChain readCertificates() throws IOException, CertificateException {
+		var boxCertificate = CertificateTool.certificateFromBytes(Utils.getFileBytes(BOX_CERTIFICATE_PATH));
+		var caCertificate = CertificateTool.certificateFromBytes(Utils.getFileBytes(CA_CERTIFICATE_PATH));
+		return new CertificateChain(boxCertificate, caCertificate);
+	}
+
+	/**
+	 * Performs the handshake using the RTSS Handshake Class.
+	 */
+	private static CipherConfig performHandshake(InetSocketAddress address) throws Exception {
+		var certificateChain = readCertificates();
+		var handshake = new RtssHandshake(address, certificateChain);
+		// TODO: Implement
+		return null; // TODO: Implement
+	}
 
 	public static void main(String[] args) throws Exception {
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());
-
 		System.out.println("Proxy Running");
 
 		var inputStream = new FileInputStream(CONFIG_PATH);
@@ -39,11 +66,9 @@ public class Proxy {
 		var inSocketAddress = Utils.parseSocketAddress(remote);
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
 
-		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG)) {
+		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG_PATH)) {
 			var json = new String(fis.readAllBytes());
 			var cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
-
-			System.out.println("Remote: " + remote);
 
 			try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
 				try (DatagramSocket outSocket = new DatagramSocket()) {
@@ -72,6 +97,7 @@ public class Proxy {
 							if (beginningTime == -1) {
 								beginningTime = System.nanoTime();
 							}
+
 							size = data.length; // size of the frame
 							cumulativeSize = cumulativeSize + size; // cumulative size of the frames sent
 							frameCount += 1; // number of frames
@@ -85,7 +111,7 @@ public class Proxy {
 						}
 					}
 
-					long endTime = System.nanoTime(); // "The end" time
+					long endTime = System.nanoTime(); // "the end" time
 					int duration = (int) ((endTime - beginningTime) / 1000000000); // duration of the transmission
 
 					var stats = new Stats.StatsBuilder()
