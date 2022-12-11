@@ -1,5 +1,9 @@
 package cryptotools.certificates;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 public class CertificateChain {
@@ -16,10 +20,17 @@ public class CertificateChain {
 	 * Format of the byte[] should be something such as:
 	 * sizeof(certificate) || certificate || sizeof(root_certificate) || root_certificate
 	 */
-	public CertificateChain(byte[] certificateChain) {
-		// TODO: Implement
-		this.certificate = null;
-		this.rootCertificate = null;
+	public CertificateChain(byte[] certificateChain) throws IOException, CertificateException {
+		var stream = new ByteArrayInputStream(certificateChain);
+		
+		var certificateSize = stream.read();
+		var certificateBytes = stream.readNBytes(certificateSize);
+
+		var rootCertificateSize = stream.read();
+		var rootCertificateBytes = stream.readNBytes(rootCertificateSize);
+
+		this.certificate = CertificateTool.certificateFromBytes(certificateBytes);
+		this.rootCertificate = CertificateTool.certificateFromBytes(rootCertificateBytes);
 	}
 
 	public X509Certificate getCertificate() {
