@@ -1,0 +1,16 @@
+[
+  {
+    "cipher": "AES/CBC/PKCS5Padding",
+    "integrity": "SHA256",
+    "cipher-key-size": 256
+  },
+  {
+    "cipher": "AES/GCM/NoPadding",
+    "cipher-key-size": 256
+  },
+  {
+    "cipher": "RC6/CTR/NoPadding",
+    "cipher-key-size": 256,
+    "integrity": "HMAC-SHA1"
+  }
+]

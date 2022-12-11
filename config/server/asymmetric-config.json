@@ -1,0 +1,4 @@
+{
+  "key-exchange": "DH",
+  "authentication": "RSA"
+}
