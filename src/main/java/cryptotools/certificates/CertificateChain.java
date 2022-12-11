@@ -3,6 +3,7 @@ package cryptotools.certificates;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -41,7 +42,19 @@ public class CertificateChain {
 		return rootCertificate;
 	}
 
-	public byte[] getSerializedChain() {
-		return null; // TODO: Implement
+	public byte[] getSerializedChain() throws CertificateEncodingException {
+		var certificateBytes = certificate.getEncoded();
+		var certificateSize = certificateBytes.length;
+
+		var rootCertificateBytes = rootCertificate.getEncoded();
+		var rootCertificateSize = rootCertificateBytes.length;
+
+		var stream = new ByteArrayOutputStream();
+		stream.write(certificateSize);
+		stream.write(certificateBytes, 0, certificateSize);
+		stream.write(rootCertificateSize);
+		stream.write(rootCertificateBytes, 0, rootCertificateSize);
+
+		return stream.toByteArray();
 	}
 }
