@@ -1,4 +1,4 @@
 package config;
 
-public class AsymmetricConfig {
+public record AsymmetricConfig(String keyExchange, int numSize, String authentication, int keySize) {
 }

@@ -1,4 +1,4 @@
 package config;
 
-public class SymmetricConfig {
+public record SymmetricConfig(String cipher, int keySize, String integrity, boolean isMac) {
 }
