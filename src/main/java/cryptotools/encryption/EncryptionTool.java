@@ -1,6 +1,6 @@
 package cryptotools.encryption;
 
-import config.parser.CipherConfig;
+import config.CipherConfig;
 import cryptotools.CryptoException;
 
 import javax.crypto.BadPaddingException;

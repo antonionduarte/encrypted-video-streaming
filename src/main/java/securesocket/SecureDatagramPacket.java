@@ -1,6 +1,6 @@
 package securesocket;
 
-import config.parser.CipherConfig;
+import config.CipherConfig;
 import cryptotools.CryptoException;
 import cryptotools.encryption.EncryptionTool;
 import cryptotools.integrity.IntegrityTool;

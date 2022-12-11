@@ -1,7 +1,7 @@
 package server;
 
 import config.DecipherCipherConfig;
-import config.parser.CipherConfig;
+import config.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
 import cryptotools.integrity.IntegrityTool;
@@ -44,13 +44,11 @@ public class StreamServer {
 
 	private byte[] getMovieBytes() throws IOException, CryptoException {
 		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
-
 		// check integrity of dat.enc file
 		if (!IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(movie)))) {
 			System.err.println("Movie integrity not checked");
 			System.exit(1);
 		}
-
 		return EncryptMovies.decryptMovie(movieCipherConfig, movie);
 	}
 
@@ -94,7 +92,7 @@ public class StreamServer {
 					frameData = appendMessageType(MESSAGE_TYPE.FRAME, frameData);
 					SecureDatagramPacket packet = new SecureDatagramPacket(frameData, remoteAddress, cipherConfig);
 
-					// Decision about the right time to transmit
+					// decision about the right time to transmit
 					long currentTime = System.nanoTime(); // what time is it?
 					Thread.sleep(Math.max(0, ((frameTimestamp - timeOfLastPacketSent) - (currentTime - beginningTime)) / 1000000)); // sleep until the right time
 					socket.send(packet);

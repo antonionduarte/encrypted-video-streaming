@@ -1,8 +1,18 @@
 package utils;
 
+import cryptotools.certificates.CertificateTool;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class Utils {
+	public static byte[] getFileBytes(String filePath) throws IOException {
+		try (FileInputStream fis = new FileInputStream(filePath)) {
+			return fis.readAllBytes();
+		}
+	}
 
 	public static InetSocketAddress parseSocketAddress(String socketAddress) {
 		String[] split = socketAddress.split(":");

@@ -1,6 +1,6 @@
 package statistics;
 
-import config.parser.CipherConfig;
+import config.CipherConfig;
 
 import java.util.HexFormat;
 

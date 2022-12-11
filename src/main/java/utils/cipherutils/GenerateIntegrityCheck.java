@@ -27,6 +27,7 @@ public class GenerateIntegrityCheck {
 		byte[] result;
 		var alg = args[0];
 		var fileData = Files.readAllBytes(Path.of(args[1]));
+
 		if (args.length == 2) {
 			var hash = MessageDigest.getInstance(alg);
 			hash.update(fileData);

@@ -1,6 +1,6 @@
 package cryptotools.integrity;
 
-import config.parser.CipherConfig;
+import config.CipherConfig;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
