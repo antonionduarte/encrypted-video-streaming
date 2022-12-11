@@ -1,6 +1,5 @@
 package config;
 
-import config.parser.CipherConfig;
 import config.parser.ParseCipherConfig;
 import cryptotools.CryptoException;
 import utils.cipherutils.EncryptConfig;
@@ -25,6 +24,5 @@ public class DecipherCipherConfig {
 	public Map<String, CipherConfig> getCipherConfig() {
 		return cipherConfig;
 	}
-
 
 }

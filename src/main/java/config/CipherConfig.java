@@ -1,4 +1,4 @@
-package config.parser;
+package config;
 
 public class CipherConfig {
 	private final String cipher;
