@@ -63,6 +63,8 @@ public class Proxy {
 
 		properties.load(inputStream);
 
+		//TODO performHandshake?
+
 		var inSocketAddress = Utils.parseSocketAddress(remote);
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
 

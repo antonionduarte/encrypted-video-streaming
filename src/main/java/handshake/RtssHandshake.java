@@ -39,6 +39,7 @@ public class RtssHandshake {
 	public InetSocketAddress waitClient() throws AuthenticationException, NoCiphersuiteException {
 		try (var serverSocket = new ServerSocket(selfAddress.getPort())) {
 			var clientSocket = serverSocket.accept();
+			//TODO
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -50,7 +51,7 @@ public class RtssHandshake {
 	}
 
 	private void waitServer() throws AuthenticationException {
-
+		//TODO
 	}
 
 	private byte[] generateFirstMessage() {
