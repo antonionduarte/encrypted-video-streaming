@@ -11,6 +11,17 @@ public class CertificateChain {
 		this.rootCertificate = rootCertificate;
 	}
 
+	/**
+	 * Returns a certificate chain from a byte[].
+	 * Format of the byte[] should be something such as:
+	 * sizeof(certificate) || certificate || sizeof(root_certificate) || root_certificate
+	 */
+	public CertificateChain(byte[] certificateChain) {
+		// TODO: Implement
+		this.certificate = null;
+		this.rootCertificate = null;
+	}
+
 	public X509Certificate getCertificate() {
 		return certificate;
 	}

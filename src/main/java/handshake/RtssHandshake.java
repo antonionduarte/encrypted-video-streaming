@@ -54,7 +54,6 @@ public class RtssHandshake {
 	}
 
 	private byte[] generateFirstMessage() {
-
 		// dh_parameters (pubkey) ||
 		return null; //TODO
 	}
