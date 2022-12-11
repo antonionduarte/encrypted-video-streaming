@@ -8,7 +8,7 @@ ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 
-config_folder="../config/"
+config_folder="certs/"
 mkdir $config_folder &> /dev/null
 box_config_folder=$config_folder"box/"
 mkdir $box_config_folder &> /dev/null
