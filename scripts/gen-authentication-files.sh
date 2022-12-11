@@ -3,23 +3,24 @@
 # example: DSA 2048
 # example: EC 256
 
-# CHANGE HERE (prob put in env)
+# change here to your own values
 ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 
 config_folder="certs/"
-mkdir $config_folder &> /dev/null
 box_config_folder=$config_folder"box/"
-mkdir $box_config_folder &> /dev/null
 server_config_folder=$config_folder"server/"
-mkdir $server_config_folder &> /dev/null
 ca_config_folder=$config_folder"ca/"
-mkdir $ca_config_folder &> /dev/null
 common_config_folder=$config_folder"common/"
-mkdir $common_config_folder &> /dev/null
 certs_folder="certs/"
 csr_folder="cert_requests/"
+
+mkdir $config_folder &> /dev/null
+mkdir $box_config_folder &> /dev/null
+mkdir $server_config_folder &> /dev/null
+mkdir $ca_config_folder &> /dev/null
+mkdir $common_config_folder &> /dev/null
 mkdir $box_config_folder$certs_folder &> /dev/null
 mkdir $server_config_folder$certs_folder &> /dev/null
 mkdir $common_config_folder$certs_folder &> /dev/null

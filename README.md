@@ -1,13 +1,13 @@
 # Video-Stream Ciphering
 Repository for the Stream Ciphering Project of the Network Security Course @ FCT-UNL.
 
-# Environment Variables
+## Environment Variables
 - `CRYPTO_CONFIG_KEY`: The key to the AES key for the video sharing. **DEPRECATED**,
 - `CA_PASSWORD`: The password of the CA Keystore.
 - `BOX_PASSWORD`: The password of the Box Keystore.
 - `SERVER_PASSWORD`: The password of the Server Keystore.
 
-# How To Compile
+## How To Compile
 
 We're using maven to compile the project. To compile the project, run the following command:
 ```
@@ -15,7 +15,7 @@ mvn clean compile assembly:single
 ```
 It's important that you use `assembly:single` instead of `package` because the latter will not include the dependencies in the final jar file.
 
-# How to Run
+## How to Run
 There are two alternatives to running this project, in both of the alternatives you firstly need to export the 
 AES key to decrypt the movies. To do so, run the following command:
 
@@ -71,7 +71,7 @@ And for the server:
 java -cp target/ciphered-video-server.jar Server <encrypted-movie-filename>
 ```
 
-# Configuration 
+## Configuration 
 
 There are two types of configuration files, the ones present in the `movies` directory and the ones in the `config` directory.
 There are two JSON files, and one properties file in `config/proxy/config.properties`.
@@ -134,3 +134,14 @@ The box properties are contained in `config/proxy/config.properties` and are use
 remote=127.0.0.1:9999
 localdelivery=127.0.0.1:7575
 ```
+
+## Helper Scripts
+
+We provide several helper bash scripts to perform different functions, they're all in the `scripts` directory.
+- `build-and-deploy.sh`: Builds the project and runs it using docker compose.
+- `deploy.sh`: Runs the project using docker compose.
+- `encrypt-config.sh`: Encrypts the configuration files. 
+- `encrypt-movies.sh`: Encrypts the movies.
+- `gen-authentication-files.sh`: Generates certificates for server, proxy and a root CA.
+
+**NOTE:** the file paths in the project changed quite a lot during development, some of the scripts might therefore not work without changes right now, particularly `encrypt-config.sh` and `encrypt-movies.sh`.
