@@ -1,6 +1,12 @@
 # Video-Stream Ciphering
 Repository for the Stream Ciphering Project of the Network Security Course @ FCT-UNL.
 
+# Environment Variables
+- `CRYPTO_CONFIG_KEY`: The key to the AES key for the video sharing. **DEPRECATED**,
+- `CA_PASSWORD`: The password of the CA Keystore.
+- `BOX_PASSWORD`: The password of the Box Keystore.
+- `SERVER_PASSWORD`: The password of the Server Keystore.
+
 # How To Compile
 
 We're using maven to compile the project. To compile the project, run the following command:
