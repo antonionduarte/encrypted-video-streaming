@@ -1,5 +1,6 @@
 package handshake;
 
+import cryptotools.certificates.CertificateChain;
 import cryptotools.key_agreement.SecretGenerator;
 import handshake.exceptions.AuthenticationException;
 import handshake.exceptions.NoCiphersuiteException;
@@ -11,13 +12,15 @@ import java.net.Socket;
 
 public class RtssHandshake {
 	public static final String KEY_AGREEMENT = "DH"; // TODO: Replace this with something taken from a CipherSuite object
+
 	private final InetSocketAddress selfAddress;
 	private final SecretGenerator secretGenerator;
+	private final CertificateChain certificateChain;
 	private byte[] secret;
 
-	public RtssHandshake(InetSocketAddress selfAddress) throws Exception {
+	public RtssHandshake(InetSocketAddress selfAddress, CertificateChain certificateChain) throws Exception {
 		var keyPair = SecretGenerator.generateKeyPair(KEY_AGREEMENT, 2048);
-
+		this.certificateChain = certificateChain;
 		this.selfAddress = selfAddress;
 		this.secretGenerator = new SecretGenerator(KEY_AGREEMENT, keyPair);
 	}
@@ -51,6 +54,8 @@ public class RtssHandshake {
 	}
 
 	private byte[] generateFirstMessage() {
+
+		// dh_parameters (pubkey) ||
 		return null; //TODO
 	}
 }
