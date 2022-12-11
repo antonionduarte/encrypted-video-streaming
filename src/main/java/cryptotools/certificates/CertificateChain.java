@@ -42,6 +42,11 @@ public class CertificateChain {
 		return rootCertificate;
 	}
 
+	/**
+	 * Returns a byte[] representation of the certificate chain.
+	 * Serialized format of the byte[]:
+	 * sizeof(certificate) || certificate || sizeof(root_certificate) || root_certificate
+	 */
 	public byte[] getSerializedChain() throws CertificateEncodingException {
 		var certificateBytes = certificate.getEncoded();
 		var certificateSize = certificateBytes.length;
