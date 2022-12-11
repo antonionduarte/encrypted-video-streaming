@@ -3,6 +3,7 @@ package cryptotools.key_agreement;
 import javax.crypto.KeyAgreement;
 import java.security.*;
 
+//TODO: cringe name, maybe KeyAgreementExecutor or something
 public class SecretGenerator {
 	public static final String HASH_DIGEST = "SHA1";
 

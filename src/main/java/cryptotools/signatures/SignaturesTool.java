@@ -25,7 +25,8 @@ public class SignaturesTool {
 	 */
 	public static byte[] createSignature(byte[] data, PrivateKey key) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		// Create a Signature object and initialize it with the private key
-		Signature sig = Signature.getInstance("SHA256withRSA");
+		Signature sig = Signature.getInstance("SHA256withRSA"); //TODO "SHA256with"+alg ?
+
 		sig.initSign(key);
 
 		// Update the signature object with the data that you want to sign

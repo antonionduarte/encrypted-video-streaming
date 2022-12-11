@@ -55,6 +55,8 @@ public class StreamServer {
 	public void run() throws Exception {
 		System.out.println("Server running");
 
+		//TODO make handshake
+
 		byte[] plainMovie = getMovieBytes();
 
 		int frameSize;
