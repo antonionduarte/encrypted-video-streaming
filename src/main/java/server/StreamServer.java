@@ -1,8 +1,8 @@
 package server;
 
 import config.CipherConfig;
-import config.DecipherCipherConfig;
-import config.parser.ParseCipherConfig;
+import config.DecipherMoviesConfig;
+import config.parser.ParseCipherConfigMap;
 import cryptotools.CryptoException;
 import cryptotools.integrity.IntegrityTool;
 import securesocket.SecureDatagramPacket;
@@ -32,7 +32,7 @@ public class StreamServer {
 	public StreamServer(String movie, String serverAddressStr, String serverPort) throws CryptoException, IOException {
 		this.movie = movie;
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));
-		this.moviesConfig = new DecipherCipherConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
+		this.moviesConfig = new DecipherMoviesConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
 	}
 
 	public byte[] appendMessageType(MESSAGE_TYPE messageType, byte[] data) throws IOException {
@@ -66,8 +66,8 @@ public class StreamServer {
 
 		try (var fileInputStream = new FileInputStream(STREAM_CIPHER_CONFIG)) {
 			var json = new String(fileInputStream.readAllBytes());
-			var cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
-			var address = new ParseCipherConfig(json).parseConfig().keySet().iterator().next();
+			var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
+			var address = new ParseCipherConfigMap(json).parseConfig().keySet().iterator().next();
 
 			this.remoteAddress = Utils.parseSocketAddress(address);
 

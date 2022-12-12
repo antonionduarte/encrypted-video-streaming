@@ -1,7 +1,7 @@
 package utils.cipherutils;
 
 import config.CipherConfig;
-import config.parser.ParseCipherConfig;
+import config.parser.ParseCipherConfigMap;
 import cryptotools.CryptoException;
 import cryptotools.encryption.EncryptionTool;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -28,7 +28,7 @@ public class EncryptMovies {
 
 		try (FileInputStream fileInputStream = new FileInputStream(MOVIE_CIPHER_CONFIG_PATH)) {
 			var configJson = new String(fileInputStream.readAllBytes());
-			var config = new ParseCipherConfig(configJson).parseConfig();
+			var config = new ParseCipherConfigMap(configJson).parseConfig();
 
 			for (var cipheredName : config.keySet()) {
 				var split = cipheredName.split("\\.");

@@ -1,5 +1,5 @@
 import config.CipherConfig;
-import config.parser.ParseCipherConfig;
+import config.parser.ParseCipherConfigMap;
 import cryptotools.certificates.CertificateChain;
 import cryptotools.certificates.CertificateTool;
 import cryptotools.integrity.IntegrityException;
@@ -71,7 +71,7 @@ public class Proxy {
 
 		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG_PATH)) {
 			var json = new String(fis.readAllBytes());
-			var cipherConfig = new ParseCipherConfig(json).parseConfig().values().iterator().next();
+			var cipherConfig = new ParseCipherConfigMap(json).parseConfig().values().iterator().next();
 
 			try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
 				try (DatagramSocket outSocket = new DatagramSocket()) {

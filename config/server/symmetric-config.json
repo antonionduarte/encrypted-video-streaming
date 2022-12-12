@@ -10,7 +10,8 @@
   },
   {
     "cipher": "RC6/CTR/NoPadding",
-    "cipher-key-size": 256,
-    "integrity": "HMAC-SHA1"
+    "key-size": 256,
+    "integrity": "HMAC-SHA1",
+    "mac-key-size": 160
   }
 ]
