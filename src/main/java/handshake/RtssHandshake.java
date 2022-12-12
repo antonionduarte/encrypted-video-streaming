@@ -1,7 +1,8 @@
 package handshake;
 
+import config.CipherConfig;
 import cryptotools.certificates.CertificateChain;
-import cryptotools.key_agreement.SecretGenerator;
+import cryptotools.key_agreement.KeyAgreementExecutor;
 import handshake.exceptions.AuthenticationException;
 import handshake.exceptions.NoCiphersuiteException;
 
@@ -9,20 +10,24 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 
 public class RtssHandshake {
 	public static final String KEY_AGREEMENT = "DH"; // TODO: Replace this with something taken from a CipherSuite object
 
 	private final InetSocketAddress selfAddress;
-	private final SecretGenerator secretGenerator;
+	private final KeyAgreementExecutor keyAgreementExecutor;
 	private final CertificateChain certificateChain;
+	private CipherConfig chosenCiphersuite;
 	private byte[] secret;
 
 	public RtssHandshake(InetSocketAddress selfAddress, CertificateChain certificateChain) throws Exception {
-		var keyPair = SecretGenerator.generateKeyPair(KEY_AGREEMENT, 2048);
 		this.certificateChain = certificateChain;
 		this.selfAddress = selfAddress;
-		this.secretGenerator = new SecretGenerator(KEY_AGREEMENT, keyPair);
+		var numSize = 2048; //TODO: read from assymetric config
+		this.keyAgreementExecutor = new KeyAgreementExecutor(KEY_AGREEMENT, numSize);
 	}
 
 	public void start(InetSocketAddress targetAddress) throws AuthenticationException {
@@ -37,13 +42,18 @@ public class RtssHandshake {
 	}
 
 	public InetSocketAddress waitClient() throws AuthenticationException, NoCiphersuiteException {
+		Socket clientSocket;
 		try (var serverSocket = new ServerSocket(selfAddress.getPort())) {
-			var clientSocket = serverSocket.accept();
-			//TODO
-		} catch (IOException e) {
+			clientSocket = serverSocket.accept();
+			var secondMessage = generateSecondMessage();
+			//TODO ...
+			PublicKey remotePubNum = null; //TODO get from second message
+			this.secret = keyAgreementExecutor.generateSecret(remotePubNum);
+			clientSocket.getOutputStream().write(secondMessage);
+		} catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
 		}
-		return null;
+		return new InetSocketAddress(clientSocket.getInetAddress(), clientSocket.getPort());
 	}
 
 	public byte[] getSecret() {
@@ -51,11 +61,21 @@ public class RtssHandshake {
 	}
 
 	private void waitServer() throws AuthenticationException {
+
 		//TODO
 	}
 
 	private byte[] generateFirstMessage() {
-		// dh_parameters (pubkey) ||
+		// ==================================A==================================
+		// Yb || G || p || cs_list || KpubBox || Sig_KprivBox(box.chain || time) || HMAC_KMac(A)
+		// ?
+		return null; //TODO
+	}
+
+	private byte[] generateSecondMessage() {
+		// ==============================B================================
+		// Ys || cs || KpubServer || Sig_KprivServer(server.chain || time) || HMAC_KMac(B)
+		// ?
 		return null; //TODO
 	}
 }
