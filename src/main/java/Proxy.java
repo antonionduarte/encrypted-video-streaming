@@ -29,7 +29,7 @@ public class Proxy {
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
 	private static final String CONFIG_PATH = "config/proxy/config.properties";
 	private static final String STREAM_CIPHER_CONFIG_PATH = "config/box-cryptoconfig.json";
-	//TODO
+	//TODO beware the masks
 	private static final String BOX_CERTIFICATE_PATH = "certs/box/box_%s_%d.cer";
 	private static final String CA_CERTIFICATE_PATH = "certs/common/ca_%s_%d.cer";
 
