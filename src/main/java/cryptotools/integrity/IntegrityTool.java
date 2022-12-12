@@ -52,7 +52,7 @@ public class IntegrityTool {
 
 	private static byte[] buildMacIntegrity(CipherConfig cipherConfig, byte[] cipherText) throws NoSuchAlgorithmException, InvalidKeyException {
 		var macAlgorithm = cipherConfig.getIntegrity();
-		var macKey = new SecretKeySpec(cipherConfig.getMackey().getBytes(), macAlgorithm);
+		var macKey = cipherConfig.getMackey();
 		var mac = Mac.getInstance(macAlgorithm);
 
 		mac.init(macKey);

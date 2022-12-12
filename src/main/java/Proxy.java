@@ -29,8 +29,9 @@ public class Proxy {
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
 	private static final String CONFIG_PATH = "config/proxy/config.properties";
 	private static final String STREAM_CIPHER_CONFIG_PATH = "config/box-cryptoconfig.json";
-	private static final String BOX_CERTIFICATE_PATH = "certs/box/box_RSA_2048.cer";
-	private static final String CA_CERTIFICATE_PATH = "certs/common/ca_RSA_2048.cer";
+	//TODO
+	private static final String BOX_CERTIFICATE_PATH = "certs/box/box_%s_%d.cer";
+	private static final String CA_CERTIFICATE_PATH = "certs/common/ca_%s_%d.cer";
 
 	/**
 	 * Reads the box and ca certificates, and returns a certificate chain object.

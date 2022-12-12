@@ -24,19 +24,16 @@ public class EncryptionTool {
 	}
 
 	private static byte[] doCrypto(int cipherMode, CipherConfig config, byte[] text) throws CryptoException {
-		var algorithm = config.getCipher().split("/")[0];
-		var key = config.getKey();
+		var secretKey = config.getKey();
 		var cipherSuite = config.getCipher();
-		var iv = config.getIv();
+		var ivSpec = config.getIv();
 
 		try {
-			Key secretKey = new SecretKeySpec(key.getBytes(), algorithm);
 			Cipher cipher = Cipher.getInstance(cipherSuite);
 
-			if (iv == null) {
+			if (ivSpec == null) {
 				cipher.init(cipherMode, secretKey);
 			} else {
-				IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes());
 				cipher.init(cipherMode, secretKey, ivSpec);
 			}
 
