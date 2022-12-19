@@ -7,6 +7,7 @@
 ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
+truststore_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 
 config_folder="certs/"
 box_config_folder=$config_folder"box/"
@@ -20,13 +21,13 @@ mkdir $config_folder &> /dev/null
 mkdir $box_config_folder &> /dev/null
 mkdir $server_config_folder &> /dev/null
 mkdir $ca_config_folder &> /dev/null
+mkdir $ca_config_folder$certs_folder &> /dev/null
 mkdir $common_config_folder &> /dev/null
 mkdir $box_config_folder$certs_folder &> /dev/null
 mkdir $server_config_folder$certs_folder &> /dev/null
-mkdir $common_config_folder$certs_folder &> /dev/null
+mkdir $common_config_folder &> /dev/null
 mkdir $box_config_folder$csr_folder &> /dev/null
 mkdir $server_config_folder$csr_folder &> /dev/null
-mkdir $common_config_folder$csr_folder &> /dev/null
 
 alg=$(echo $1 | tr 'a-z' 'A-Z')
 key_size=$2
@@ -34,13 +35,14 @@ ca_alias="ca_"$alg"_"$key_size
 box_alias="box_"$alg"_"$key_size
 server_alias="server_"$alg"_"$key_size
 ca_ks=$ca_config_folder"ca.pkcs12"
-ca_cert=$common_config_folder$certs_folder$ca_alias".cer"
+ca_cert=$ca_config_folder$certs_folder$ca_alias".cer"
 box_ks=$box_config_folder"box.pkcs12"
 box_cert=$box_config_folder$certs_folder$box_alias".cer"
 box_csr=$box_config_folder$csr_folder$box_alias".csr"
 server_ks=$server_config_folder"server.pkcs12"
 server_cert=$server_config_folder$certs_folder$server_alias".cer"
 server_csr=$server_config_folder$csr_folder$server_alias".csr"
+truststore=$common_config_folder"truststore.pkcs12"
 
 # To begin, we first generate a key pair which will be used as the CA,
 # its private key will be used to sign the certificate it issues.
@@ -60,6 +62,14 @@ keytool -export -noprompt \
   -storepass $ca_password \
   -file $ca_cert \
   -keystore $ca_ks
+
+keytool -import -noprompt \
+  -alias $ca_alias \
+  -file $ca_cert \
+  -storetype PKCS12 \
+  -storepass $truststore_password \
+  -keystore $truststore
+
 
 # Then, generate a key pair where the certificate of it will be signed by the CA above.
 keytool -genkeypair -noprompt \
@@ -114,4 +124,9 @@ keytool -gencert -noprompt \
 keytool -printcert -file $ca_cert
 keytool -printcert -file $box_cert
 keytool -printcert -file $server_cert
+
+# list truststore
+keytool -list \
+  -keystore $truststore \
+  -storepass $truststore_password
 
