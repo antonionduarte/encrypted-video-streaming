@@ -4,8 +4,8 @@ import config.parser.parser_objects.ParsedSymmetricConfig;
 
 public class SymmetricConfig {
 	private final String cipher;
-	private int keySize = 0;
 	private final String integrity;
+	private int keySize = 0;
 	private int macKeySize;
 	private int ivSize;
 
@@ -26,9 +26,15 @@ public class SymmetricConfig {
 		this.keySize = 0;
 		this.macKeySize = 0;
 
-		if (ivSize != null) this.ivSize = Integer.parseInt(ivSize);
-		if (keySize != null) this.keySize = Integer.parseInt(keySize);
-		if (macKeySize != null) this.macKeySize = Integer.parseInt(macKeySize);
+		if (ivSize != null) {
+			this.ivSize = Integer.parseInt(ivSize);
+		}
+		if (keySize != null) {
+			this.keySize = Integer.parseInt(keySize);
+		}
+		if (macKeySize != null) {
+			this.macKeySize = Integer.parseInt(macKeySize);
+		}
 
 		this.cipher = parsedSymmetricConfig.getCipher();
 		this.integrity = parsedSymmetricConfig.getIntegrity();

@@ -19,7 +19,8 @@ public class ParseCipherConfigMap implements ParseConfig<Map<String, ParsedCiphe
 	}
 
 	public Map<String, ParsedCipherConfig> parseConfig() {
-		Type mapType = new TypeToken<Map<String, ParsedCipherConfig>>() {}.getType();
+		Type mapType = new TypeToken<Map<String, ParsedCipherConfig>>() {
+		}.getType();
 		return gson.fromJson(json, mapType);
 	}
 }

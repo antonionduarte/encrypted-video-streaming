@@ -5,60 +5,59 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+/**
+ * Represents a certificate chain.
+ * <p>
+ * Serialized format: [length][size_cert1][cert1][size_cert2][cert2]...[size_certN][certN]
+ */
 public class CertificateChain {
-	private final X509Certificate certificate;
-	private final X509Certificate rootCertificate;
+	private static final String CERTIFICATE_TYPE = "X.509";
 
-	public CertificateChain(X509Certificate certificate, X509Certificate rootCertificate) {
-		this.certificate = certificate;
-		this.rootCertificate = rootCertificate;
+	private final X509Certificate[] chain;
+
+	public CertificateChain(X509Certificate[] chain) {
+		this.chain = chain;
+	}
+
+	public X509Certificate[] getChain() {
+		return chain;
 	}
 
 	/**
-	 * Returns a certificate chain from a byte[].
-	 * Format of the byte[] should be something such as:
-	 * sizeof(certificate) || certificate || sizeof(root_certificate) || root_certificate
+	 * Returns a certificate chain from a byte[]. Format of the byte[] should be something such as:
+	 * [length][size_cert1][cert1][size_cert2][cert2]...[size_certN][certN]
 	 */
 	public CertificateChain(byte[] certificateChain) throws IOException, CertificateException {
 		var stream = new ByteArrayInputStream(certificateChain);
-		
-		var certificateSize = stream.read();
-		var certificateBytes = stream.readNBytes(certificateSize);
 
-		var rootCertificateSize = stream.read();
-		var rootCertificateBytes = stream.readNBytes(rootCertificateSize);
+		var length = stream.read();
+		var certificates = new X509Certificate[length];
 
-		this.certificate = CertificateTool.certificateFromBytes(certificateBytes);
-		this.rootCertificate = CertificateTool.certificateFromBytes(rootCertificateBytes);
-	}
+		for (int i = 0; i < length; i++) {
+			var size = stream.read();
+			var certificate = stream.readNBytes(size);
+			certificates[i] = (X509Certificate) CertificateFactory.getInstance(CERTIFICATE_TYPE).generateCertificate(new ByteArrayInputStream(certificate));
+		}
 
-	public X509Certificate getCertificate() {
-		return certificate;
-	}
-
-	public X509Certificate getRootCertificate() {
-		return rootCertificate;
+		this.chain = certificates;
 	}
 
 	/**
 	 * Returns a byte[] representation of the certificate chain.
-	 * Serialized format of the byte[]:
-	 * sizeof(certificate) || certificate || sizeof(root_certificate) || root_certificate
+	 * Serialized format: [length][size_cert1][cert1][size_cert2][cert2]...[size_certN][certN]
 	 */
 	public byte[] getSerializedChain() throws CertificateEncodingException {
-		var certificateBytes = certificate.getEncoded();
-		var certificateSize = certificateBytes.length;
-
-		var rootCertificateBytes = rootCertificate.getEncoded();
-		var rootCertificateSize = rootCertificateBytes.length;
-
 		var stream = new ByteArrayOutputStream();
-		stream.write(certificateSize);
-		stream.write(certificateBytes, 0, certificateSize);
-		stream.write(rootCertificateSize);
-		stream.write(rootCertificateBytes, 0, rootCertificateSize);
+		stream.write(chain.length);
+
+		for (X509Certificate certificate : chain) {
+			var certificateBytes = certificate.getEncoded();
+			stream.write(certificateBytes.length);
+			stream.write(certificateBytes, 0, certificateBytes.length);
+		}
 
 		return stream.toByteArray();
 	}

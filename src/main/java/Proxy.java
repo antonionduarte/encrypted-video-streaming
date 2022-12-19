@@ -20,6 +20,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.Security;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -35,11 +36,12 @@ public class Proxy {
 
 	/**
 	 * Reads the box and ca certificates, and returns a certificate chain object.
+	 * TODO: Might be useless, the certs are going to a truststore.
 	 */
 	private static CertificateChain readCertificates() throws IOException, CertificateException {
 		var boxCertificate = CertificateTool.certificateFromBytes(Utils.getFileBytes(BOX_CERTIFICATE_PATH));
 		var caCertificate = CertificateTool.certificateFromBytes(Utils.getFileBytes(CA_CERTIFICATE_PATH));
-		return new CertificateChain(boxCertificate, caCertificate);
+		return new CertificateChain(new X509Certificate[]{boxCertificate, caCertificate});
 	}
 
 	/**
@@ -71,7 +73,7 @@ public class Proxy {
 
 		try (var fis = new FileInputStream(STREAM_CIPHER_CONFIG_PATH)) {
 			var json = new String(fis.readAllBytes());
-			var cipherConfig = new ParseCipherConfigMap(json).parseConfig().values().iterator().next();
+			var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
 
 			try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
 				try (DatagramSocket outSocket = new DatagramSocket()) {

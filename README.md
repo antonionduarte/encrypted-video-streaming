@@ -1,6 +1,9 @@
 # Video-Stream Ciphering
 Repository for the Stream Ciphering Project of the Network Security Course @ FCT-UNL.
 
+# TODO:
+- [ ] Both the server and the box will have a truststore  that should be saved on the `certs/common` and it will contain the CA cert.
+
 ## Environment Variables
 - `CRYPTO_CONFIG_KEY`: The key to the AES key for the video sharing. **DEPRECATED**,
 - `CA_PASSWORD`: The password of the CA Keystore.

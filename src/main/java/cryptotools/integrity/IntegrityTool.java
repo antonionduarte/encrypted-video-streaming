@@ -3,7 +3,6 @@ package cryptotools.integrity;
 import config.CipherConfig;
 
 import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

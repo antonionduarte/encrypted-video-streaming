@@ -9,20 +9,26 @@ import java.security.SecureRandom;
 
 public class CipherConfig {
 	private final String cipher;
+	private final String integrity;
+	private final String integrityCheck;
 	private Key key;
 	private IvParameterSpec iv;
-	private final String integrity;
 	private Key mackey;
-	private final String integrityCheck;
 
 	public CipherConfig(ParsedCipherConfig parsedCipherConfig) {
 		var key = parsedCipherConfig.getKey();
 		var iv = parsedCipherConfig.getIv();
 		var macKey = parsedCipherConfig.getMacKey();
 
-		if (key != null) this.key = new SecretKeySpec(key.getBytes(), algFromCipher(parsedCipherConfig.getCipher()));
-		if (iv != null) this.iv = new IvParameterSpec(iv.getBytes());
-		if (macKey != null) this.mackey = new SecretKeySpec(macKey.getBytes(), parsedCipherConfig.getIntegrity());
+		if (key != null) {
+			this.key = new SecretKeySpec(key.getBytes(), algFromCipher(parsedCipherConfig.getCipher()));
+		}
+		if (iv != null) {
+			this.iv = new IvParameterSpec(iv.getBytes());
+		}
+		if (macKey != null) {
+			this.mackey = new SecretKeySpec(macKey.getBytes(), parsedCipherConfig.getIntegrity());
+		}
 
 		this.cipher = parsedCipherConfig.getCipher();
 		this.integrity = parsedCipherConfig.getIntegrity();
