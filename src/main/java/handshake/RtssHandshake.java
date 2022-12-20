@@ -1,54 +1,60 @@
 package handshake;
 
-import config.CipherConfig;
+import config.AsymmetricConfig;
+import config.SymmetricConfig;
 import cryptotools.certificates.CertificateChain;
 import cryptotools.key_agreement.KeyAgreementExecutor;
+import cryptotools.signatures.SignaturesTool;
 import handshake.exceptions.AuthenticationException;
 import handshake.exceptions.NoCiphersuiteException;
+import handshake.messages.FirstMessage;
+import handshake.messages.SecondMessage;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
+import java.util.List;
 
 public class RtssHandshake {
-	public static final String KEY_AGREEMENT = "DH"; // TODO: Replace this with something taken from a CipherSuite object
-
-	private final InetSocketAddress selfAddress;
 	private final KeyAgreementExecutor keyAgreementExecutor;
 	private final CertificateChain certificateChain;
-	private CipherConfig chosenCiphersuite;
+	private final AsymmetricConfig asymConfig;
+	private final List<SymmetricConfig> symConfigList;
+	private final KeyPair authenticationKeys;
 	private byte[] secret;
 
-	public RtssHandshake(InetSocketAddress selfAddress, CertificateChain certificateChain) throws Exception {
+	public RtssHandshake(CertificateChain certificateChain, AsymmetricConfig asymConfig,
+						 List<SymmetricConfig> symConfigList, KeyPair authenticationKeys) {
 		this.certificateChain = certificateChain;
-		this.selfAddress = selfAddress;
-		var numSize = 2048; //TODO: read from assymetric config
-		this.keyAgreementExecutor = new KeyAgreementExecutor(KEY_AGREEMENT, numSize);
+		this.asymConfig = asymConfig;
+		this.symConfigList = symConfigList;
+		this.keyAgreementExecutor = new KeyAgreementExecutor(asymConfig.authAlg(), asymConfig.numSize());
+		this.authenticationKeys = authenticationKeys;
 	}
 
 	public void start(InetSocketAddress targetAddress) throws AuthenticationException {
-		try (var clientSocket = new Socket(selfAddress.getAddress().getHostAddress(), selfAddress.getPort())) {
-			clientSocket.connect(targetAddress);
-			var firstMessage = generateFirstMessage();
-			clientSocket.getOutputStream().write(firstMessage);
+		try (var socket = new Socket(targetAddress.getAddress().getHostAddress(), targetAddress.getPort())) {
+			byte[] signature = SignaturesTool.createSignature();
+			var firstMessage = new FirstMessage(asymConfig, symConfigList, certificateChain, signature);
+			socket.getOutputStream().write(firstMessage.encode("HMAC256", mackey)); //TODO set in shared static config
 			waitServer();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public InetSocketAddress waitClient() throws AuthenticationException, NoCiphersuiteException {
+	public InetSocketAddress waitClient(InetSocketAddress serverAddress) throws AuthenticationException, NoCiphersuiteException {
 		Socket clientSocket;
-		try (var serverSocket = new ServerSocket(selfAddress.getPort())) {
+		try (var serverSocket = new ServerSocket(serverAddress.getPort())) {
 			clientSocket = serverSocket.accept();
-			var secondMessage = generateSecondMessage();
+			var secondMessage = new SecondMessage(...);
 			//TODO ...
-			PublicKey remotePubNum = null; //TODO get from second message
-			this.secret = keyAgreementExecutor.generateSecret(remotePubNum);
+			PublicKey clientPubNum = null; //TODO get from first message
+			this.secret = keyAgreementExecutor.generateSecret(clientPubNum);
 			clientSocket.getOutputStream().write(secondMessage);
 		} catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
@@ -61,21 +67,7 @@ public class RtssHandshake {
 	}
 
 	private void waitServer() throws AuthenticationException {
-
 		//TODO
 	}
 
-	private byte[] generateFirstMessage() {
-		// ==================================A==================================
-		// Yb || G || p || cs_list || KpubBox || Sig_KprivBox(box.chain || time) || HMAC_KMac(A)
-		// ?
-		return null; //TODO
-	}
-
-	private byte[] generateSecondMessage() {
-		// ==============================B================================
-		// Ys || cs || KpubServer || Sig_KprivServer(server.chain || time) || HMAC_KMac(B)
-		// ?
-		return null; //TODO
-	}
 }

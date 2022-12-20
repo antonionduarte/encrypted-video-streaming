@@ -6,7 +6,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 public class CertificateTool {
-	public static final String CERT_TYPE = "X509"; // TODO: Make this a param maybe?
+	public static final String CERT_TYPE = "X509";
+
+
 
 	/**
 	 * Gets a certificate from a byte array.

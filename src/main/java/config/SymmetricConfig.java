@@ -2,12 +2,14 @@ package config;
 
 import config.parser.parser_objects.ParsedSymmetricConfig;
 
+import java.io.*;
+
 public class SymmetricConfig {
-	private final String cipher;
-	private final String integrity;
-	private int keySize = 0;
-	private int macKeySize;
-	private int ivSize;
+	public final String cipher;
+	public int keySize;
+	public final String integrity;
+	public int macKeySize;
+	public int ivSize;
 
 	public SymmetricConfig(String cipher, int keySize, String integrity, int macKeySize, int ivSize) {
 		this.cipher = cipher;
@@ -18,45 +20,35 @@ public class SymmetricConfig {
 	}
 
 	public SymmetricConfig(ParsedSymmetricConfig parsedSymmetricConfig) {
-		var ivSize = parsedSymmetricConfig.getIvSize();
-		var keySize = parsedSymmetricConfig.getKeySize();
-		var macKeySize = parsedSymmetricConfig.getMacKeySize();
-
-		this.ivSize = 0;
-		this.keySize = 0;
-		this.macKeySize = 0;
-
-		if (ivSize != null) {
-			this.ivSize = Integer.parseInt(ivSize);
-		}
-		if (keySize != null) {
-			this.keySize = Integer.parseInt(keySize);
-		}
-		if (macKeySize != null) {
-			this.macKeySize = Integer.parseInt(macKeySize);
-		}
-
-		this.cipher = parsedSymmetricConfig.getCipher();
-		this.integrity = parsedSymmetricConfig.getIntegrity();
+		this.cipher = parsedSymmetricConfig.cipher();
+		this.keySize = parsedSymmetricConfig.keySize();
+		this.integrity = parsedSymmetricConfig.integrity();
+		this.macKeySize = parsedSymmetricConfig.macKeySize();
+		this.ivSize = parsedSymmetricConfig.ivSize();
 	}
 
-	public String getCipher() {
-		return cipher;
-	}
+    public byte[] toBytes() throws IOException {
+		var bos = new ByteArrayOutputStream();
+		var dos = new DataOutputStream(bos);
 
-	public int getKeySize() {
-		return keySize;
-	}
+		dos.writeUTF(cipher);
+		dos.writeInt(keySize);
+		dos.writeUTF(integrity);
+		dos.writeInt(macKeySize);
+		dos.writeInt(ivSize);
 
-	public String getIntegrity() {
-		return integrity;
-	}
+		return bos.toByteArray();
+    }
 
-	public int getMacKeySize() {
-		return macKeySize;
-	}
+	public static SymmetricConfig fromBytes(byte[] bytes) throws IOException {
+		var dis = new DataInputStream(new ByteArrayInputStream(bytes));
 
-	public int getIvSize() {
-		return ivSize;
+		var cipher = dis.readUTF();
+		var keySize = dis.readInt();
+		var integrity = dis.readUTF();
+		var macKeySize = dis.readInt();
+		var ivSize = dis.readInt();
+
+		return new SymmetricConfig(cipher, keySize, integrity, macKeySize, ivSize);
 	}
 }

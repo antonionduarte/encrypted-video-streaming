@@ -16,23 +16,23 @@ public class CipherConfig {
 	private Key mackey;
 
 	public CipherConfig(ParsedCipherConfig parsedCipherConfig) {
-		var key = parsedCipherConfig.getKey();
-		var iv = parsedCipherConfig.getIv();
-		var macKey = parsedCipherConfig.getMacKey();
+		var key = parsedCipherConfig.key();
+		var iv = parsedCipherConfig.iv();
+		var macKey = parsedCipherConfig.macKey();
 
 		if (key != null) {
-			this.key = new SecretKeySpec(key.getBytes(), algFromCipher(parsedCipherConfig.getCipher()));
+			this.key = new SecretKeySpec(key.getBytes(), algFromCipher(parsedCipherConfig.cipher()));
 		}
 		if (iv != null) {
 			this.iv = new IvParameterSpec(iv.getBytes());
 		}
 		if (macKey != null) {
-			this.mackey = new SecretKeySpec(macKey.getBytes(), parsedCipherConfig.getIntegrity());
+			this.mackey = new SecretKeySpec(macKey.getBytes(), parsedCipherConfig.integrity());
 		}
 
-		this.cipher = parsedCipherConfig.getCipher();
-		this.integrity = parsedCipherConfig.getIntegrity();
-		this.integrityCheck = parsedCipherConfig.getIntegrityCheck();
+		this.cipher = parsedCipherConfig.cipher();
+		this.integrity = parsedCipherConfig.integrity();
+		this.integrityCheck = parsedCipherConfig.integrityCheck();
 	}
 
 	public CipherConfig(byte[] secret, SymmetricConfig symmetricConfig) {

@@ -1,4 +1,18 @@
-{
-  "key-exchange": "DH",
-  "authentication": "RSA"
-}
+[
+  {
+    "authentication": "RSA",
+    "key-size": 2048,
+    "key-exchange": "DH",
+    "num-size": 2048,
+    "G": "SHA1",
+    "p": ""
+  },
+  {
+    "authentication": "ECDSA",
+    "key-size": 256,
+    "key-exchange": "ECDHE",
+    "num-size": 224,
+    "G": "SHA1",
+    "p": ""
+  }
+]

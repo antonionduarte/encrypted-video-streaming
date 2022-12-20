@@ -2,13 +2,11 @@ package server;
 
 import config.CipherConfig;
 import config.DecipherMoviesConfig;
-import config.parser.ParseCipherConfigMap;
 import cryptotools.CryptoException;
 import cryptotools.integrity.IntegrityTool;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.Stats;
-import utils.Utils;
 import utils.cipherutils.EncryptMovies;
 
 import java.io.*;
@@ -27,7 +25,7 @@ public class StreamServer {
 	private final String movie;
 	private final Map<String, CipherConfig> moviesConfig;
 
-	private InetSocketAddress remoteAddress;
+	private InetSocketAddress clientAddress;
 
 	public StreamServer(String movie, String serverAddressStr, String serverPort) throws CryptoException, IOException {
 		this.movie = movie;
@@ -55,8 +53,6 @@ public class StreamServer {
 	public void run() throws Exception {
 		System.out.println("Server running");
 
-		//TODO make handshake
-
 		byte[] plainMovie = getMovieBytes();
 
 		int frameSize;
@@ -64,63 +60,62 @@ public class StreamServer {
 		var frameCount = 0;
 		long frameTimestamp;
 
-		try (var fileInputStream = new FileInputStream(STREAM_CIPHER_CONFIG)) {
-			var json = new String(fileInputStream.readAllBytes());
-			var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
-			var address = new ParseCipherConfigMap(json).parseConfig().keySet().iterator().next();
+		//var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
+		CipherConfig cipherConfig = null; //TODO performHandshake like Proxy
 
-			this.remoteAddress = Utils.parseSocketAddress(address);
 
-			DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
+		this.clientAddress = null;// TODO from handshake.waitClient()
 
-			try (SecureSocket socket = new SecureSocket(serverAddress)) {
-				byte[] frameData;
+		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 
-				long beginningTime = System.nanoTime(); // ref. time
-				long timeOfLastPacketSent = 0; // time of the last packet sent
+		try (SecureSocket socket = new SecureSocket(serverAddress)) {
+			byte[] frameData;
 
-				while (dataStream.available() > 0) {
-					frameSize = dataStream.readShort(); // size of the frame
-					cumulativeSize += frameSize; // cumulative size of the frames sent
-					frameTimestamp = dataStream.readLong();  // timestamp of the frame
+			long beginningTime = System.nanoTime(); // ref. time
+			long timeOfLastPacketSent = 0; // time of the last packet sent
 
-					if (frameCount == 0) { // first packet
-						timeOfLastPacketSent = frameTimestamp; // ref. time in the stream
-					}
+			while (dataStream.available() > 0) {
+				frameSize = dataStream.readShort(); // size of the frame
+				cumulativeSize += frameSize; // cumulative size of the frames sent
+				frameTimestamp = dataStream.readLong();  // timestamp of the frame
 
-					frameCount++; // number of frames
-					frameData = new byte[frameSize];
-					dataStream.readFully(frameData, 0, frameSize); // read the frame
-					frameData = appendMessageType(MESSAGE_TYPE.FRAME, frameData);
-					SecureDatagramPacket packet = new SecureDatagramPacket(frameData, remoteAddress, cipherConfig);
-
-					// decision about the right time to transmit
-					long currentTime = System.nanoTime(); // what time is it?
-					Thread.sleep(Math.max(0, ((frameTimestamp - timeOfLastPacketSent) - (currentTime - beginningTime)) / 1000000)); // sleep until the right time
-					socket.send(packet);
-					System.out.print(".");
+				if (frameCount == 0) { // first packet
+					timeOfLastPacketSent = frameTimestamp; // ref. time in the stream
 				}
 
-				// send the end of the stream
-				frameData = appendMessageType(MESSAGE_TYPE.END, new byte[0]);
-				SecureDatagramPacket packet = new SecureDatagramPacket(frameData, remoteAddress, cipherConfig);
+				frameCount++; // number of frames
+				frameData = new byte[frameSize];
+				dataStream.readFully(frameData, 0, frameSize); // read the frame
+				frameData = appendMessageType(MESSAGE_TYPE.FRAME, frameData);
+				SecureDatagramPacket packet = new SecureDatagramPacket(frameData, clientAddress, cipherConfig);
+
+				// decision about the right time to transmit
+				long currentTime = System.nanoTime(); // what time is it?
+				Thread.sleep(Math.max(0, ((frameTimestamp - timeOfLastPacketSent) - (currentTime - beginningTime)) / 1000000)); // sleep until the right time
 				socket.send(packet);
-
-				long transmissionEndTime = System.nanoTime(); // "The end" time
-				int duration = (int) ((transmissionEndTime - beginningTime) / 1000000000); // duration of the transmission
-
-				var stats = new Stats.StatsBuilder()
-						.withConfig(cipherConfig)
-						.withNumFrames(frameCount)
-						.withAvgFrameSize(cumulativeSize / frameCount)
-						.withMovieSize(cumulativeSize)
-						.withElapsedTime(duration)
-						.withFrameRate(frameCount / duration)
-						.withThroughPut((8 * (cumulativeSize / duration)) / 1000000)
-						.build();
-				stats.printStats();
+				System.out.print(".");
 			}
+
+			// send the end of the stream
+			frameData = appendMessageType(MESSAGE_TYPE.END, new byte[0]);
+			SecureDatagramPacket packet = new SecureDatagramPacket(frameData, clientAddress, cipherConfig);
+			socket.send(packet);
+
+			long transmissionEndTime = System.nanoTime(); // "The end" time
+			int duration = (int) ((transmissionEndTime - beginningTime) / 1000000000); // duration of the transmission
+
+			var stats = new Stats.StatsBuilder()
+					.withConfig(cipherConfig)
+					.withNumFrames(frameCount)
+					.withAvgFrameSize(cumulativeSize / frameCount)
+					.withMovieSize(cumulativeSize)
+					.withElapsedTime(duration)
+					.withFrameRate(frameCount / duration)
+					.withThroughPut((8 * (cumulativeSize / duration)) / 1000000)
+					.build();
+			stats.printStats();
 		}
+
 	}
 
 	public enum MESSAGE_TYPE {

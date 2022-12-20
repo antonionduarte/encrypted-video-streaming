@@ -1,16 +1,18 @@
 [
   {
-    "key-exchange": "DH",
     "authentication": "RSA",
-    "cipher": "AES/CBC/PKCS5Padding",
-    "cipher-key-size": 256,
-    "integrity": "SHA1"
+    "key-size": 2048,
+    "key-exchange": "DH",
+    "num-size": 2048,
+    "G": "SHA1",
+    "p": ""
   },
   {
-    "key-exchange": "ECDHE",
     "authentication": "ECDSA",
-    "cipher": "AES/GCM/PKCS5Padding",
-    "cipher-key-size": 128,
-    "integrity": "SHA256"
+    "key-size": 256,
+    "key-exchange": "ECDHE",
+    "num-size": 224,
+    "G": "SHA1",
+    "p": ""
   }
 ]

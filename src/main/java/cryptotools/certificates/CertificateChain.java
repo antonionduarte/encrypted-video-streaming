@@ -27,11 +27,32 @@ public class CertificateChain {
 	}
 
 	/**
+	 * Returns a byte[] representation of the certificate chain.
+	 * Serialized format: [length][size_cert1][cert1][size_cert2][cert2]...[size_certN][certN]
+	 */
+	public byte[] serializedChain() {
+		var stream = new ByteArrayOutputStream();
+		stream.write(chain.length);
+
+		for (X509Certificate certificate : chain) {
+			try {
+				byte[] certificateBytes = certificate.getEncoded();
+				stream.write(certificateBytes.length);
+				stream.write(certificateBytes, 0, certificateBytes.length);
+			} catch (CertificateEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		return stream.toByteArray();
+	}
+
+	/**
 	 * Returns a certificate chain from a byte[]. Format of the byte[] should be something such as:
 	 * [length][size_cert1][cert1][size_cert2][cert2]...[size_certN][certN]
 	 */
-	public CertificateChain(byte[] certificateChain) throws IOException, CertificateException {
-		var stream = new ByteArrayInputStream(certificateChain);
+	public static CertificateChain deserializeChain(byte[] bytes) throws IOException {
+		var stream = new ByteArrayInputStream(bytes);
 
 		var length = stream.read();
 		var certificates = new X509Certificate[length];
@@ -39,26 +60,13 @@ public class CertificateChain {
 		for (int i = 0; i < length; i++) {
 			var size = stream.read();
 			var certificate = stream.readNBytes(size);
-			certificates[i] = (X509Certificate) CertificateFactory.getInstance(CERTIFICATE_TYPE).generateCertificate(new ByteArrayInputStream(certificate));
+			try {
+				certificates[i] = (X509Certificate) CertificateFactory.getInstance(CERTIFICATE_TYPE).generateCertificate(new ByteArrayInputStream(certificate));
+			} catch (CertificateException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
-		this.chain = certificates;
-	}
-
-	/**
-	 * Returns a byte[] representation of the certificate chain.
-	 * Serialized format: [length][size_cert1][cert1][size_cert2][cert2]...[size_certN][certN]
-	 */
-	public byte[] getSerializedChain() throws CertificateEncodingException {
-		var stream = new ByteArrayOutputStream();
-		stream.write(chain.length);
-
-		for (X509Certificate certificate : chain) {
-			var certificateBytes = certificate.getEncoded();
-			stream.write(certificateBytes.length);
-			stream.write(certificateBytes, 0, certificateBytes.length);
-		}
-
-		return stream.toByteArray();
+		return new CertificateChain(certificates);
 	}
 }

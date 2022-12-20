@@ -1,16 +1,16 @@
 [
   {
-    "key-exchange": "DH",
-    "authentication": "RSA",
     "cipher": "AES/CBC/PKCS5Padding",
-    "cipher-key-size": 256,
-    "integrity": "SHA1"
+    "key-size": 256,
+    "integrity": "SHA256",
+    "mac-key-size": 0,
+    "iv-size": 32
   },
   {
-    "key-exchange": "ECDHE",
-    "authentication": "ECDSA",
-    "cipher": "AES/GCM/PKCS5Padding",
-    "cipher-key-size": 128,
-    "integrity": "SHA256"
+    "cipher": "AES/CTR/PKCS5Padding",
+    "key-size": 512,
+    "integrity": "HMAC256",
+    "mac-key-size": 32,
+    "iv-size": 32
   }
 ]

@@ -7,6 +7,8 @@ public interface ParseConfig<T> {
 	 *
 	 * @return A correctly formatted config (or collection of) objects.
 	 */
-	T parseConfig();
+	default T parseConfig() {
+ 		//TODO ? prob bs
+	}
 
 }

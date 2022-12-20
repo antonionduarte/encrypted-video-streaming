@@ -2,38 +2,32 @@ package cryptotools.key_agreement;
 
 import javax.crypto.KeyAgreement;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 public class KeyAgreementExecutor {
-	//TODO make configurable perhaps
-	public static final String HASH_DIGEST = "SHA1";
-
+	private static final String HASH_DIGEST = "SHA256";
 	private final KeyAgreement keyAgreement;
 	private final KeyPair numPair;
 
 	/**
 	 * Generates a key agreement using the specified algorithm.
 	 *
-	 * @param agreementType The type of the agreement, something such as "DH" for Diffie-Hellman.
+	 * @param agreementAlg The algorithm of the agreement, something such as "DH" for Diffie-Hellman.
 	 * @param numSize       Size of the num pair to used for the agreement.
 	 */
-	public KeyAgreementExecutor(String agreementType, int numSize) throws NoSuchAlgorithmException, InvalidKeyException {
-		this.numPair = KeyAgreementExecutor.generateKeyPair(agreementType, numSize);
-		this.keyAgreement = KeyAgreement.getInstance(agreementType);
-		this.keyAgreement.init(numPair.getPrivate());
-	}
-
-	public static KeyPair generateKeyPair(String keyType, int size) throws NoSuchAlgorithmException {
-		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(keyType);
-		keyPairGenerator.initialize(size);
-		return keyPairGenerator.generateKeyPair();
+	public KeyAgreementExecutor(String agreementAlg, int numSize) {
+		this.numPair = KeyAgreementExecutor.generateNumPair(agreementAlg, numSize);
+		try {
+			this.keyAgreement = KeyAgreement.getInstance(agreementAlg);
+			this.keyAgreement.init(numPair.getPrivate());
+		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public Key getPublicNum() {
 		return numPair.getPublic();
-	}
-
-	public Key getPrivateNum() {
-		return numPair.getPrivate();
 	}
 
 	/**
@@ -46,5 +40,26 @@ public class KeyAgreementExecutor {
 		var hash = MessageDigest.getInstance(HASH_DIGEST);
 		keyAgreement.doPhase(publicKey, true);
 		return hash.digest(keyAgreement.generateSecret());
+	}
+
+	public static KeyPair generateNumPair(String alg, int size) {
+		try {
+			var keyPairGenerator = KeyPairGenerator.getInstance(alg);
+			keyPairGenerator.initialize(size);
+			return keyPairGenerator.generateKeyPair();
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static Key decodePublicNum(String alg, byte[] numBytes) {
+		try {
+			// Create a KeyFactory for the key's algorithm
+			var keyFactory = KeyFactory.getInstance(alg);
+			// Use the KeyFactory to recreate the key from the encoded form
+			return keyFactory.generatePublic(new X509EncodedKeySpec(numBytes));
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
