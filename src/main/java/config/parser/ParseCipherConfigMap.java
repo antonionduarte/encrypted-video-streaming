@@ -9,18 +9,14 @@ import config.parser.parser_objects.ParsedCipherConfig;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class ParseCipherConfigMap implements ParseConfig<Map<String, ParsedCipherConfig>> {
-	private final Gson gson;
-	private final String json;
+public class ParseCipherConfigMap extends ParseConfig<Map<String, ParsedCipherConfig>> {
 
 	public ParseCipherConfigMap(String config) {
-		this.gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES).create();
-		this.json = config;
+		super(config);
 	}
 
 	public Map<String, ParsedCipherConfig> parseConfig() {
-		Type mapType = new TypeToken<Map<String, ParsedCipherConfig>>() {
-		}.getType();
+		Type mapType = new TypeToken<Map<String, ParsedCipherConfig>>() {}.getType();
 		return gson.fromJson(json, mapType);
 	}
 }

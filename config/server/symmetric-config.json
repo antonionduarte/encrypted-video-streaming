@@ -1,8 +1,9 @@
 [
   {
     "cipher": "AES/CBC/PKCS5Padding",
+    "key-size": 256,
     "integrity": "SHA256",
-    "cipher-key-size": 256
+    "iv-size": 32
   },
   {
     "cipher": "AES/GCM/NoPadding",

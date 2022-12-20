@@ -3,7 +3,6 @@
     "cipher": "AES/CBC/PKCS5Padding",
     "key-size": 256,
     "integrity": "SHA256",
-    "mac-key-size": 0,
     "iv-size": 32
   },
   {
