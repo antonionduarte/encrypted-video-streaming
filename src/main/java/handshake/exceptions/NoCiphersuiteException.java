@@ -8,5 +8,4 @@ public class NoCiphersuiteException extends Exception {
 	public NoCiphersuiteException(String message, Throwable throwable) {
 		super(message, throwable);
 	}
-
 }

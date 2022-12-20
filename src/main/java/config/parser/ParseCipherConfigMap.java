@@ -1,8 +1,5 @@
 package config.parser;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import config.parser.parser_objects.ParsedCipherConfig;
 
@@ -17,7 +14,8 @@ public class ParseCipherConfigMap extends ParseConfig<Map<String, ParsedCipherCo
 	}
 
 	public Map<String, ParsedCipherConfig> parseConfig() {
-		Type mapType = new TypeToken<Map<String, ParsedCipherConfig>>() {}.getType();
+		Type mapType = new TypeToken<Map<String, ParsedCipherConfig>>() {
+		}.getType();
 		return gson.fromJson(json, mapType);
 	}
 }

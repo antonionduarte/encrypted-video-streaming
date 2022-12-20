@@ -27,7 +27,6 @@ import java.net.SocketAddress;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;

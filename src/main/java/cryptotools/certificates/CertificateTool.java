@@ -1,6 +1,5 @@
 package cryptotools.certificates;
 
-import config.AsymmetricConfig;
 import utils.Utils;
 
 import java.io.ByteArrayInputStream;

@@ -41,6 +41,5 @@ public class GenerateIntegrityCheck {
 			result = mac.doFinal();
 		}
 		System.out.println(Base64.getEncoder().encodeToString(result));
-
 	}
 }

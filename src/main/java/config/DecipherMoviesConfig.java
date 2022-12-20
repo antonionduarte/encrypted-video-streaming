@@ -29,5 +29,4 @@ public class DecipherMoviesConfig {
 	public Map<String, CipherConfig> getCipherConfig() {
 		return cipherConfig;
 	}
-
 }

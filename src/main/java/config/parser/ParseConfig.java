@@ -14,7 +14,7 @@ public abstract class ParseConfig<T> {
 
 	protected ParseConfig(String jsonConfigPath) throws IOException {
 		this.gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES).create();
-		this.json =  new String(Utils.getFileBytes(jsonConfigPath));
+		this.json = new String(Utils.getFileBytes(jsonConfigPath));
 	}
 
 	/**
@@ -23,5 +23,4 @@ public abstract class ParseConfig<T> {
 	 * @return A correctly formatted config (or collection of) objects.
 	 */
 	public abstract T parseConfig();
-
 }

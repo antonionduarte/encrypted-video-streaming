@@ -35,9 +35,8 @@ public class EncryptionTool {
 			}
 
 			return cipher.doFinal(text);
-
 		} catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException |
-		         IllegalBlockSizeException | InvalidAlgorithmParameterException ex) {
+				IllegalBlockSizeException | InvalidAlgorithmParameterException ex) {
 			throw new CryptoException("Error encrypting/decrypting file", ex);
 		}
 	}

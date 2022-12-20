@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public class SymmetricConfig {
 	public final String cipher;
-	public int keySize;
 	public final Optional<String> integrity;
+	public int keySize;
 	public int macKeySize;
 	public int ivSize;
 
@@ -33,43 +33,43 @@ public class SymmetricConfig {
 	public SymmetricConfig(ParsedSymmetricConfig parsedSymmetricConfig) {
 		this.cipher = parsedSymmetricConfig.cipher();
 		this.keySize = parsedSymmetricConfig.keySize();
-		this.integrity = parsedSymmetricConfig.integrity() == null ? Optional.empty() :
-				Optional.of(parsedSymmetricConfig.integrity());
+		this.integrity = parsedSymmetricConfig.integrity() == null ? Optional.empty() : Optional.of(parsedSymmetricConfig.integrity());
 		this.macKeySize = parsedSymmetricConfig.macKeySize();
 		this.ivSize = parsedSymmetricConfig.ivSize();
 	}
 
-    public byte[] toBytes() throws IOException {
-		var bos = new ByteArrayOutputStream();
-		var dos = new DataOutputStream(bos);
-
-		dos.writeUTF(cipher);
-		dos.writeInt(keySize);
-
-		if (integrity.isPresent()) {
-			dos.writeUTF(integrity.get());
-			if (macKeySize == 0) dos.writeInt(macKeySize);
-		}
-		if (ivSize == 0) dos.writeInt(ivSize);
-
-		return bos.toByteArray();
-    }
-
 	public static SymmetricConfig fromBytes(byte[] bytes) throws IOException {
-		var dis = new DataInputStream(new ByteArrayInputStream(bytes));
+		var dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
 
-		var cipher = dis.readUTF();
-		var keySize = dis.readInt();
+		var cipher = dataInputStream.readUTF();
+		var keySize = dataInputStream.readInt();
 
-		if (dis.available() == 0) {
+		if (dataInputStream.available() == 0) {
 			return new SymmetricConfig(cipher, keySize, 0);
-		} else if (dis.available() == 4) {
-			return new SymmetricConfig(cipher, keySize, dis.readInt());
+		} else if (dataInputStream.available() == 4) {
+			return new SymmetricConfig(cipher, keySize, dataInputStream.readInt());
 		} else {
-			var integrity = dis.readUTF();
-			var macKeySize = dis.readInt();
-			var ivSize = dis.available() == 4 ? dis.readInt() : 0;
+			var integrity = dataInputStream.readUTF();
+			var macKeySize = dataInputStream.readInt();
+			var ivSize = dataInputStream.available() == 4 ? dataInputStream.readInt() : 0;
 			return new SymmetricConfig(cipher, keySize, integrity, macKeySize, ivSize);
 		}
+	}
+
+	public byte[] toBytes() throws IOException {
+		var byteArrayOutputStream = new ByteArrayOutputStream();
+		var dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+
+		dataOutputStream.writeUTF(cipher);
+		dataOutputStream.writeInt(keySize);
+
+		if (integrity.isPresent()) {
+			dataOutputStream.writeUTF(integrity.get());
+			if (macKeySize == 0) dataOutputStream.writeInt(macKeySize);
+		}
+
+		if (ivSize == 0) dataOutputStream.writeInt(ivSize);
+
+		return byteArrayOutputStream.toByteArray();
 	}
 }

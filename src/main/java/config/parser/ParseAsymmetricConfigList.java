@@ -16,10 +16,10 @@ public class ParseAsymmetricConfigList extends ParseConfig<List<ParsedAsymmetric
 	@Override
 	public List<ParsedAsymmetricConfig> parseConfig() {
 		// Define the list's element type
-		Type listType = new TypeToken<List<ParsedAsymmetricConfig>>(){}.getType();
+		Type listType = new TypeToken<List<ParsedAsymmetricConfig>>() {
+		}.getType();
 
 		// Deserialize the JSON string
 		return gson.fromJson(json, listType);
 	}
-
 }

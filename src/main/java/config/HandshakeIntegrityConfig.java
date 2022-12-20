@@ -8,11 +8,11 @@ import java.security.Key;
 
 public class HandshakeIntegrityConfig {
 
-    public String algorithm;
-    public Key macKey;
+	public String algorithm;
+	public Key macKey;
 
-    public HandshakeIntegrityConfig(ParsedHandshakeIntegrityConfig config) {
-        this.algorithm = config.algorithm();
-        this.macKey = new SecretKeySpec(Utils.hexToBytes(config.macKey()), algorithm);
-    }
+	public HandshakeIntegrityConfig(ParsedHandshakeIntegrityConfig config) {
+		this.algorithm = config.algorithm();
+		this.macKey = new SecretKeySpec(Utils.hexToBytes(config.macKey()), algorithm);
+	}
 }

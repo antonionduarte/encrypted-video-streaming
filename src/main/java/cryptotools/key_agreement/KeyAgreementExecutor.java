@@ -1,13 +1,11 @@
 package cryptotools.key_agreement;
 
 import config.AsymmetricConfig;
-import org.bouncycastle.crypto.generators.DHKeyPairGenerator;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import java.math.BigInteger;
 import java.security.*;
-import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Optional;
@@ -34,22 +32,6 @@ public class KeyAgreementExecutor {
 		}
 	}
 
-	public Key getPublicNum() {
-		return numPair.getPublic();
-	}
-
-	/**
-	 * Generates a secret key using the specified algorithm.
-	 *
-	 * @param publicKey The public key of the other node.
-	 * @return The secret value.
-	 */
-	public byte[] generateSecret(PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
-		var hash = MessageDigest.getInstance(HASH_DIGEST);
-		keyAgreement.doPhase(publicKey, true);
-		return hash.digest(keyAgreement.generateSecret());
-	}
-
 	private static KeyPair generateNumPair(AsymmetricConfig config) {
 		try {
 			var keyPairGenerator = KeyPairGenerator.getInstance(config.keyExchange);
@@ -66,7 +48,6 @@ public class KeyAgreementExecutor {
 				config.p = Optional.of(p);
 			}
 			return keyPairGenerator.generateKeyPair();
-
 		} catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -81,5 +62,21 @@ public class KeyAgreementExecutor {
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public Key getPublicNum() {
+		return numPair.getPublic();
+	}
+
+	/**
+	 * Generates a secret key using the specified algorithm.
+	 *
+	 * @param publicKey The public key of the other node.
+	 * @return The secret value.
+	 */
+	public byte[] generateSecret(PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
+		var hash = MessageDigest.getInstance(HASH_DIGEST);
+		keyAgreement.doPhase(publicKey, true);
+		return hash.digest(keyAgreement.generateSecret());
 	}
 }

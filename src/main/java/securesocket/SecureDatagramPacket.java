@@ -22,8 +22,8 @@ public class SecureDatagramPacket {
 	 * are going to be sent through the Socket, according to the received cipherConfig. The DatagramPacket is directly
 	 * encapsulated in this class because it needs a seqNumber which is going to be controlled by the SecureSocket.
 	 *
-	 * @param data         The bytes to be sent.
-	 * @param address      The address to be sent.
+	 * @param data The bytes to be sent.
+	 * @param address The address to be sent.
 	 * @param cipherConfig The cipherConfig to be used to correctly encrypt the buffer.
 	 */
 	public SecureDatagramPacket(byte[] data, InetSocketAddress address, CipherConfig cipherConfig) throws NoSuchAlgorithmException {

@@ -6,15 +6,15 @@ import java.io.IOException;
 import java.security.Key;
 
 public class ThirdMessage implements Message {
-//TODO
-    @Override
-    public byte[] encode(String macAlg, Key macKey) throws IOException {
+	public static ThirdMessage decode(String macAlg, Key macKey, byte[] bytes) throws IOException, IntegrityException {
+		return null;
+	}
+
+	//TODO
+	@Override
+	public byte[] encode(String macAlg, Key macKey) throws IOException {
 
 
-        return new byte[0];
-    }
-
-    public static ThirdMessage decode(String macAlg, Key macKey, byte[] bytes) throws IOException, IntegrityException {
-        return null;
-    }
+		return new byte[0];
+	}
 }

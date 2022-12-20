@@ -7,7 +7,6 @@ import cryptotools.integrity.IntegrityException;
 
 import java.io.*;
 import java.security.Key;
-import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,33 +23,6 @@ public class FirstMessage implements Message {
 		this.symConfigList = symConfigList;
 		this.certChain = certChain;
 		this.signature = signature;
-	}
-
-	@Override
-	public byte[] encode(String macAlg, Key macKey) throws IOException {
-    	var baos = new ByteArrayOutputStream();
-		var dos = new DataOutputStream(baos);
-
-		// Write the AsymmetricConfig
-		dos.writeInt(asymConfig.toBytes().length);
-		dos.write(asymConfig.toBytes());
-
-		// Write the List<SymmetricConfig>
-		dos.writeInt(symConfigList.size());
-		for (SymmetricConfig symConfig : symConfigList) {
-			dos.writeInt(symConfig.toBytes().length);
-			dos.write(symConfig.toBytes());
-		}
-
-		// Write the CertificateChain
-		var certChainBytes = certChain.serializedChain();
-		dos.writeInt(certChainBytes.length);
-		dos.write(certChainBytes);
-
-		// Write the signature
-		dos.write(signature);
-
-		return Message.msgBytesWithIntegrity(macAlg, macKey, baos.toByteArray());
 	}
 
 	public static FirstMessage decode(String macAlg, Key macKey, byte[] bytes) throws IntegrityException, IOException {
@@ -85,4 +57,30 @@ public class FirstMessage implements Message {
 		return new FirstMessage(asymConfig, symConfigList, certChain, signature);
 	}
 
+	@Override
+	public byte[] encode(String macAlg, Key macKey) throws IOException {
+		var baos = new ByteArrayOutputStream();
+		var dos = new DataOutputStream(baos);
+
+		// Write the AsymmetricConfig
+		dos.writeInt(asymConfig.toBytes().length);
+		dos.write(asymConfig.toBytes());
+
+		// Write the List<SymmetricConfig>
+		dos.writeInt(symConfigList.size());
+		for (SymmetricConfig symConfig : symConfigList) {
+			dos.writeInt(symConfig.toBytes().length);
+			dos.write(symConfig.toBytes());
+		}
+
+		// Write the CertificateChain
+		var certChainBytes = certChain.serializedChain();
+		dos.writeInt(certChainBytes.length);
+		dos.write(certChainBytes);
+
+		// Write the signature
+		dos.write(signature);
+
+		return Message.msgBytesWithIntegrity(macAlg, macKey, baos.toByteArray());
+	}
 }

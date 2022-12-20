@@ -1,7 +1,6 @@
 package config.parser;
 
 import com.google.gson.reflect.TypeToken;
-import config.parser.parser_objects.ParsedAsymmetricConfig;
 import config.parser.parser_objects.ParsedSymmetricConfig;
 
 import java.io.IOException;
@@ -17,10 +16,10 @@ public class ParseSymmetricConfigList extends ParseConfig<List<ParsedSymmetricCo
 	@Override
 	public List<ParsedSymmetricConfig> parseConfig() {
 		// Define the list's element type
-		Type listType = new TypeToken<List<ParsedSymmetricConfig>>(){}.getType();
+		Type listType = new TypeToken<List<ParsedSymmetricConfig>>() {
+		}.getType();
 
 		// Deserialize the JSON string
 		return gson.fromJson(json, listType);
 	}
-
 }
