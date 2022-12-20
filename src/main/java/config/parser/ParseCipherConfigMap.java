@@ -6,13 +6,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import config.parser.parser_objects.ParsedCipherConfig;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 
 public class ParseCipherConfigMap extends ParseConfig<Map<String, ParsedCipherConfig>> {
 
-	public ParseCipherConfigMap(String config) {
-		super(config);
+	public ParseCipherConfigMap(String jsonConfigPath) throws IOException {
+		super(jsonConfigPath);
 	}
 
 	public Map<String, ParsedCipherConfig> parseConfig() {

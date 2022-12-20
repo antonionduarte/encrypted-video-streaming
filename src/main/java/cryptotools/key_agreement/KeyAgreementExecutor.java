@@ -1,9 +1,16 @@
 package cryptotools.key_agreement;
 
+import config.AsymmetricConfig;
+import org.bouncycastle.crypto.generators.DHKeyPairGenerator;
+
 import javax.crypto.KeyAgreement;
+import javax.crypto.spec.DHParameterSpec;
+import java.math.BigInteger;
 import java.security.*;
+import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Optional;
 
 public class KeyAgreementExecutor {
 	private static final String HASH_DIGEST = "SHA256";
@@ -13,13 +20,14 @@ public class KeyAgreementExecutor {
 	/**
 	 * Generates a key agreement using the specified algorithm.
 	 *
-	 * @param agreementAlg The algorithm of the agreement, something such as "DH" for Diffie-Hellman.
-	 * @param numSize       Size of the num pair to used for the agreement.
+	 * @param config asymmetric config of the handshake
 	 */
-	public KeyAgreementExecutor(String agreementAlg, int numSize) {
-		this.numPair = KeyAgreementExecutor.generateNumPair(agreementAlg, numSize);
+	public KeyAgreementExecutor(AsymmetricConfig config) {
 		try {
-			this.keyAgreement = KeyAgreement.getInstance(agreementAlg);
+			this.keyAgreement = KeyAgreement.getInstance(config.keyExchange);
+
+			this.numPair = generateNumPair(config);
+
 			this.keyAgreement.init(numPair.getPrivate());
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new RuntimeException(e);
@@ -42,13 +50,25 @@ public class KeyAgreementExecutor {
 		return hash.digest(keyAgreement.generateSecret());
 	}
 
-	public static KeyPair generateNumPair(String alg, int size) {
+	private static KeyPair generateNumPair(AsymmetricConfig config) {
 		try {
-			var keyPairGenerator = KeyPairGenerator.getInstance(alg);
-			keyPairGenerator.initialize(size);
+			var keyPairGenerator = KeyPairGenerator.getInstance(config.keyExchange);
+			if (config.G.isPresent() && config.p.isPresent()) {
+				var paramSpec = new DHParameterSpec(config.p.get(), config.G.get());
+				keyPairGenerator.initialize(paramSpec);
+			} else {
+				keyPairGenerator.initialize(config.numSize);
+				//TODO get G and p from initialized keyPairGenerator
+				BigInteger G = null;
+				BigInteger p = null;
+
+				config.G = Optional.of(G);
+				config.p = Optional.of(p);
+			}
 			return keyPairGenerator.generateKeyPair();
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
+
+		} catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
+			throw new RuntimeException(ex);
 		}
 	}
 

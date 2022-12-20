@@ -4,10 +4,10 @@
 # example: EC 256
 
 # change here to your own values
-ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-truststore_password="aaaaaaaabbbbbbbbccccccccdddddddd"
+export ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
+export box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
+export server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
+export truststore_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 
 config_folder="certs/"
 box_config_folder=$config_folder"box/"

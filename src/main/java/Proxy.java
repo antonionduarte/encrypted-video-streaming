@@ -1,8 +1,14 @@
+import config.AsymmetricConfig;
 import config.CipherConfig;
-import config.parser.ParseCipherConfigMap;
+import config.HandshakeIntegrityConfig;
+import config.SymmetricConfig;
+import config.parser.ParseAsymmetricConfigList;
+import config.parser.ParseHandshakeIntegrityConfig;
+import config.parser.ParseSymmetricConfigList;
 import cryptotools.certificates.CertificateChain;
 import cryptotools.certificates.CertificateTool;
 import cryptotools.integrity.IntegrityException;
+import cryptotools.keystore.KeyStoreTool;
 import handshake.RtssHandshake;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
@@ -18,44 +24,83 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class Proxy {
 	private static final String PROPERTY_REMOTE = "remote";
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
-	private static final String CONFIG_PATH = "config/proxy/config.properties";
-	private static final String STREAM_CIPHER_CONFIG_PATH = "config/box-cryptoconfig.json";
-	//TODO beware the masks
-	private static final String BOX_CERTIFICATE_PATH = "certs/box/box_%s_%d.cer";
-	private static final String CA_CERTIFICATE_PATH = "certs/common/ca_%s_%d.cer";
+
+	private static final String CONFIG_PATH = "config/box/config.properties";
+	private static final String ASYM_CONFIG_PATH = "config/box/asymmetric-config.json";
+	private static final String SYM_CONFIG_PATH = "config/box/symmetric-config.json";
+	private static final String INTEGRITY_CONFIG_PATH = "config/common/handshake-integrity.json";
+
+	private static final String KEYSTORE_PASSWORD_ENV = "box_password";
+	private static final String TRUSTSTORE_PASSWORD_ENV = "truststore_password";
+
+	private static final String CA_ALIAS_MASK = "ca_%s_%d";
+	private static final String BOX_ALIAS_MASK = "box_%s_%d";
+
+	private static final String CERTIFICATE_PATH_MASK = "certs/box/box_%s_%d.cer";
+	private static final String KEYSTORE_PATH = "certs/box/box.pkcs12";
+	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
 
 
+	private static AsymmetricConfig readAsymConfig() throws IOException {
+		// only need the first one
+		var parsedConfig = new ParseAsymmetricConfigList(ASYM_CONFIG_PATH).parseConfig().get(0);
+		return new AsymmetricConfig(parsedConfig);
+	}
+
+	private static List<SymmetricConfig> readSymConfigList() throws IOException {
+		var parsedConfigList = new ParseSymmetricConfigList(SYM_CONFIG_PATH).parseConfig();
+		return parsedConfigList.stream().map(config -> new SymmetricConfig(config)).collect(Collectors.toList());
+	}
+
+	private static HandshakeIntegrityConfig readIntegrityConfig() throws IOException {
+		var parsedConfig = new ParseHandshakeIntegrityConfig(INTEGRITY_CONFIG_PATH).parseConfig();
+		return new HandshakeIntegrityConfig(parsedConfig);
+	}
+
+	private static KeyPair readKeyPair(AsymmetricConfig config) {
+		var alias = String.format(BOX_ALIAS_MASK, config.authentication, config.keySize);
+		var password = System.getenv(KEYSTORE_PASSWORD_ENV);
+		return KeyStoreTool.keyPairFromKeyStore(KEYSTORE_PATH, alias, password);
+	}
 
 	/**
 	 * Reads the box and ca certificates, and returns a certificate chain object.
 	 */
-	private static CertificateChain readCertificates() throws IOException, CertificateException {
-		var boxCertificate = CertificateTool.certificateFromBytes(Utils.getFileBytes(BOX_CERTIFICATE_PATH));
-		//TODO get cacert from trustore
-		var caCertificate = CertificateTool.certificateFromBytes(Utils.getFileBytes(CA_CERTIFICATE_PATH));
-		return new CertificateChain(new X509Certificate[]{boxCertificate, caCertificate});
+	private static CertificateChain readCertificates(AsymmetricConfig config) throws IOException, CertificateException {
+		var path = String.format(CERTIFICATE_PATH_MASK, config.authentication, config.keySize);
+		var boxCertificate = CertificateTool.certificateFromFile(path);
+
+		var alias = String.format(CA_ALIAS_MASK, config.authentication, config.keySize);
+		var password = System.getenv(TRUSTSTORE_PASSWORD_ENV);
+		var caCertificate = CertificateTool.certificateFromTruststore(TRUSTSTORE_PATH, alias, password);
+		return new CertificateChain(caCertificate, boxCertificate);
 	}
 
 	/**
 	 * Performs the handshake using the RTSS Handshake Class.
 	 */
 	private static CipherConfig performHandshake(InetSocketAddress serverAddress) throws Exception {
-		var certificateChain = readCertificates();
-		// TODO get other stuff to handshake
-		var handshake = new RtssHandshake(certificateChain);
+		var asymConfig = readAsymConfig();
+		var symConfigList = readSymConfigList();
+		var integrityConfig = readIntegrityConfig();
+		var keyPair = readKeyPair(asymConfig);
+		var certificateChain = readCertificates(asymConfig);
+
+		var handshake = new RtssHandshake(certificateChain, asymConfig, symConfigList, keyPair, integrityConfig);
 		handshake.start(serverAddress);
-		// TODO: get cipherconfig from secret
-		return null;
+		return handshake.decidedCipherSuite;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -65,10 +110,9 @@ public class Proxy {
 
 		var inputStream = new FileInputStream(CONFIG_PATH);
 		var properties = new Properties();
+		properties.load(inputStream);
 		var remote = properties.getProperty(PROPERTY_REMOTE);
 		var destinations = properties.getProperty(PROPERTY_DESTINATIONS);
-
-		properties.load(inputStream);
 
 		var inSocketAddress = Utils.parseSocketAddress(remote);
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());

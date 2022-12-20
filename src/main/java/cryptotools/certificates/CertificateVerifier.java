@@ -25,7 +25,7 @@ public class CertificateVerifier {
 		for (TrustManager trustManager : trustManagers) {
 			if (trustManager instanceof X509TrustManager) {
 				((X509TrustManager) trustManager).checkServerTrusted(chain, "RSA"); // TODO: Make authType configurable?
-				return; // TODO: I also don't know if this verifies the certificate itself, probably not.
+				return; //TODO: I also don't know if this verifies the certificate itself, probably not.
 			}
 		}
 		throw new CertificateException("No X509TrustManager found in TrustManagerFactory");

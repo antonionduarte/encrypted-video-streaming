@@ -4,13 +4,14 @@ import com.google.gson.reflect.TypeToken;
 import config.parser.parser_objects.ParsedAsymmetricConfig;
 import config.parser.parser_objects.ParsedSymmetricConfig;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 
 public class ParseSymmetricConfigList extends ParseConfig<List<ParsedSymmetricConfig>> {
 
-	protected ParseSymmetricConfigList(String config) {
-		super(config);
+	public ParseSymmetricConfigList(String jsonConfigPath) throws IOException {
+		super(jsonConfigPath);
 	}
 
 	@Override

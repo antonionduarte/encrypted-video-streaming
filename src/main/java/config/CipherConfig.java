@@ -1,58 +1,62 @@
 package config;
 
 import config.parser.parser_objects.ParsedCipherConfig;
+import utils.Utils;
 
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.SecureRandom;
+import java.util.Optional;
+import java.util.OptionalInt;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CipherConfig {
-	private final String cipher;
-	private final String integrity;
-	private final String integrityCheck;
-	private Key key;
-	private IvParameterSpec iv;
-	private Key mackey;
+	public final String cipher;
+	public Key key;
+	public Optional<IvParameterSpec> iv;
+	public final Optional<String> integrity;
+	public Optional<Key> mackey;
+	public final Optional<byte[]> integrityCheck;
 
 	public CipherConfig(ParsedCipherConfig parsedCipherConfig) {
-		var key = parsedCipherConfig.key();
-		var iv = parsedCipherConfig.iv();
-		var macKey = parsedCipherConfig.macKey();
-
-		if (key != null) {
-			this.key = new SecretKeySpec(key.getBytes(), algFromCipher(parsedCipherConfig.cipher()));
-		}
-		if (iv != null) {
-			this.iv = new IvParameterSpec(iv.getBytes());
-		}
-		if (macKey != null) {
-			this.mackey = new SecretKeySpec(macKey.getBytes(), parsedCipherConfig.integrity());
-		}
-
 		this.cipher = parsedCipherConfig.cipher();
-		this.integrity = parsedCipherConfig.integrity();
-		this.integrityCheck = parsedCipherConfig.integrityCheck();
+		this.key = new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.key()), algFromCipher(cipher));
+		this.integrity = parsedCipherConfig.integrity() == null ? Optional.empty() :
+				Optional.of(parsedCipherConfig.integrity());
+		this.mackey = parsedCipherConfig.macKey() == null ? Optional.empty() :
+				Optional.of(new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.macKey()), this.integrity.get()));
+		this.integrityCheck = parsedCipherConfig.integrityCheck() == null ? Optional.empty() :
+				Optional.of(Utils.hexToBytes(parsedCipherConfig.integrityCheck()));
 	}
 
-	public CipherConfig(byte[] secret, SymmetricConfig symmetricConfig) {
+	public CipherConfig(SymmetricConfig symmetricConfig, byte[] secret) {
 		var random = new SecureRandom(secret);
-		var bytes = genBytes(random, symmetricConfig.getKeySize());
 
-		this.cipher = symmetricConfig.getCipher();
-		this.integrity = symmetricConfig.getIntegrity();
+		this.cipher = symmetricConfig.cipher;
+
+		var bytes = genBytes(random, symmetricConfig.keySize);
 		this.key = new SecretKeySpec(bytes, algFromCipher(cipher));
 
-		if (symmetricConfig.getIvSize() > 0) {
-			bytes = genBytes(random, symmetricConfig.getIvSize());
-			this.iv = new IvParameterSpec(bytes);
-		}
-		if (symmetricConfig.getMacKeySize() > 0) {
-			bytes = genBytes(random, symmetricConfig.getMacKeySize());
-			this.mackey = new SecretKeySpec(bytes, integrity);
+		if (symmetricConfig.ivSize > 0) {
+			bytes = genBytes(random, symmetricConfig.ivSize);
+			this.iv = Optional.of(new IvParameterSpec(bytes));
+		} else
+			this.iv = Optional.empty();
+
+		if (symmetricConfig.integrity.isPresent()) {
+			this.integrity = symmetricConfig.integrity;
+			if (symmetricConfig.macKeySize > 0) {
+				bytes = genBytes(random, symmetricConfig.macKeySize);
+				this.mackey = Optional.of(new SecretKeySpec(bytes, integrity.get()));
+			} else
+				this.mackey = Optional.empty();
+		} else {
+			this.integrity = Optional.empty();
+			this.mackey = Optional.empty();
 		}
 
-		this.integrityCheck = null;
+		this.integrityCheck = Optional.empty();
 	}
 
 	private static String algFromCipher(String cipher) {
@@ -63,29 +67,5 @@ public class CipherConfig {
 		var bytes = new byte[size];
 		random.nextBytes(bytes);
 		return bytes;
-	}
-
-	public String getCipher() {
-		return cipher;
-	}
-
-	public Key getKey() {
-		return key;
-	}
-
-	public IvParameterSpec getIv() {
-		return iv;
-	}
-
-	public String getIntegrity() {
-		return integrity;
-	}
-
-	public String getIntegrityCheck() {
-		return integrityCheck;
-	}
-
-	public Key getMackey() {
-		return mackey;
 	}
 }

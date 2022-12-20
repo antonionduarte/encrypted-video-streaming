@@ -4,8 +4,6 @@ import config.AsymmetricConfig;
 
 import java.security.*;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 
 public class SignaturesTool {
 	/**
@@ -29,7 +27,7 @@ public class SignaturesTool {
 	 */
 	public static byte[] createSignature(AsymmetricConfig config, PrivateKey key, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		// Create a Signature object and initialize it with the private key
-		Signature sig = Signature.getInstance("SHA256with" + config.authAlg());
+		Signature sig = Signature.getInstance("SHA256with" + config.authentication);
 
 		sig.initSign(key);
 
