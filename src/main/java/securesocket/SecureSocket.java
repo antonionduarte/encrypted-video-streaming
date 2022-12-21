@@ -3,6 +3,7 @@ package securesocket;
 import cryptotools.encryption.EncryptionTool;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.integrity.IntegrityTool;
+import cryptotools.repetition.exceptions.RepeatedMessageException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -18,6 +19,7 @@ import java.net.SocketException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,11 +37,12 @@ public class SecureSocket implements Closeable {
 		datagramSocket.send(secureDatagramPacket.toDatagramPacket());
 	}
 
-	public void receive(byte[] buffer, SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+	public void receive(byte[] buffer, SecureDatagramPacket secureDatagramPacket) throws IOException, IntegrityException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, RepeatedMessageException {
 		var inPacket = new DatagramPacket(buffer, buffer.length);
 		datagramSocket.receive(inPacket);
 
-		var plainText = secureDatagramPacket.getProtocol().decrypt(inPacket.getData(), inPacket.getLength());
+		var cipherText = Arrays.copyOfRange(inPacket.getData(), 0, inPacket.getLength());
+		var plainText = secureDatagramPacket.getProtocol().decrypt(cipherText);
 
 		secureDatagramPacket.setData(plainText);
 	}

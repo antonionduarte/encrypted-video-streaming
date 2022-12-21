@@ -19,16 +19,12 @@ import java.security.NoSuchAlgorithmException;
 // msg: E(k, X) || H(X)
 public class HashConstruction extends Construction {
 
-    protected HashConstruction(CipherConfig cipherConfig, byte[] plainText) {
-        super(cipherConfig, plainText);
-    }
-
-    protected HashConstruction(CipherConfig cipherConfig) {
+    public HashConstruction(CipherConfig cipherConfig) {
         super(cipherConfig);
     }
 
     @Override
-    protected byte[] encrypt() throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    public byte[] encrypt(byte[] plainText) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         // Convert the nonce to a byte array
         int nonce = NonceProcessor.getInstance().generateNonce();
         byte[] nonceBytes = ByteBuffer.allocate(4).putInt(nonce).array();
@@ -46,14 +42,38 @@ public class HashConstruction extends Construction {
         byte[] ciphertext = EncryptionTool.encrypt(cipherConfig, data);
 
         // Concatenate the ciphertext and the hash
-        buffer = ByteBuffer.allocate(ciphertext.length + hash.length);
+        buffer = ByteBuffer.allocate(ciphertext.length + hash.length + 4);
+
+        buffer.putInt(ciphertext.length);
         buffer.put(ciphertext);
         buffer.put(hash);
         return buffer.array();
     }
 
     @Override
-    protected void decrypt(byte[] cipherText) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IntegrityException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, RepeatedMessageException {
+    public byte[] decrypt(byte[] cipherText) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IntegrityException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, RepeatedMessageException {
+        // public the encoded data into the ciphertext and the hash
+        ByteBuffer buffer = ByteBuffer.wrap(cipherText);
+        byte[] ciphertext = new byte[buffer.getInt()];
+        buffer.get(ciphertext);
 
+        byte[] hash = new byte[buffer.remaining()];
+        buffer.get(hash);
+
+        // Decrypt the ciphertext
+        byte[] data = EncryptionTool.decrypt(cipherConfig, ciphertext);
+
+        // Check the hash of the decrypted data
+        IntegrityTool.checkIntegrity(cipherConfig, data, hash);
+
+        // Split the decrypted data into the nonce and message
+        buffer = ByteBuffer.wrap(data);
+
+        int nonce = buffer.getInt();
+        NonceProcessor.getInstance().receiveNonce(nonce);
+
+        var plainText = new byte[buffer.remaining()];
+        buffer.get(plainText);
+        return plainText;
     }
 }
