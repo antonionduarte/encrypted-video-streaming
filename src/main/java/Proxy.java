@@ -36,18 +36,18 @@ public class Proxy {
 	private static final String PROPERTY_REMOTE = "remote";
 	private static final String PROPERTY_DESTINATIONS = "localdelivery";
 
-	private static final String CONFIG_PATH = "config/box/config.properties";
-	private static final String ASYM_CONFIG_PATH = "config/box/asymmetric-config.json";
-	private static final String SYM_CONFIG_PATH = "config/box/symmetric-config.json";
+	private static final String CONFIG_PATH = "config/proxy/config.properties";
+	private static final String ASYM_CONFIG_PATH = "config/proxy/asymmetric-config.json";
+	private static final String SYM_CONFIG_PATH = "config/proxy/symmetric-config.json";
 	private static final String INTEGRITY_CONFIG_PATH = "config/common/handshake-integrity.json";
 
-	private static final String KEYSTORE_PASSWORD_ENV = "box_password";
+	private static final String KEYSTORE_PASSWORD_ENV = "proxy_password";
 	private static final String TRUSTSTORE_PASSWORD_ENV = "truststore_password";
 
-	private static final String BOX_ALIAS_MASK = "box_%s_%d";
+	private static final String PROXY_ALIAS_MASK = "proxy_%s_%d";
 
-	private static final String CERTIFICATE_PATH_MASK = "certs/box/box_%s_%d.cer";
-	private static final String KEYSTORE_PATH = "certs/box/box.pkcs12";
+	private static final String CERTIFICATE_PATH_MASK = "certs/proxy/proxy_%s_%d.cer";
+	private static final String KEYSTORE_PATH = "certs/proxy/proxy.pkcs12";
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
 
 
@@ -68,21 +68,21 @@ public class Proxy {
 	}
 
 	private static KeyPair readKeyPair(AsymmetricConfig config) {
-		var alias = String.format(BOX_ALIAS_MASK, config.getAuthentication(), config.getKeySize());
+		var alias = String.format(PROXY_ALIAS_MASK, config.getAuthentication(), config.getKeySize());
 		var password = System.getenv(KEYSTORE_PASSWORD_ENV);
 		return KeyStoreTool.keyPairFromKeyStore(KEYSTORE_PATH, alias, password);
 	}
 
 	/**
-	 * Reads the box and ca certificates, and returns a certificate certificates object.
+	 * Reads the proxy and ca certificates, and returns a certificate certificates object.
 	 */
 	private static CertificateChain readCertificates(AsymmetricConfig config, KeyStore trustStore) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
 		var path = String.format(CERTIFICATE_PATH_MASK, config.getAuthentication(), config.getKeySize());
-		var boxCertificate = CertificateTool.certificateFromFile(path);
+		var proxyCertificate = CertificateTool.certificateFromFile(path);
 
-		var alias = boxCertificate.getIssuerX500Principal().getName();
+		var alias = proxyCertificate.getIssuerX500Principal().getName();
 		var caCertificate = CertificateTool.certificateFromTruststore(trustStore, alias);
-		return new CertificateChain(boxCertificate, caCertificate);
+		return new CertificateChain(proxyCertificate, caCertificate);
 	}
 
 	/**

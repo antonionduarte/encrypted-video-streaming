@@ -29,7 +29,7 @@ import java.util.Map;
 public class StreamServer {
 	private static final String CIPHER_CONFIG_ENV = "CRYPTO_CONFIG_KEY";
 	private static final String CIPHER_CONFIG_PATH = "movies/ciphered/cryptoconfig.json.enc";
-	private static final String STREAM_CIPHER_CONFIG = "config/box-cryptoconfig.json";
+	private static final String STREAM_CIPHER_CONFIG = "config/proxy-cryptoconfig.json";
 
 	private final InetSocketAddress serverAddress;
 	private final String movie;

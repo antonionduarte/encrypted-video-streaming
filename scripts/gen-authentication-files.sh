@@ -5,12 +5,12 @@
 
 # change here to your own values
 export ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-export box_password="aaaaaaaabbbbbbbbccccccccdddddddd"
+export proxy_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 export server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 export truststore_password="aaaaaaaabbbbbbbbccccccccdddddddd"
 
 config_folder="certs/"
-box_config_folder=$config_folder"box/"
+proxy_config_folder=$config_folder"proxy/"
 server_config_folder=$config_folder"server/"
 ca_config_folder=$config_folder"ca/"
 common_config_folder=$config_folder"common/"
@@ -18,27 +18,27 @@ certs_folder="certs/"
 csr_folder="cert_requests/"
 
 mkdir $config_folder &> /dev/null
-mkdir $box_config_folder &> /dev/null
+mkdir $proxy_config_folder &> /dev/null
 mkdir $server_config_folder &> /dev/null
 mkdir $ca_config_folder &> /dev/null
 mkdir $ca_config_folder$certs_folder &> /dev/null
 mkdir $common_config_folder &> /dev/null
-mkdir $box_config_folder$certs_folder &> /dev/null
+mkdir $proxy_config_folder$certs_folder &> /dev/null
 mkdir $server_config_folder$certs_folder &> /dev/null
 mkdir $common_config_folder &> /dev/null
-mkdir $box_config_folder$csr_folder &> /dev/null
+mkdir $proxy_config_folder$csr_folder &> /dev/null
 mkdir $server_config_folder$csr_folder &> /dev/null
 
 alg=$(echo $1 | tr 'a-z' 'A-Z')
 key_size=$2
 ca_alias="ca_"$alg"_"$key_size
-box_alias="box_"$alg"_"$key_size
+proxy_alias="proxy_"$alg"_"$key_size
 server_alias="server_"$alg"_"$key_size
 ca_ks=$ca_config_folder"ca.pkcs12"
 ca_cert=$ca_config_folder$certs_folder$ca_alias".cer"
-box_ks=$box_config_folder"box.pkcs12"
-box_cert=$box_config_folder$certs_folder$box_alias".cer"
-box_csr=$box_config_folder$csr_folder$box_alias".csr"
+proxy_ks=$proxy_config_folder"proxy.pkcs12"
+proxy_cert=$proxy_config_folder$certs_folder$proxy_alias".cer"
+proxy_csr=$proxy_config_folder$csr_folder$proxy_alias".csr"
 server_ks=$server_config_folder"server.pkcs12"
 server_cert=$server_config_folder$certs_folder$server_alias".cer"
 server_csr=$server_config_folder$csr_folder$server_alias".csr"
@@ -74,13 +74,13 @@ keytool -import -noprompt \
 
 # Then, generate a key pair where the certificate of it will be signed by the CA above.
 keytool -genkeypair -noprompt \
-  -dname "CN=Box" \
+  -dname "CN=Proxy" \
   -keysize $key_size \
   -keyalg $alg \
   -storetype PKCS12 \
-  -alias $box_alias \
-  -keystore $box_ks \
-  -storepass $box_password
+  -alias $proxy_alias \
+  -keystore $proxy_ks \
+  -storepass $proxy_password
 keytool -genkeypair -noprompt \
   -dname "CN=Server" \
   -keysize $key_size \
@@ -92,11 +92,11 @@ keytool -genkeypair -noprompt \
 
 # Next, a certificate request for the "CN=Leaf" certificate needs to be created.
 keytool -certreq -noprompt \
-  -keystore $box_ks \
-  -storepass $box_password \
+  -keystore $proxy_ks \
+  -storepass $proxy_password \
   -storetype PKCS12 \
-  -alias $box_alias \
-  -file $box_csr
+  -alias $proxy_alias \
+  -file $proxy_csr
 keytool -certreq -noprompt \
   -keystore $server_ks \
   -storepass $server_password \
@@ -111,8 +111,8 @@ keytool -gencert -noprompt \
   -storepass $ca_password \
   -storetype PKCS12 \
   -alias $ca_alias \
-  -infile $box_csr \
-  -outfile $box_cert
+  -infile $proxy_csr \
+  -outfile $proxy_cert
 keytool -gencert -noprompt \
   -keystore $ca_ks \
   -storepass $ca_password \
@@ -123,7 +123,7 @@ keytool -gencert -noprompt \
 
 # An output certificate file leaf.cer will be created. Now let's see what its content is.
 keytool -printcert -file $ca_cert
-keytool -printcert -file $box_cert
+keytool -printcert -file $proxy_cert
 keytool -printcert -file $server_cert
 
 # list truststore
