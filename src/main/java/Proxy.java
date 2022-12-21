@@ -7,6 +7,7 @@ import config.parser.ParseHandshakeIntegrityConfig;
 import config.parser.ParseSymmetricConfigList;
 import cryptotools.certificates.CertificateChain;
 import cryptotools.certificates.CertificateTool;
+import cryptotools.certificates.CertificateVerifier;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.keystore.KeyStoreTool;
 import handshake.RtssHandshake;
@@ -24,8 +25,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.security.KeyPair;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +44,6 @@ public class Proxy {
 	private static final String KEYSTORE_PASSWORD_ENV = "box_password";
 	private static final String TRUSTSTORE_PASSWORD_ENV = "truststore_password";
 
-	private static final String CA_ALIAS_MASK = "ca_%s_%d";
 	private static final String BOX_ALIAS_MASK = "box_%s_%d";
 
 	private static final String CERTIFICATE_PATH_MASK = "certs/box/box_%s_%d.cer";
@@ -75,16 +74,15 @@ public class Proxy {
 	}
 
 	/**
-	 * Reads the box and ca certificates, and returns a certificate chain object.
+	 * Reads the box and ca certificates, and returns a certificate certificates object.
 	 */
-	private static CertificateChain readCertificates(AsymmetricConfig config) throws IOException, CertificateException {
+	private static CertificateChain readCertificates(AsymmetricConfig config, KeyStore trustStore) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
 		var path = String.format(CERTIFICATE_PATH_MASK, config.authentication, config.keySize);
 		var boxCertificate = CertificateTool.certificateFromFile(path);
 
-		var alias = String.format(CA_ALIAS_MASK, config.authentication, config.keySize);
-		var password = System.getenv(TRUSTSTORE_PASSWORD_ENV);
-		var caCertificate = CertificateTool.certificateFromTruststore(TRUSTSTORE_PATH, alias, password);
-		return new CertificateChain(caCertificate, boxCertificate);
+		var alias = boxCertificate.getIssuerX500Principal().getName();
+		var caCertificate = CertificateTool.certificateFromTruststore(trustStore, alias);
+		return new CertificateChain(boxCertificate, caCertificate);
 	}
 
 	/**
@@ -95,9 +93,11 @@ public class Proxy {
 		var symConfigList = readSymConfigList();
 		var integrityConfig = readIntegrityConfig();
 		var keyPair = readKeyPair(asymConfig);
-		var certificateChain = readCertificates(asymConfig);
+		var trustStore = KeyStoreTool.getTrustStore(TRUSTSTORE_PATH, System.getenv(TRUSTSTORE_PASSWORD_ENV));
+		var certificateChain = readCertificates(asymConfig, trustStore);
+		var certVerifier = new CertificateVerifier(trustStore);
 
-		var handshake = new RtssHandshake(certificateChain, asymConfig, symConfigList, keyPair, integrityConfig);
+		var handshake = new RtssHandshake(certificateChain, asymConfig, symConfigList, keyPair, integrityConfig, certVerifier);
 		handshake.start(serverAddress);
 		return handshake.decidedCipherSuite;
 	}

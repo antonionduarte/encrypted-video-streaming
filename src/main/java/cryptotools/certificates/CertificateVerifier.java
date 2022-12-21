@@ -1,16 +1,20 @@
 package cryptotools.certificates;
 
+import config.AsymmetricConfig;
+
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 
 public class CertificateVerifier {
-	private static final String TRUSTSTORE_TYPE = "PKCS12";
 
 	private final KeyStore trustStore;
 
@@ -18,16 +22,36 @@ public class CertificateVerifier {
 		this.trustStore = trustStore;
 	}
 
-	public void verify(X509Certificate[] chain) throws CertificateException, NoSuchAlgorithmException, KeyStoreException {
-		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TRUSTSTORE_TYPE);
-		trustManagerFactory.init(trustStore);
-		TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-		for (TrustManager trustManager : trustManagers) {
-			if (trustManager instanceof X509TrustManager) {
-				((X509TrustManager) trustManager).checkServerTrusted(chain, "RSA"); // TODO: Make authType configurable?
-				return; // TODO: I also don't know if this verifies the certificate itself, probably not.
-			}
+	/**
+	 * Verify the validity of a certificate chain
+	 *
+	 * @param chain certificate chain to verify
+	 * @throws CertificateException
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyStoreException
+	 */
+	public void verifyCertificateChain(CertificateChain chain) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, CertPathValidatorException, InvalidAlgorithmParameterException {
+		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+		CertPath certPath = certificateFactory.generateCertPath(Arrays.asList(chain.certificates()));
+		PKIXParameters params = new PKIXParameters(trustStore);
+		params.setRevocationEnabled(true);
+		CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
+
+		certPathValidator.validate(certPath, params);
+		checkRootCertificate(chain.rootCertificate());
+		checkDateValidity(chain);
+	}
+
+	private void checkRootCertificate(X509Certificate rootCertificate) throws KeyStoreException, CertificateException {
+		String rootAlias = trustStore.getCertificateAlias(rootCertificate);
+		if (rootAlias == null) {
+			throw new CertificateException("Root certificate is not trusted");
 		}
-		throw new CertificateException("No X509TrustManager found in TrustManagerFactory");
+	}
+	private void checkDateValidity(CertificateChain chain) throws CertificateNotYetValidException, CertificateExpiredException {
+		Date currentDate = new Date();
+		for (X509Certificate certificate : chain.certificates()) {
+			certificate.checkValidity(currentDate);
+		}
 	}
 }

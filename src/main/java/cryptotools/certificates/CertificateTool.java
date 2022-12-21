@@ -13,6 +13,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 public class CertificateTool {
+
 	/**
 	 * Gets a certificate from a file.
 	 */
@@ -25,16 +26,10 @@ public class CertificateTool {
 	/**
 	 * Gets a certificate from a truststore.
 	 */
-	public static X509Certificate certificateFromTruststore(String truststorePath, String alias, String password)
-			throws CertificateException, IOException {
-		// Load the truststore file
-		var truststoreInputStream = new FileInputStream(truststorePath);
+	public static X509Certificate certificateFromTruststore(KeyStore trustStore, String alias) {
 		try {
-			var truststore = KeyStore.getInstance(KeyStore.getDefaultType());
-			truststore.load(truststoreInputStream, password.toCharArray());
-
-			return (X509Certificate) truststore.getCertificate(alias);
-		} catch (NoSuchAlgorithmException | KeyStoreException ex) {
+			return (X509Certificate) trustStore.getCertificate(alias);
+		} catch (KeyStoreException ex) {
 			throw new RuntimeException(ex);
 		}
 	}

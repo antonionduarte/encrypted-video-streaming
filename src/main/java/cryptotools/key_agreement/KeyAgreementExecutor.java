@@ -3,15 +3,15 @@ package cryptotools.key_agreement;
 import config.AsymmetricConfig;
 
 import javax.crypto.KeyAgreement;
+import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
-import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Optional;
 
 public class KeyAgreementExecutor {
-	private static final String HASH_DIGEST = "SHA256";
+	private static final String DIGEST_ALG = "SHA1";
 	private final KeyAgreement keyAgreement;
 	private final KeyPair numPair;
 
@@ -32,22 +32,42 @@ public class KeyAgreementExecutor {
 		}
 	}
 
+	public Key getPublicNum() {
+		return numPair.getPublic();
+	}
+
+	/**
+	 * Generates a secret key using the specified algorithm.
+	 *
+	 * @param publicKey The public key of the other node.
+	 * @return The secret value.
+	 */
+	public byte[] generateSecret(PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
+		keyAgreement.doPhase(publicKey, true);
+
+		var hash = MessageDigest.getInstance(DIGEST_ALG);
+		return hash.digest(keyAgreement.generateSecret());
+	}
+
 	private static KeyPair generateNumPair(AsymmetricConfig config) {
 		try {
 			var keyPairGenerator = KeyPairGenerator.getInstance(config.keyExchange);
 			if (config.G.isPresent() && config.p.isPresent()) {
 				var paramSpec = new DHParameterSpec(config.p.get(), config.G.get());
 				keyPairGenerator.initialize(paramSpec);
+				return keyPairGenerator.generateKeyPair();
 			} else {
 				keyPairGenerator.initialize(config.numSize);
-				//TODO get G and p from initialized keyPairGenerator
-				BigInteger G = null;
-				BigInteger p = null;
+				var keyPair = keyPairGenerator.generateKeyPair();
+				// Get the public key
+				var publicKey = (DHPublicKey) keyPair.getPublic();
+				// Get the DHParameterSpec object from the public key
+				var dhParamSpec = publicKey.getParams();
+				config.G = Optional.of(dhParamSpec.getG());
+				config.p = Optional.of(dhParamSpec.getP());
 
-				config.G = Optional.of(G);
-				config.p = Optional.of(p);
+				return keyPair;
 			}
-			return keyPairGenerator.generateKeyPair();
 		} catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -62,21 +82,5 @@ public class KeyAgreementExecutor {
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public Key getPublicNum() {
-		return numPair.getPublic();
-	}
-
-	/**
-	 * Generates a secret key using the specified algorithm.
-	 *
-	 * @param publicKey The public key of the other node.
-	 * @return The secret value.
-	 */
-	public byte[] generateSecret(PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
-		var hash = MessageDigest.getInstance(HASH_DIGEST);
-		keyAgreement.doPhase(publicKey, true);
-		return hash.digest(keyAgreement.generateSecret());
 	}
 }
