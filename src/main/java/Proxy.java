@@ -89,15 +89,15 @@ public class Proxy {
 	 * Performs the handshake using the RTSS Handshake Class.
 	 */
 	private static CipherConfig performHandshake(InetSocketAddress serverAddress) throws Exception {
-		var asymConfig = readAsymConfig();
-		var symConfigList = readSymConfigList();
+		var asymmetricConfig = readAsymConfig();
+		var symmetricConfigList = readSymConfigList();
 		var integrityConfig = readIntegrityConfig();
-		var keyPair = readKeyPair(asymConfig);
+		var keyPair = readKeyPair(asymmetricConfig);
 		var trustStore = KeyStoreTool.getTrustStore(TRUSTSTORE_PATH, System.getenv(TRUSTSTORE_PASSWORD_ENV));
-		var certificateChain = readCertificates(asymConfig, trustStore);
-		var certVerifier = new CertificateVerifier(trustStore);
+		var certificateChain = readCertificates(asymmetricConfig, trustStore);
+		var certificateVerifier = new CertificateVerifier(trustStore);
 
-		var handshake = new RtssHandshake(certificateChain, asymConfig, symConfigList, keyPair, integrityConfig, certVerifier);
+		var handshake = new RtssHandshake(certificateChain, asymmetricConfig, symmetricConfigList, keyPair, integrityConfig, certificateVerifier);
 		handshake.start(serverAddress);
 		return handshake.decidedCipherSuite;
 	}
@@ -109,7 +109,9 @@ public class Proxy {
 
 		var inputStream = new FileInputStream(CONFIG_PATH);
 		var properties = new Properties();
+
 		properties.load(inputStream);
+
 		var remote = properties.getProperty(PROPERTY_REMOTE);
 		var destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 

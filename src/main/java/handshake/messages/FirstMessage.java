@@ -18,7 +18,7 @@ public class FirstMessage implements Message {
 	public final byte[] signature;
 
 	public FirstMessage(AsymmetricConfig asymConfig, List<SymmetricConfig> symConfigList, CertificateChain certChain,
-						byte[] signature) {
+	                    byte[] signature) {
 		this.asymConfig = asymConfig;
 		this.symConfigList = symConfigList;
 		this.certChain = certChain;
@@ -27,8 +27,9 @@ public class FirstMessage implements Message {
 
 	public static FirstMessage decode(String macAlg, Key macKey, byte[] bytes) throws IntegrityException, IOException {
 		// integrity check
-		if (Message.checkMsgBytesIntegrity(macAlg, macKey, bytes))
+		if (Message.checkMsgBytesIntegrity(macAlg, macKey, bytes)) {
 			throw new IntegrityException();
+		}
 
 		var dis = new DataInputStream(new ByteArrayInputStream(bytes));
 		//skip integrity

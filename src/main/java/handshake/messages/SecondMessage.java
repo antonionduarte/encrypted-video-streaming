@@ -21,8 +21,9 @@ public class SecondMessage implements Message {
 
 	public static SecondMessage decode(String macAlg, Key macKey, byte[] bytes) throws IOException, IntegrityException {
 		// integrity check
-		if (Message.checkMsgBytesIntegrity(macAlg, macKey, bytes))
+		if (Message.checkMsgBytesIntegrity(macAlg, macKey, bytes)) {
 			throw new IntegrityException();
+		}
 
 		var dis = new DataInputStream(new ByteArrayInputStream(bytes));
 		//skip integrity

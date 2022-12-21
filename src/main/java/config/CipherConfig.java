@@ -37,14 +37,18 @@ public class CipherConfig {
 		if (symmetricConfig.ivSize > 0) {
 			bytes = genBytes(random, symmetricConfig.ivSize);
 			this.iv = Optional.of(new IvParameterSpec(bytes));
-		} else this.iv = Optional.empty();
+		} else {
+			this.iv = Optional.empty();
+		}
 
 		if (symmetricConfig.integrity.isPresent()) {
 			this.integrity = symmetricConfig.integrity;
 			if (symmetricConfig.macKeySize > 0) {
 				bytes = genBytes(random, symmetricConfig.macKeySize);
 				this.macKey = Optional.of(new SecretKeySpec(bytes, integrity.get()));
-			} else this.macKey = Optional.empty();
+			} else {
+				this.macKey = Optional.empty();
+			}
 		} else {
 			this.integrity = Optional.empty();
 			this.macKey = Optional.empty();

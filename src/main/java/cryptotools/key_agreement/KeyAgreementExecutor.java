@@ -32,23 +32,6 @@ public class KeyAgreementExecutor {
 		}
 	}
 
-	public Key getPublicNum() {
-		return numPair.getPublic();
-	}
-
-	/**
-	 * Generates a secret key using the specified algorithm.
-	 *
-	 * @param publicKey The public key of the other node.
-	 * @return The secret value.
-	 */
-	public byte[] generateSecret(PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
-		keyAgreement.doPhase(publicKey, true);
-
-		var hash = MessageDigest.getInstance(DIGEST_ALG);
-		return hash.digest(keyAgreement.generateSecret());
-	}
-
 	private static KeyPair generateNumPair(AsymmetricConfig config) {
 		try {
 			var keyPairGenerator = KeyPairGenerator.getInstance(config.keyExchange);
@@ -82,5 +65,22 @@ public class KeyAgreementExecutor {
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public Key getPublicNum() {
+		return numPair.getPublic();
+	}
+
+	/**
+	 * Generates a secret key using the specified algorithm.
+	 *
+	 * @param publicKey The public key of the other node.
+	 * @return The secret value.
+	 */
+	public byte[] generateSecret(PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
+		keyAgreement.doPhase(publicKey, true);
+
+		var hash = MessageDigest.getInstance(DIGEST_ALG);
+		return hash.digest(keyAgreement.generateSecret());
 	}
 }

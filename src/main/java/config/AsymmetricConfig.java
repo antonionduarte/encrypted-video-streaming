@@ -9,12 +9,12 @@ import java.util.Optional;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class AsymmetricConfig {
 
-	public final String authentication;
-	public final int keySize;
-	public final String keyExchange;
-	public final int numSize;
-	public Optional<BigInteger> G;
-	public Optional<BigInteger> p;
+	private final String authentication;
+	private final int keySize;
+	private final String keyExchange;
+	private final int numSize;
+	private Optional<BigInteger> G;
+	private Optional<BigInteger> p;
 
 
 	public AsymmetricConfig(String authentication, int keySize, String keyExchange, int numSize, BigInteger G, BigInteger p) {
@@ -60,8 +60,9 @@ public class AsymmetricConfig {
 			var G = new BigInteger(dataInputStream.readNBytes(dataInputStream.readInt()));
 			var p = new BigInteger(dataInputStream.readAllBytes());
 			return new AsymmetricConfig(authentication, keySize, keyExchange, numSize, G, p);
-		} else
+		} else {
 			return new AsymmetricConfig(authentication, keySize, keyExchange, numSize);
+		}
 	}
 
 	public byte[] toBytes() throws IOException {
@@ -77,8 +78,9 @@ public class AsymmetricConfig {
 			dataOutputStream.write(gBytes.length);
 			dataOutputStream.write(gBytes);
 		}
-		if (p.isPresent())
+		if (p.isPresent()) {
 			dataOutputStream.write(p.get().toByteArray());
+		}
 
 		return byteArrayOutputStream.toByteArray();
 	}

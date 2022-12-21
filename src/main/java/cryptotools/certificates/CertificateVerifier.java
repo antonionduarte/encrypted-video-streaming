@@ -1,17 +1,11 @@
 package cryptotools.certificates;
 
-import config.AsymmetricConfig;
-
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.*;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 public class CertificateVerifier {
@@ -48,6 +42,7 @@ public class CertificateVerifier {
 			throw new CertificateException("Root certificate is not trusted");
 		}
 	}
+
 	private void checkDateValidity(CertificateChain chain) throws CertificateNotYetValidException, CertificateExpiredException {
 		Date currentDate = new Date();
 		for (X509Certificate certificate : chain.certificates()) {

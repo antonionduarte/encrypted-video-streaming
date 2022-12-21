@@ -65,10 +65,14 @@ public class SymmetricConfig {
 
 		if (integrity.isPresent()) {
 			dataOutputStream.writeUTF(integrity.get());
-			if (macKeySize == 0) dataOutputStream.writeInt(macKeySize);
+			if (macKeySize == 0) {
+				dataOutputStream.writeInt(macKeySize);
+			}
 		}
 
-		if (ivSize == 0) dataOutputStream.writeInt(ivSize);
+		if (ivSize == 0) {
+			dataOutputStream.writeInt(ivSize);
+		}
 
 		return byteArrayOutputStream.toByteArray();
 	}

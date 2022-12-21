@@ -22,8 +22,8 @@ import java.util.List;
 
 public class RtssHandshake {
 	private final CertificateChain certificateChain;
-	private final AsymmetricConfig asymConfig;
-	private final List<SymmetricConfig> symConfigList;
+	private final AsymmetricConfig asymmetricConfig;
+	private final List<SymmetricConfig> symmetricConfigList;
 	private final KeyPair authenticationKeys;
 	private final HandshakeIntegrityConfig integrityConfig;
 	private final CertificateVerifier certVerifier;
@@ -31,17 +31,16 @@ public class RtssHandshake {
 
 	public CipherConfig decidedCipherSuite;
 
-	public RtssHandshake(CertificateChain certificateChain, AsymmetricConfig asymConfig,
-						 List<SymmetricConfig> symConfigList, KeyPair authenticationKeys,
-						 HandshakeIntegrityConfig integrityConfig, CertificateVerifier certVerifier) {
+	public RtssHandshake(CertificateChain certificateChain, AsymmetricConfig asymmetricConfig,
+	                     List<SymmetricConfig> symmetricConfigList, KeyPair authenticationKeys,
+	                     HandshakeIntegrityConfig integrityConfig, CertificateVerifier certVerifier) {
 		this.certificateChain = certificateChain;
-		this.asymConfig = asymConfig;
-		this.symConfigList = symConfigList;
+		this.asymmetricConfig = asymmetricConfig;
+		this.symmetricConfigList = symmetricConfigList;
 		this.authenticationKeys = authenticationKeys;
 		this.integrityConfig = integrityConfig;
 		this.certVerifier = certVerifier;
-
-		this.keyAgreementExecutor = new KeyAgreementExecutor(asymConfig);
+		this.keyAgreementExecutor = new KeyAgreementExecutor(asymmetricConfig);
 	}
 
 	/**
@@ -53,11 +52,14 @@ public class RtssHandshake {
 	public void start(InetSocketAddress targetAddress) throws AuthenticationException, IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
 		var socket = new TCPSocket();
 		socket.connect(targetAddress);
+
 		byte[] signature = SignaturesTool.createSignature(
-				asymConfig,
+				asymmetricConfig,
 				authenticationKeys.getPrivate(),
-				keyAgreementExecutor.getPublicNum().getEncoded());
-		var firstMessage = new FirstMessage(asymConfig, symConfigList, certificateChain, signature);
+				keyAgreementExecutor.getPublicNum().getEncoded()
+		);
+
+		var firstMessage = new FirstMessage(asymmetricConfig, symmetricConfigList, certificateChain, signature);
 		socket.sendMessage(firstMessage.encode(integrityConfig.algorithm, integrityConfig.macKey));
 		waitServer();
 	}
@@ -68,8 +70,7 @@ public class RtssHandshake {
 	 * @param port to listen
 	 * @return InetSocketAddress of connecting client
 	 */
-	public InetSocketAddress waitClientConnection(int port)
-			throws IntegrityException, IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, KeyStoreException {
+	public InetSocketAddress waitClientConnection(int port) throws IntegrityException, IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, KeyStoreException {
 		var socket = new TCPSocket();
 		var clientSocket = socket.waitConnection(port);
 		var firstMessageBytes = socket.waitMessage();
