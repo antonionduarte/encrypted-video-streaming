@@ -11,12 +11,11 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
 public record FirstMessage(AsymmetricConfig asymConfig, List<SymmetricConfig> symConfigList, CertificateChain certChain,
-						   byte[] pubNumBytes, byte[] signature) implements Message {
+                           byte[] pubNumBytes, byte[] signature) implements Message {
 
 	public static FirstMessage deserialize(String macAlg, Key macKey, byte[] bytes) throws IntegrityException, IOException, RepeatedMessageException, NoSuchAlgorithmException, InvalidKeyException {
 		// integrity check
@@ -57,35 +56,35 @@ public record FirstMessage(AsymmetricConfig asymConfig, List<SymmetricConfig> sy
 
 	@Override
 	public byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
-		var baos = new ByteArrayOutputStream();
-		var dos = new DataOutputStream(baos);
+		var byteArrayOutputStream = new ByteArrayOutputStream();
+		var dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
 		// Write the nonce
-		dos.writeInt(NonceProcessor.getInstance().generateNonce());
+		dataOutputStream.writeInt(NonceProcessor.getInstance().generateNonce());
 
 		// Write the AsymmetricConfig
-		dos.writeInt(asymConfig.serialize().length);
-		dos.write(asymConfig.serialize());
+		dataOutputStream.writeInt(asymConfig.serialize().length);
+		dataOutputStream.write(asymConfig.serialize());
 
 		// Write the List<SymmetricConfig>
-		dos.writeInt(symConfigList.size());
+		dataOutputStream.writeInt(symConfigList.size());
 		for (SymmetricConfig symConfig : symConfigList) {
-			dos.writeInt(symConfig.serialize().length);
-			dos.write(symConfig.serialize());
+			dataOutputStream.writeInt(symConfig.serialize().length);
+			dataOutputStream.write(symConfig.serialize());
 		}
 
 		// Write the CertificateChain
 		var certChainBytes = certChain.serialize();
-		dos.writeInt(certChainBytes.length);
-		dos.write(certChainBytes);
+		dataOutputStream.writeInt(certChainBytes.length);
+		dataOutputStream.write(certChainBytes);
 
 		// Write the pubNum
-		dos.writeInt(pubNumBytes.length);
-		dos.write(pubNumBytes);
+		dataOutputStream.writeInt(pubNumBytes.length);
+		dataOutputStream.write(pubNumBytes);
 
 		// Write the signature
-		dos.write(signature);
+		dataOutputStream.write(signature);
 
-		return Message.msgBytesWithIntegrity(macAlg, macKey, baos.toByteArray());
+		return Message.msgBytesWithIntegrity(macAlg, macKey, byteArrayOutputStream.toByteArray());
 	}
 }

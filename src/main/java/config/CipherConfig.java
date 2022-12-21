@@ -7,7 +7,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.SecureRandom;
-import java.util.Optional;
 
 public class CipherConfig {
 	private final String cipher;
@@ -20,13 +19,10 @@ public class CipherConfig {
 	public CipherConfig(ParsedCipherConfig parsedCipherConfig) {
 		this.cipher = parsedCipherConfig.cipher();
 		this.key = new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.key()), algFromCipher(cipher));
-		this.iv = (parsedCipherConfig.iv() != null) ?
-			new IvParameterSpec(Utils.hexToBytes(parsedCipherConfig.iv())) : null;
+		this.iv = (parsedCipherConfig.iv() != null) ? new IvParameterSpec(Utils.hexToBytes(parsedCipherConfig.iv())) : null;
 		this.integrity = parsedCipherConfig.integrity();
-		this.macKey = (this.integrity != null) ?
-			new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.macKey()), this.integrity) : null;
-		this.integrityCheck = (parsedCipherConfig.integrityCheck() != null) ?
-			Utils.hexToBytes(parsedCipherConfig.integrityCheck()) : null;
+		this.macKey = (this.integrity != null) ? new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.macKey()), this.integrity) : null;
+		this.integrityCheck = (parsedCipherConfig.integrityCheck() != null) ? Utils.hexToBytes(parsedCipherConfig.integrityCheck()) : null;
 	}
 
 	public CipherConfig(SymmetricConfig symmetricConfig, byte[] secret) {
@@ -58,7 +54,7 @@ public class CipherConfig {
 		this.integrityCheck = null;
 	}
 
-    private static String algFromCipher(String cipher) {
+	private static String algFromCipher(String cipher) {
 		return cipher.split("/")[0];
 	}
 

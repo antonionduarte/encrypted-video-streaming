@@ -1,13 +1,16 @@
 package protocols.rtss.handshake;
 
 import comms.TCPSocket;
-import config.*;
+import config.AsymmetricConfig;
+import config.CipherConfig;
+import config.HandshakeIntegrityConfig;
+import config.SymmetricConfig;
 import cryptotools.certificates.CertificateChain;
 import cryptotools.certificates.CertificateVerifier;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.key_agreement.KeyAgreementExecutor;
 import cryptotools.repetition.exceptions.RepeatedMessageException;
-import cryptotools.signatures.SignaturesTool;
+import cryptotools.signatures.SignatureTool;
 import protocols.rtss.handshake.exceptions.AuthenticationException;
 import protocols.rtss.handshake.exceptions.NoCiphersuiteMatchException;
 import protocols.rtss.handshake.messages.FirstMessage;
@@ -23,35 +26,69 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 public class RtssHandshake {
+	public static class RtssHandshakeBuilder {
+		private CertificateChain certificateChain;
+		private List<AsymmetricConfig> asymmetricConfigList;
+		private List<SymmetricConfig> symmetricConfigList;
+		private KeyPair authenticationKeys;
+		private HandshakeIntegrityConfig integrityConfig;
+		private CertificateVerifier certificateVerifier;
+
+		public RtssHandshakeBuilder setCertificateChain(CertificateChain certificateChain) {
+			this.certificateChain = certificateChain;
+			return this;
+		}
+
+		public RtssHandshakeBuilder setAsymmetricConfigList(List<AsymmetricConfig> asymmetricConfigList) {
+			this.asymmetricConfigList = asymmetricConfigList;
+			return this;
+		}
+
+		public RtssHandshakeBuilder setSymmetricConfigList(List<SymmetricConfig> symmetricConfigList) {
+			this.symmetricConfigList = symmetricConfigList;
+			return this;
+		}
+
+		public RtssHandshakeBuilder setAuthenticationKeys(KeyPair authenticationKeys) {
+			this.authenticationKeys = authenticationKeys;
+			return this;
+		}
+
+		public RtssHandshakeBuilder setIntegrityConfig(HandshakeIntegrityConfig integrityConfig) {
+			this.integrityConfig = integrityConfig;
+			return this;
+		}
+
+		public RtssHandshakeBuilder setCertificateVerifier(CertificateVerifier certificateVerifier) {
+			this.certificateVerifier = certificateVerifier;
+			return this;
+		}
+
+		public RtssHandshake build() {
+			return new RtssHandshake(certificateChain, asymmetricConfigList, symmetricConfigList, authenticationKeys, integrityConfig, certificateVerifier);
+		}
+	}
+
 	private final CertificateChain certificateChain;
 	private final List<AsymmetricConfig> asymmetricConfigList;
 	private final List<SymmetricConfig> symmetricConfigList;
 	private final KeyPair authenticationKeys;
 	private final HandshakeIntegrityConfig integrityConfig;
-	private final CertificateVerifier certVerifier;
-
+	private final CertificateVerifier certificateVerifier;
 	private final TCPSocket socket;
+
 	private KeyAgreementExecutor keyAgreementExecutor;
 
-	public CipherConfig decidedCipherSuite;
+	private CipherConfig decidedCipherSuite;
 
-	RtssHandshake(CertificateChain certificateChain, List<AsymmetricConfig> asymmetricConfigList,
-	                     List<SymmetricConfig> symmetricConfigList, KeyPair authenticationKeys,
-	                     HandshakeIntegrityConfig integrityConfig, CertificateVerifier certVerifier) {
+	RtssHandshake(CertificateChain certificateChain, List<AsymmetricConfig> asymmetricConfigList, List<SymmetricConfig> symmetricConfigList, KeyPair authenticationKeys, HandshakeIntegrityConfig integrityConfig, CertificateVerifier certificateVerifier) {
 		this.certificateChain = certificateChain;
 		this.asymmetricConfigList = asymmetricConfigList;
 		this.symmetricConfigList = symmetricConfigList;
 		this.authenticationKeys = authenticationKeys;
 		this.integrityConfig = integrityConfig;
-		this.certVerifier = certVerifier;
-
+		this.certificateVerifier = certificateVerifier;
 		this.socket = new TCPSocket();
-	}
-
-	RtssHandshake(CertificateChain certificateChain, AsymmetricConfig asymmetricConfig,
-						 List<SymmetricConfig> symmetricConfigList, KeyPair authenticationKeys,
-						 HandshakeIntegrityConfig integrityConfig, CertificateVerifier certVerifier) {
-		this(certificateChain, List.of(asymmetricConfig), symmetricConfigList, authenticationKeys, integrityConfig, certVerifier);
 	}
 
 	/**
@@ -63,13 +100,13 @@ public class RtssHandshake {
 		socket.connect(targetAddress);
 
 		// choose first one
-		var chosenAsymConfig = asymmetricConfigList.get(0);
-		this.keyAgreementExecutor = new KeyAgreementExecutor(chosenAsymConfig);
+		var chosenAsymmetricConfig = asymmetricConfigList.get(0);
+		this.keyAgreementExecutor = new KeyAgreementExecutor(chosenAsymmetricConfig);
 
 		var pubNumBytes = keyAgreementExecutor.getPublicNum().getEncoded();
-		byte[] signature = SignaturesTool.createSignature(chosenAsymConfig, authenticationKeys.getPrivate(), pubNumBytes);
+		byte[] signature = SignatureTool.createSignature(chosenAsymmetricConfig, authenticationKeys.getPrivate(), pubNumBytes);
 
-		var firstMessage = new FirstMessage(chosenAsymConfig, symmetricConfigList, certificateChain, pubNumBytes, signature);
+		var firstMessage = new FirstMessage(chosenAsymmetricConfig, symmetricConfigList, certificateChain, pubNumBytes, signature);
 		socket.sendMessage(firstMessage.serialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey()));
 
 		waitServer();
@@ -87,32 +124,25 @@ public class RtssHandshake {
 
 		// integrity and repetition is checked in this deserialization
 		var firstMessage = FirstMessage.deserialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey(), firstMessageBytes);
+		var asymmetricConfig = Utils.firstIntersection(List.of(firstMessage.asymConfig()), asymmetricConfigList);
+		var symmetricConfig = Utils.firstIntersection(firstMessage.symConfigList(), symmetricConfigList);
 
-		// choose configs
-		var asymConfig = Utils.firstIntersection(List.of(firstMessage.asymConfig()), asymmetricConfigList);
-		var symConfig = Utils.firstIntersection(firstMessage.symConfigList(), symmetricConfigList);
-		if (asymConfig == null || symConfig == null) throw new NoCiphersuiteMatchException();
+		if (asymmetricConfig == null || symmetricConfig == null) {
+			throw new NoCiphersuiteMatchException();
+		}
 
-		certVerifier.verifyCertificateChain(firstMessage.certChain());
+		certificateVerifier.verifyCertificateChain(firstMessage.certChain());
 
-		SignaturesTool.verifySignature(
-				asymConfig,
-				firstMessage.certChain().leafCertificate().getPublicKey(),
-				firstMessage.pubNumBytes(),
-				firstMessage.signature());
+		SignatureTool.verifySignature(asymmetricConfig, firstMessage.certChain().leafCertificate().getPublicKey(), firstMessage.pubNumBytes(), firstMessage.signature());
 
-		this.keyAgreementExecutor = new KeyAgreementExecutor(asymConfig);
-		var clientPubNum = KeyAgreementExecutor.getPubicNum(asymConfig.getKeyExchange(), firstMessage.pubNumBytes());
+		this.keyAgreementExecutor = new KeyAgreementExecutor(asymmetricConfig);
+		var clientPubNum = KeyAgreementExecutor.getPubicNum(asymmetricConfig.getKeyExchange(), firstMessage.pubNumBytes());
 		var secret = keyAgreementExecutor.generateSecret(clientPubNum);
-		this.decidedCipherSuite = new CipherConfig(symConfig, secret);
+		this.decidedCipherSuite = new CipherConfig(symmetricConfig, secret);
 
 		var pubNumBytes = keyAgreementExecutor.getPublicNum().getEncoded();
-		byte[] signature = SignaturesTool.createSignature(
-				asymConfig,
-				authenticationKeys.getPrivate(),
-				pubNumBytes
-		);
-		var secondMessage = new SecondMessage(symConfig, this.certificateChain, pubNumBytes, signature);
+		byte[] signature = SignatureTool.createSignature(asymmetricConfig, authenticationKeys.getPrivate(), pubNumBytes);
+		var secondMessage = new SecondMessage(symmetricConfig, this.certificateChain, pubNumBytes, signature);
 		socket.sendMessage(secondMessage.serialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey()));
 
 		return clientSocket;
@@ -129,26 +159,26 @@ public class RtssHandshake {
 		var secondMessage = SecondMessage.deserialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey(), secondMessageBytes);
 
 		// verify certificate chain
-		certVerifier.verifyCertificateChain(secondMessage.certChain());
+		certificateVerifier.verifyCertificateChain(secondMessage.certChain());
 
-		var asymConfig = asymmetricConfigList.get(0);
+		var asymmetricConfig = asymmetricConfigList.get(0);
 
-		SignaturesTool.verifySignature(
-				asymConfig,
-				secondMessage.certChain().leafCertificate().getPublicKey(),
-				secondMessage.pubNumBytes(),
-				secondMessage.signature());
+		SignatureTool.verifySignature(asymmetricConfig, secondMessage.certChain().leafCertificate().getPublicKey(), secondMessage.pubNumBytes(), secondMessage.signature());
 
-		var serverPubNum = KeyAgreementExecutor.getPubicNum(asymConfig.getKeyExchange(), secondMessage.pubNumBytes());
+		var serverPubNum = KeyAgreementExecutor.getPubicNum(asymmetricConfig.getKeyExchange(), secondMessage.pubNumBytes());
 		var secret = keyAgreementExecutor.generateSecret(serverPubNum);
 		this.decidedCipherSuite = new CipherConfig(secondMessage.symConfig(), secret);
+	}
+
+	public CipherConfig getDecidedCipherSuite() {
+		return decidedCipherSuite;
 	}
 
 	/**
 	 * Send movie request.
 	 *
 	 * @param movie name to request
-«	 */
+	 */
 	public void requestMovie(String movie) {
 
 	}

@@ -20,17 +20,14 @@ public class CertificateVerifier {
 	 * Verify the validity of a certificate chain
 	 *
 	 * @param chain certificate chain to verify
-	 * @throws CertificateException
-	 * @throws NoSuchAlgorithmException
-	 * @throws KeyStoreException
 	 */
 	public void verifyCertificateChain(CertificateChain chain) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, CertPathValidatorException, InvalidAlgorithmParameterException {
 		CertPathValidator certPathValidator = CertPathValidator.getInstance(CertificateChain.STORE_TYPE);
 		CertificateFactory certificateFactory = CertificateFactory.getInstance(CertificateChain.CERT_TYPE);
 		CertPath certPath = certificateFactory.generateCertPath(Arrays.asList(chain.certificates()));
 		PKIXBuilderParameters params = new PKIXBuilderParameters(trustStore, new X509CertSelector());
-		params.setRevocationEnabled(true);
 
+		params.setRevocationEnabled(true);
 		certPathValidator.validate(certPath, params);
 		checkDateValidity(chain);
 	}

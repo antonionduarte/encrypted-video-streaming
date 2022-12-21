@@ -19,7 +19,7 @@ public class KeyAgreementExecutor {
 	 *
 	 * @param config asymmetric config of the handshake
 	 */
-	public KeyAgreementExecutor(AsymmetricConfig config) throws NoSuchAlgorithmException, InvalidKeyException {
+	public KeyAgreementExecutor(AsymmetricConfig config) throws NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
 		this.keyAgreement = KeyAgreement.getInstance(config.getKeyExchange());
 		this.numPair = generateNumPair(config);
 		this.keyAgreement.init(numPair.getPrivate());

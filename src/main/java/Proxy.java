@@ -97,9 +97,17 @@ public class Proxy {
 		var certificateChain = readCertificates(asymmetricConfig, trustStore);
 		var certificateVerifier = new CertificateVerifier(trustStore);
 
-		var handshake = new RtssHandshake(certificateChain, asymmetricConfig, symmetricConfigList, keyPair, integrityConfig, certificateVerifier);
+		RtssHandshake.RtssHandshakeBuilder builder = new RtssHandshake.RtssHandshakeBuilder();
+
+		var handshake = builder.setCertificateChain(certificateChain)
+				.setAsymmetricConfigList(List.of(asymmetricConfig))
+				.setSymmetricConfigList(symmetricConfigList)
+				.setAuthenticationKeys(keyPair)
+				.setIntegrityConfig(integrityConfig)
+				.setCertificateVerifier(certificateVerifier).build();
 		handshake.start(serverAddress);
-		return handshake.decidedCipherSuite;
+
+		return handshake.getDecidedCipherSuite();
 	}
 
 	public static void main(String[] args) throws Exception {

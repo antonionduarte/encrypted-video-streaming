@@ -13,25 +13,23 @@ public class KeyStoreTool {
 		try {
 			// load the KeyStore
 			KeyStore keyStore = KeyStore.getInstance(STORE_TYPE);
-			var is = new FileInputStream(keyStorePath);
-			keyStore.load(is, password.toCharArray());
+			var fileInputStream = new FileInputStream(keyStorePath);
+			keyStore.load(fileInputStream, password.toCharArray());
 
 			// get the private key
 			var privateKey = (PrivateKey) keyStore.getKey(alias, password.toCharArray());
 
 			// get the public key
-			var cert = keyStore.getCertificate(alias);
-			var publicKey = cert.getPublicKey();
+			var certificate = keyStore.getCertificate(alias);
+			var publicKey = certificate.getPublicKey();
 
 			return new KeyPair(publicKey, privateKey);
-		} catch (CertificateException | UnrecoverableKeyException | KeyStoreException | IOException |
-		         NoSuchAlgorithmException ex) {
-			throw new RuntimeException(ex);
+		} catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
-	public static KeyStore getTrustStore(String truststorePath, String password) throws
-			IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+	public static KeyStore getTrustStore(String truststorePath, String password) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
 		KeyStore trustStore = KeyStore.getInstance(STORE_TYPE);
 		FileInputStream trustStoreInputStream = new FileInputStream(truststorePath);
 		trustStore.load(trustStoreInputStream, password.toCharArray());

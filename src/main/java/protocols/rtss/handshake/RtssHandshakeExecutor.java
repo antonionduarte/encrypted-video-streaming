@@ -1,6 +1,6 @@
 package protocols.rtss.handshake;
 
-public class RtssHandshakePerformer {
+public class RtssHandshakeExecutor {
 
     public enum Role {
         CLIENT,

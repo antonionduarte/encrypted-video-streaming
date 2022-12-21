@@ -18,27 +18,31 @@ public class IntegrityTool {
 			} else {
 				checkHashIntegrity(cipherConfig.getIntegrity(), data, integrity);
 			}
-		} else
+		} else {
 			throw new IllegalArgumentException("No integrity algorithm in configuration");
+		}
 	}
 
 	public static void checkMovieIntegrity(CipherConfig movieCipherConfig, byte[] data) throws IntegrityException, NoSuchAlgorithmException, InvalidKeyException {
-		if (movieCipherConfig.getIntegrityCheck() != null)
+		if (movieCipherConfig.getIntegrityCheck() != null) {
 			checkIntegrity(movieCipherConfig, data, movieCipherConfig.getIntegrityCheck());
-		else
+		} else {
 			throw new IllegalArgumentException("No integrity check in configuration");
+		}
 	}
 
 	public static void checkMacIntegrity(String macAlg, Key macKey, byte[] data, byte[] integrity) throws IntegrityException, NoSuchAlgorithmException, InvalidKeyException {
 		var macBytes = buildMacIntegrity(macAlg, macKey, data);
-		if (!Arrays.equals(macBytes, integrity))
+		if (!Arrays.equals(macBytes, integrity)) {
 			throw new IntegrityException();
+		}
 	}
 
 	public static void checkHashIntegrity(String digestAlg, byte[] data, byte[] integrity) throws NoSuchAlgorithmException, IntegrityException {
 		var hashBytes = buildHashIntegrity(digestAlg, data);
-		if (!Arrays.equals(hashBytes, integrity))
+		if (!Arrays.equals(hashBytes, integrity)) {
 			throw new IntegrityException();
+		}
 	}
 
 	public static byte[] buildMacIntegrity(String macAlg, Key macKey, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException {

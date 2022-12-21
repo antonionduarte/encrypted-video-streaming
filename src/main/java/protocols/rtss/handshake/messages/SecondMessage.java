@@ -18,26 +18,26 @@ public record SecondMessage(SymmetricConfig symConfig, CertificateChain certChai
 		// integrity check
 		Message.checkMsgBytesIntegrity(macAlg, macKey, bytes);
 
-		var dis = new DataInputStream(new ByteArrayInputStream(bytes));
+		var dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
 		//skip integrity
-		dis.skipBytes(dis.readInt());
+		dataInputStream.skipBytes(dataInputStream.readInt());
 
 		// Read and process the nonce
-		NonceProcessor.getInstance().receiveNonce(dis.readInt());
+		NonceProcessor.getInstance().receiveNonce(dataInputStream.readInt());
 
 		// Read the SymmetricConfig
-		byte[] symConfigBytes = dis.readNBytes(dis.readInt());
+		byte[] symConfigBytes = dataInputStream.readNBytes(dataInputStream.readInt());
 		var symConfig = SymmetricConfig.deserialize(symConfigBytes);
 
 		// Read the CertificateChain
-		byte[] certChainBytes = dis.readNBytes(dis.readInt());
+		byte[] certChainBytes = dataInputStream.readNBytes(dataInputStream.readInt());
 		var certChain = CertificateChain.deserialize(certChainBytes);
 
 		// Read the pubNum
-		byte[] pubNumBytes = dis.readNBytes(dis.readInt());
+		byte[] pubNumBytes = dataInputStream.readNBytes(dataInputStream.readInt());
 
 		// Read the signature
-		byte[] signature = dis.readAllBytes();
+		byte[] signature = dataInputStream.readAllBytes();
 
 		return new SecondMessage(symConfig, certChain, pubNumBytes, signature);
 	}

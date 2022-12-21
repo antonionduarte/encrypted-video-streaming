@@ -5,7 +5,7 @@ import protocols.rtss.handshake.exceptions.AuthenticationException;
 
 import java.security.*;
 
-public class SignaturesTool {
+public class SignatureTool {
 
 	public static void verifySignature(AsymmetricConfig config, PublicKey publicKey, byte[] originalData, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, AuthenticationException {
 		// Initialize the Signature object with the desired signature algorithm
@@ -18,8 +18,9 @@ public class SignaturesTool {
 		sig.update(originalData);
 
 		// Check if the signature is valid
-		if (!sig.verify(signature))
+		if (!sig.verify(signature)) {
 			throw new AuthenticationException();
+		}
 	}
 
 	/**

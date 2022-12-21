@@ -8,8 +8,8 @@ import java.math.BigInteger;
 public class AsymmetricConfig {
 
 	private final String authentication;
-	private final int keySize;
 	private final String keyExchange;
+	private final int keySize;
 	private final int numSize;
 	private BigInteger g;
 	private BigInteger p;
@@ -29,6 +29,7 @@ public class AsymmetricConfig {
 		this.keySize = parsedConfig.keySize();
 		this.keyExchange = parsedConfig.keyExchange();
 		this.numSize = parsedConfig.numSize();
+
 		if (parsedConfig.g() != null && parsedConfig.p() != null) {
 			this.g = new BigInteger(parsedConfig.g(), 16);
 			this.p = new BigInteger(parsedConfig.p(), 16);
@@ -59,6 +60,7 @@ public class AsymmetricConfig {
 		dataOutputStream.writeInt(keySize);
 		dataOutputStream.writeUTF(keyExchange);
 		dataOutputStream.writeInt(numSize);
+
 		if (g != null && p != null) {
 			var gBytes = g.toByteArray();
 			dataOutputStream.write(gBytes.length);
