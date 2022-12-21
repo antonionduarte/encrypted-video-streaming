@@ -8,63 +8,50 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Base64;
 
 public class IntegrityTool {
 
-	public static boolean checkIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) {
-		try {
-			if (cipherConfig.getMackey() == null) {
-				return checkHashIntegrity(cipherConfig.getIntegrity(), data, integrity);
+	public static void checkIntegrity(CipherConfig cipherConfig, byte[] data, byte[] integrity) throws IntegrityException, NoSuchAlgorithmException, InvalidKeyException {
+		if (cipherConfig.getIntegrity() != null) {
+			if (cipherConfig.getMacKey() != null) {
+				checkMacIntegrity(cipherConfig.getIntegrity(), cipherConfig.getMacKey(), data, integrity);
 			} else {
-				return checkMacIntegrity(cipherConfig.getIntegrity(), cipherConfig.getMackey(), data, integrity);
+				checkHashIntegrity(cipherConfig.getIntegrity(), data, integrity);
 			}
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
+		} else
+			throw new IllegalArgumentException("No integrity algorithm in configuration");
 	}
 
-	public static byte[] buildIntegrity(CipherConfig cipherConfig, byte[] plainText, byte[] cipherText) {
-		if (cipherConfig.getMackey() == null) {
-			return buildHashIntegrity(cipherConfig.getIntegrity(), plainText);
-		} else {
-			return buildMacIntegrity(cipherConfig.getIntegrity(), cipherConfig.getMackey(), cipherText);
-		}
+	public static void checkMovieIntegrity(CipherConfig movieCipherConfig, byte[] data) throws IntegrityException, NoSuchAlgorithmException, InvalidKeyException {
+		if (movieCipherConfig.getIntegrityCheck() != null)
+			checkIntegrity(movieCipherConfig, data, movieCipherConfig.getIntegrityCheck());
+		else
+			throw new IllegalArgumentException("No integrity check in configuration");
 	}
 
-	public static boolean checkMovieIntegrity(CipherConfig movieCipherConfig, byte[] data) {
-		return checkIntegrity(movieCipherConfig, data, Base64.getDecoder().decode(movieCipherConfig.getIntegrityCheck()));
-	}
-
-	public static boolean checkMacIntegrity(String macAlg, Key macKey, byte[] data, byte[] integrity) {
+	public static void checkMacIntegrity(String macAlg, Key macKey, byte[] data, byte[] integrity) throws IntegrityException, NoSuchAlgorithmException, InvalidKeyException {
 		var macBytes = buildMacIntegrity(macAlg, macKey, data);
-		return Arrays.equals(macBytes, integrity);
+		if (!Arrays.equals(macBytes, integrity))
+			throw new IntegrityException();
 	}
 
-	private static boolean checkHashIntegrity(String digestAlg, byte[] data, byte[] integrity) throws NoSuchAlgorithmException {
+	public static void checkHashIntegrity(String digestAlg, byte[] data, byte[] integrity) throws NoSuchAlgorithmException, IntegrityException {
 		var hashBytes = buildHashIntegrity(digestAlg, data);
-		return Arrays.equals(hashBytes, integrity);
+		if (!Arrays.equals(hashBytes, integrity))
+			throw new IntegrityException();
 	}
 
-	public static byte[] buildMacIntegrity(String macAlg, Key macKey, byte[] data) {
-		try {
-			var mac = Mac.getInstance(macAlg);
-			mac.init(macKey);
-			mac.update(data);
-			return mac.doFinal();
-		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
-			throw new RuntimeException(e);
-		}
+	public static byte[] buildMacIntegrity(String macAlg, Key macKey, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException {
+		var mac = Mac.getInstance(macAlg);
+		mac.init(macKey);
+		mac.update(data);
+		return mac.doFinal();
 	}
 
-	private static byte[] buildHashIntegrity(String digestAlg, byte[] data) {
-		try {
-			var hash = MessageDigest.getInstance(digestAlg);
-			hash.update(data);
+	public static byte[] buildHashIntegrity(String digestAlg, byte[] data) throws NoSuchAlgorithmException {
+		var hash = MessageDigest.getInstance(digestAlg);
+		hash.update(data);
 
-			return hash.digest();
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
+		return hash.digest();
 	}
 }

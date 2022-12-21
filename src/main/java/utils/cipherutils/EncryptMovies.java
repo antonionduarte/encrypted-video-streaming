@@ -2,15 +2,20 @@ package utils.cipherutils;
 
 import config.CipherConfig;
 import config.parser.ParseCipherConfigMap;
-import cryptotools.CryptoException;
 import cryptotools.encryption.EncryptionTool;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
 public class EncryptMovies {
@@ -18,11 +23,11 @@ public class EncryptMovies {
 	public static final String CIPHERED_MOVIE_PATH = "movies/ciphered/";
 	public static final String MOVIE_CIPHER_CONFIG_PATH = "movies/plain/cryptoconfig.json";
 
-	public static byte[] decryptMovie(CipherConfig config, String filename) throws CryptoException, IOException {
+	public static byte[] decryptMovie(CipherConfig config, String filename) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		return EncryptionTool.decrypt(config, Files.readAllBytes(Path.of(filename)));
 	}
 
-	public static void main(String[] args) throws IOException, CryptoException {
+	public static void main(String[] args) throws Exception {
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());
 
@@ -33,7 +38,8 @@ public class EncryptMovies {
 			for (var cipheredName : config.keySet()) {
 				var split = cipheredName.split("\\.");
 				var filename = split[0] + "." + split[1];
-				var cipherConfig = config.get(cipheredName);
+				var parsedConfig = config.get(cipheredName);
+				var cipherConfig = new CipherConfig(parsedConfig);
 				var outputBytes = EncryptionTool.encrypt(cipherConfig, Files.readAllBytes(Path.of(MOVIE_PATH + filename)));
 				EncryptConfig.writeToFile(outputBytes, new File(CIPHERED_MOVIE_PATH + cipheredName));
 			}

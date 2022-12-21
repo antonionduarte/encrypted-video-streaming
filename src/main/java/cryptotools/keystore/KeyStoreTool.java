@@ -7,12 +7,12 @@ import java.security.cert.CertificateException;
 
 public class KeyStoreTool {
 
-	private static final String KEYSTORE_TYPE = "PKCS12";
+	private static final String STORE_TYPE = "PKCS12";
 
 	public static KeyPair keyPairFromKeyStore(String keyStorePath, String alias, String password) {
 		try {
 			// load the KeyStore
-			KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+			KeyStore keyStore = KeyStore.getInstance(STORE_TYPE);
 			var is = new FileInputStream(keyStorePath);
 			keyStore.load(is, password.toCharArray());
 
@@ -32,7 +32,7 @@ public class KeyStoreTool {
 
 	public static KeyStore getTrustStore(String truststorePath, String password) throws
 			IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
-		KeyStore trustStore = KeyStore.getInstance(KEYSTORE_TYPE);
+		KeyStore trustStore = KeyStore.getInstance(STORE_TYPE);
 		FileInputStream trustStoreInputStream = new FileInputStream(truststorePath);
 		trustStore.load(trustStoreInputStream, password.toCharArray());
 		trustStoreInputStream.close();

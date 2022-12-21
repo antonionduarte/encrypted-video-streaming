@@ -4,35 +4,24 @@ import config.parser.parser_objects.ParsedAsymmetricConfig;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.util.Optional;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class AsymmetricConfig {
 
 	private final String authentication;
 	private final int keySize;
 	private final String keyExchange;
 	private final int numSize;
-	private Optional<BigInteger> G;
-	private Optional<BigInteger> p;
+	private BigInteger g;
+	private BigInteger p;
 
 
-	public AsymmetricConfig(String authentication, int keySize, String keyExchange, int numSize, BigInteger G, BigInteger p) {
+	public AsymmetricConfig(String authentication, int keySize, String keyExchange, int numSize, BigInteger g, BigInteger p) {
 		this.authentication = authentication;
 		this.keySize = keySize;
 		this.keyExchange = keyExchange;
 		this.numSize = numSize;
-		this.G = Optional.of(G);
-		this.p = Optional.of(p);
-	}
-
-	public AsymmetricConfig(String authentication, int keySize, String keyExchange, int numSize) {
-		this.authentication = authentication;
-		this.keySize = keySize;
-		this.keyExchange = keyExchange;
-		this.numSize = numSize;
-		this.G = Optional.empty();
-		this.p = Optional.empty();
+		this.g = g;
+		this.p = p;
 	}
 
 	public AsymmetricConfig(ParsedAsymmetricConfig parsedConfig) {
@@ -40,16 +29,13 @@ public class AsymmetricConfig {
 		this.keySize = parsedConfig.keySize();
 		this.keyExchange = parsedConfig.keyExchange();
 		this.numSize = parsedConfig.numSize();
-		if (parsedConfig.G() == null || parsedConfig.p() == null) {
-			this.G = Optional.empty();
-			this.p = Optional.empty();
-		} else {
-			this.G = Optional.of(new BigInteger(parsedConfig.G(), 16));
-			this.p = Optional.of(new BigInteger(parsedConfig.p(), 16));
+		if (parsedConfig.g() != null && parsedConfig.p() != null) {
+			this.g = new BigInteger(parsedConfig.g(), 16);
+			this.p = new BigInteger(parsedConfig.p(), 16);
 		}
 	}
 
-	public static AsymmetricConfig fromBytes(byte[] bytes) throws IOException {
+	public static AsymmetricConfig deserialize(byte[] bytes) throws IOException {
 		var dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
 
 		String authentication = dataInputStream.readUTF();
@@ -57,15 +43,15 @@ public class AsymmetricConfig {
 		String keyExchange = dataInputStream.readUTF();
 		int numSize = dataInputStream.readInt();
 		if (dataInputStream.available() > 0) {
-			var G = new BigInteger(dataInputStream.readNBytes(dataInputStream.readInt()));
+			var g = new BigInteger(dataInputStream.readNBytes(dataInputStream.readInt()));
 			var p = new BigInteger(dataInputStream.readAllBytes());
-			return new AsymmetricConfig(authentication, keySize, keyExchange, numSize, G, p);
+			return new AsymmetricConfig(authentication, keySize, keyExchange, numSize, g, p);
 		} else {
-			return new AsymmetricConfig(authentication, keySize, keyExchange, numSize);
+			return new AsymmetricConfig(authentication, keySize, keyExchange, numSize, null, null);
 		}
 	}
 
-	public byte[] toBytes() throws IOException {
+	public byte[] serialize() throws IOException {
 		var byteArrayOutputStream = new ByteArrayOutputStream();
 		var dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
@@ -73,15 +59,45 @@ public class AsymmetricConfig {
 		dataOutputStream.writeInt(keySize);
 		dataOutputStream.writeUTF(keyExchange);
 		dataOutputStream.writeInt(numSize);
-		if (G.isPresent()) {
-			var gBytes = G.get().toByteArray();
+		if (g != null && p != null) {
+			var gBytes = g.toByteArray();
 			dataOutputStream.write(gBytes.length);
 			dataOutputStream.write(gBytes);
-		}
-		if (p.isPresent()) {
-			dataOutputStream.write(p.get().toByteArray());
+			dataOutputStream.write(p.toByteArray());
 		}
 
 		return byteArrayOutputStream.toByteArray();
+	}
+
+	public String getAuthentication() {
+		return authentication;
+	}
+
+	public int getKeySize() {
+		return keySize;
+	}
+
+	public String getKeyExchange() {
+		return keyExchange;
+	}
+
+	public int getNumSize() {
+		return numSize;
+	}
+
+	public BigInteger getG() {
+		return g;
+	}
+
+	public void setG(BigInteger g) {
+		this.g = g;
+	}
+
+	public BigInteger getP() {
+		return p;
+	}
+
+	public void setP(BigInteger p) {
+		this.p = p;
 	}
 }

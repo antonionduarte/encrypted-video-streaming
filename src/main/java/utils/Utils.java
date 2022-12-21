@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Base64;
+import java.util.List;
 
 public class Utils {
 
@@ -20,6 +21,13 @@ public class Utils {
 
 		// Decode the base64 string to a hexadecimal string
 		return new String(Base64.getDecoder().decode(base64));
+	}
+
+	public static <T> T firstIntersection(List<T> list1, List<T> list2) {
+		return list1.stream()
+				.filter(list2::contains)
+				.findFirst()
+				.orElse(null);
 	}
 
 	public static byte[] getFileBytes(String filePath) throws IOException {

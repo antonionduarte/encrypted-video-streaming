@@ -1,25 +1,25 @@
 package cryptotools.signatures;
 
 import config.AsymmetricConfig;
+import protocols.rtss.handshake.exceptions.AuthenticationException;
 
 import java.security.*;
-import java.security.cert.X509Certificate;
 
 public class SignaturesTool {
-	/**
-	 * Verifies a digital signature using an X509 certificate.
-	 */
-	public static boolean verifySignature(byte[] signature, byte[] data, X509Certificate certificate) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-		PublicKey key = certificate.getPublicKey();
 
-		Signature sig = Signature.getInstance("SHA256withRSA");
-		sig.initVerify(key);
+	public static void verifySignature(AsymmetricConfig config, PublicKey publicKey, byte[] originalData, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, AuthenticationException {
+		// Initialize the Signature object with the desired signature algorithm
+		Signature sig = Signature.getInstance("SHA256with" + config.getAuthentication());
 
-		// Update the signature object with the data that was signed
-		sig.update(data);
+		// Initialize the Signature object for verification, passing in the public key
+		sig.initVerify(publicKey);
 
-		// Verify the signature
-		return sig.verify(signature);
+		// Update the Signature object with the original data
+		sig.update(originalData);
+
+		// Check if the signature is valid
+		if (!sig.verify(signature))
+			throw new AuthenticationException();
 	}
 
 	/**
@@ -27,7 +27,7 @@ public class SignaturesTool {
 	 */
 	public static byte[] createSignature(AsymmetricConfig config, PrivateKey key, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		// Create a Signature object and initialize it with the private key
-		Signature sig = Signature.getInstance("SHA256with" + config.authentication);
+		Signature sig = Signature.getInstance("SHA256with" + config.getAuthentication());
 
 		sig.initSign(key);
 

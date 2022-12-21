@@ -10,7 +10,7 @@ import cryptotools.certificates.CertificateTool;
 import cryptotools.certificates.CertificateVerifier;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.keystore.KeyStoreTool;
-import handshake.RtssHandshake;
+import protocols.rtss.handshake.RtssHandshake;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
@@ -68,7 +68,7 @@ public class Proxy {
 	}
 
 	private static KeyPair readKeyPair(AsymmetricConfig config) {
-		var alias = String.format(BOX_ALIAS_MASK, config.authentication, config.keySize);
+		var alias = String.format(BOX_ALIAS_MASK, config.getAuthentication(), config.getKeySize());
 		var password = System.getenv(KEYSTORE_PASSWORD_ENV);
 		return KeyStoreTool.keyPairFromKeyStore(KEYSTORE_PATH, alias, password);
 	}
@@ -77,7 +77,7 @@ public class Proxy {
 	 * Reads the box and ca certificates, and returns a certificate certificates object.
 	 */
 	private static CertificateChain readCertificates(AsymmetricConfig config, KeyStore trustStore) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
-		var path = String.format(CERTIFICATE_PATH_MASK, config.authentication, config.keySize);
+		var path = String.format(CERTIFICATE_PATH_MASK, config.getAuthentication(), config.getKeySize());
 		var boxCertificate = CertificateTool.certificateFromFile(path);
 
 		var alias = boxCertificate.getIssuerX500Principal().getName();

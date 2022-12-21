@@ -27,8 +27,8 @@ public class TCPSocket {
 		outputStream.flush();
 	}
 
-	// Wait for a message from the remote host
-	public byte[] waitMessage() throws IOException {
+	// Receive a message from the remote host
+	public byte[] receiveMessage() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
 		int bytesRead;

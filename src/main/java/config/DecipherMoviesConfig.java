@@ -1,11 +1,17 @@
 package config;
 
 import config.parser.ParseCipherConfigMap;
-import cryptotools.CryptoException;
+import org.bouncycastle.crypto.CryptoException;
 import utils.cipherutils.EncryptConfig;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +21,7 @@ import java.util.Map;
 public class DecipherMoviesConfig {
 	private final Map<String, CipherConfig> cipherConfig;
 
-	public DecipherMoviesConfig(String key, String path) throws CryptoException, IOException {
+	public DecipherMoviesConfig(String key, String path) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, CryptoException, InvalidKeyException {
 		var cryptoConfigCiphered = new File(path);
 		var deciphered = new String(EncryptConfig.decryptConfig(key, cryptoConfigCiphered));
 		var parseMoviesConfig = new ParseCipherConfigMap(deciphered);

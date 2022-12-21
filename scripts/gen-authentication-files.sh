@@ -60,6 +60,7 @@ keytool -genkeypair -noprompt \
 keytool -export -noprompt \
   -alias $ca_alias \
   -storepass $ca_password \
+  -storetype PKCS12 \
   -file $ca_cert \
   -keystore $ca_ks
 

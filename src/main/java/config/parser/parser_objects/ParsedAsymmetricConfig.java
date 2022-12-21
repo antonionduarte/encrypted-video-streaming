@@ -4,6 +4,6 @@ public record ParsedAsymmetricConfig(String authentication,
                                      int keySize,
                                      String keyExchange,
                                      int numSize,
-                                     String G,
+                                     String g,
                                      String p) {
 }

@@ -1,14 +1,21 @@
 package utils.cipherutils;
 
 import config.CipherConfig;
-import cryptotools.CryptoException;
+import config.parser.parser_objects.ParsedCipherConfig;
 import cryptotools.encryption.EncryptionTool;
+import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
 public class EncryptConfig {
@@ -17,13 +24,13 @@ public class EncryptConfig {
 	private static final String ARGS_CIPHER = "cipher";
 	private static final String ARGS_DECIPHER = "decipher";
 
-	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException, IOException {
-		var config = new CipherConfig(CIPHER_SUITE, key, null, null, null, null);
+	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		var config = new CipherConfig(new ParsedCipherConfig(CIPHER_SUITE, key, null, null, null, null));
 		return EncryptionTool.decrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}
 
-	public static byte[] encryptConfig(String key, File inputFile) throws CryptoException, IOException {
-		var config = new CipherConfig(CIPHER_SUITE, key, null, null, null, null);
+	public static byte[] encryptConfig(String key, File inputFile) throws CryptoException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		var config = new CipherConfig(new ParsedCipherConfig(CIPHER_SUITE, key, null, null, null, null));
 		return EncryptionTool.encrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}
 
@@ -33,7 +40,7 @@ public class EncryptConfig {
 		}
 	}
 
-	public static void main(String[] args) throws CryptoException, IOException {
+	public static void main(String[] args) throws Exception {
 		if (args.length != 4) {
 			System.err.println("Ex. If you want to use AES");
 			System.err.println("Use: CipherConfig <cipher | decipher> <AES-key> <input-file> <output-file>");

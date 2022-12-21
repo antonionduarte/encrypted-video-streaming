@@ -1,8 +1,7 @@
 package statistics;
 
 import config.CipherConfig;
-
-import java.util.HexFormat;
+import utils.Utils;
 
 public class Stats {
 	private final CipherConfig config;
@@ -40,7 +39,7 @@ public class Stats {
 		System.out.println("Streamed Movie and used Cryptographic Configs");
 		System.out.println("---------------------------------------------");
 		System.out.println("Used ciphersuite ALG/MODE/PADDING: " + config.getCipher());
-		System.out.println("Used Key (hexadecimal rep.): " + HexFormat.of().formatHex(config.getKey().getEncoded()));
+		System.out.println("Used Key (hexadecimal rep.): " + Utils.bytesToHex(config.getKey().getEncoded()));
 		System.out.println("Used Keysize: (bytes)" + config.getKey().getEncoded().length);
 		System.out.println("Used Hash or Mac for integrity checks: " + config.getIntegrity());
 		System.out.println();

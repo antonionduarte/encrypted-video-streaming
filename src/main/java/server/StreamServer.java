@@ -2,13 +2,16 @@ package server;
 
 import config.CipherConfig;
 import config.DecipherMoviesConfig;
-import cryptotools.CryptoException;
+import cryptotools.integrity.IntegrityException;
 import cryptotools.integrity.IntegrityTool;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.Stats;
 import utils.cipherutils.EncryptMovies;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -17,6 +20,9 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 public class StreamServer {
@@ -30,7 +36,7 @@ public class StreamServer {
 
 	private InetSocketAddress clientAddress;
 
-	public StreamServer(String movie, String serverAddressStr, String serverPort) throws CryptoException, IOException {
+	public StreamServer(String movie, String serverAddressStr, String serverPort) throws IOException {
 		this.movie = movie;
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));
 		this.moviesConfig = new DecipherMoviesConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();
@@ -43,13 +49,15 @@ public class StreamServer {
 		return outputStream.toByteArray();
 	}
 
-	private byte[] getMovieBytes() throws IOException, CryptoException {
+	private byte[] getMovieBytes() throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
 		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
 		// check integrity of dat.enc file
-		if (!IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(movie)))) {
-			System.err.println("Movie integrity not checked");
-			System.exit(1);
+		try {
+			IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(movie)));
+		} catch (IntegrityException ex) {
+			throw new RuntimeException(ex);
 		}
+
 		return EncryptMovies.decryptMovie(movieCipherConfig, movie);
 	}
 

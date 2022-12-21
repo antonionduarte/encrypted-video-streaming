@@ -8,7 +8,6 @@ import javax.crypto.spec.DHParameterSpec;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Optional;
 
 public class KeyAgreementExecutor {
 	private static final String DIGEST_ALG = "SHA1";
@@ -20,51 +19,37 @@ public class KeyAgreementExecutor {
 	 *
 	 * @param config asymmetric config of the handshake
 	 */
-	public KeyAgreementExecutor(AsymmetricConfig config) {
-		try {
-			this.keyAgreement = KeyAgreement.getInstance(config.keyExchange);
+	public KeyAgreementExecutor(AsymmetricConfig config) throws NoSuchAlgorithmException, InvalidKeyException {
+		this.keyAgreement = KeyAgreement.getInstance(config.getKeyExchange());
+		this.numPair = generateNumPair(config);
+		this.keyAgreement.init(numPair.getPrivate());
+	}
 
-			this.numPair = generateNumPair(config);
+	private static KeyPair generateNumPair(AsymmetricConfig config) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+		var keyPairGenerator = KeyPairGenerator.getInstance(config.getKeyExchange());
+		if (config.getG() != null && config.getP() != null) {
+			var paramSpec = new DHParameterSpec(config.getP(), config.getG());
+			keyPairGenerator.initialize(paramSpec);
+			return keyPairGenerator.generateKeyPair();
+		} else {
+			keyPairGenerator.initialize(config.getNumSize());
+			var keyPair = keyPairGenerator.generateKeyPair();
+			// Get the public key
+			var publicKey = (DHPublicKey) keyPair.getPublic();
+			// Get the DHParameterSpec object from the public key
+			var dhParamSpec = publicKey.getParams();
+			config.setG(dhParamSpec.getG());
+			config.setP(dhParamSpec.getP());
 
-			this.keyAgreement.init(numPair.getPrivate());
-		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
-			throw new RuntimeException(e);
+			return keyPair;
 		}
 	}
 
-	private static KeyPair generateNumPair(AsymmetricConfig config) {
-		try {
-			var keyPairGenerator = KeyPairGenerator.getInstance(config.keyExchange);
-			if (config.G.isPresent() && config.p.isPresent()) {
-				var paramSpec = new DHParameterSpec(config.p.get(), config.G.get());
-				keyPairGenerator.initialize(paramSpec);
-				return keyPairGenerator.generateKeyPair();
-			} else {
-				keyPairGenerator.initialize(config.numSize);
-				var keyPair = keyPairGenerator.generateKeyPair();
-				// Get the public key
-				var publicKey = (DHPublicKey) keyPair.getPublic();
-				// Get the DHParameterSpec object from the public key
-				var dhParamSpec = publicKey.getParams();
-				config.G = Optional.of(dhParamSpec.getG());
-				config.p = Optional.of(dhParamSpec.getP());
-
-				return keyPair;
-			}
-		} catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-
-	public static Key decodePublicNum(String alg, byte[] numBytes) {
-		try {
-			// Create a KeyFactory for the key's algorithm
-			var keyFactory = KeyFactory.getInstance(alg);
-			// Use the KeyFactory to recreate the key from the encoded form
-			return keyFactory.generatePublic(new X509EncodedKeySpec(numBytes));
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-			throw new RuntimeException(e);
-		}
+	public static PublicKey getPubicNum(String alg, byte[] numBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		// Create a KeyFactory for the key's algorithm
+		var keyFactory = KeyFactory.getInstance(alg);
+		// Use the KeyFactory to recreate the key from the encoded form
+		return keyFactory.generatePublic(new X509EncodedKeySpec(numBytes));
 	}
 
 	public Key getPublicNum() {

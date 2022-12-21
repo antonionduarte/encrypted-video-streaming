@@ -1,43 +1,34 @@
 package cryptotools.encryption;
 
 import config.CipherConfig;
-import cryptotools.CryptoException;
+import cryptotools.integrity.IntegrityException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class EncryptionTool {
-	public static byte[] encrypt(CipherConfig config, byte[] plaintext) throws CryptoException {
+	public static byte[] encrypt(CipherConfig config, byte[] plaintext) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		return doCrypto(Cipher.ENCRYPT_MODE, config, plaintext);
 	}
 
-	public static byte[] decrypt(CipherConfig config, byte[] ciphertext) throws CryptoException {
-		return doCrypto(Cipher.DECRYPT_MODE, config, ciphertext);
+	public static byte[] decrypt(CipherConfig config, byte[] ciphertext) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
+		try {
+			return doCrypto(Cipher.DECRYPT_MODE, config, ciphertext);
+		} catch (AEADBadTagException ex) {
+			throw new IntegrityException();
+		}
 	}
 
-	private static byte[] doCrypto(int cipherMode, CipherConfig config, byte[] text) throws CryptoException {
-		var secretKey = config.getKey();
-		var cipherSuite = config.getCipher();
-		var ivSpec = config.getIv();
+	private static byte[] doCrypto(int cipherMode, CipherConfig config, byte[] text) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+		var cipher = Cipher.getInstance(config.getCipher());
 
-		try {
-			Cipher cipher = Cipher.getInstance(cipherSuite);
-
-			if (ivSpec == null) {
-				cipher.init(cipherMode, secretKey);
-			} else {
-				cipher.init(cipherMode, secretKey, ivSpec);
-			}
-
-			return cipher.doFinal(text);
-		} catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException |
-		         IllegalBlockSizeException | InvalidAlgorithmParameterException ex) {
-			throw new CryptoException("Error encrypting/decrypting file", ex);
+		if (config.getIv() != null) {
+			cipher.init(cipherMode, config.getKey(), config.getIv());
+		} else {
+			cipher.init(cipherMode, config.getKey());
 		}
+		return cipher.doFinal(text);
 	}
 }

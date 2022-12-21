@@ -25,22 +25,14 @@ public class CertificateVerifier {
 	 * @throws KeyStoreException
 	 */
 	public void verifyCertificateChain(CertificateChain chain) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, CertPathValidatorException, InvalidAlgorithmParameterException {
-		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+		CertPathValidator certPathValidator = CertPathValidator.getInstance(CertificateChain.STORE_TYPE);
+		CertificateFactory certificateFactory = CertificateFactory.getInstance(CertificateChain.CERT_TYPE);
 		CertPath certPath = certificateFactory.generateCertPath(Arrays.asList(chain.certificates()));
-		PKIXParameters params = new PKIXParameters(trustStore);
+		PKIXBuilderParameters params = new PKIXBuilderParameters(trustStore, new X509CertSelector());
 		params.setRevocationEnabled(true);
-		CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
 
 		certPathValidator.validate(certPath, params);
-		checkRootCertificate(chain.rootCertificate());
 		checkDateValidity(chain);
-	}
-
-	private void checkRootCertificate(X509Certificate rootCertificate) throws KeyStoreException, CertificateException {
-		String rootAlias = trustStore.getCertificateAlias(rootCertificate);
-		if (rootAlias == null) {
-			throw new CertificateException("Root certificate is not trusted");
-		}
 	}
 
 	private void checkDateValidity(CertificateChain chain) throws CertificateNotYetValidException, CertificateExpiredException {

@@ -16,8 +16,9 @@ import java.util.List;
 public record CertificateChain(X509Certificate... certificates) {
 
 	public static final String CERT_TYPE = "X.509";
+	public static final String STORE_TYPE = "PKCS12";
 
-	public static CertificateChain deserializeChain(byte[] bytes) {
+	public static CertificateChain deserialize(byte[] bytes) {
 		try {
 			// create a certificate factory
 			CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);
@@ -35,7 +36,7 @@ public record CertificateChain(X509Certificate... certificates) {
 		}
 	}
 
-	public byte[] serializedChain() {
+	public byte[] serialize() {
 		try {
 			// create a certificate factory
 			var cf = CertificateFactory.getInstance(CERT_TYPE);
@@ -50,7 +51,6 @@ public record CertificateChain(X509Certificate... certificates) {
 		}
 	}
 
-	// TODO not sure about name
 	public X509Certificate leafCertificate() {
 		return certificates[0];
 	}
