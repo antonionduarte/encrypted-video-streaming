@@ -45,7 +45,7 @@ public class Stats {
 		System.out.println();
 		System.out.println("---------------------------------------------");
 		System.out.println("Performance indicators of streaming");
-		System.out.println("delivered to receiver Box(es)");
+		System.out.println("delivered to receiver Proxy(s)");
 		System.out.println("---------------------------------------------");
 		System.out.println("Nr of sent frames: " + numFrames);
 		System.out.println("Average frame size (bytes): " + avgFrameSize);

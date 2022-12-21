@@ -2,12 +2,12 @@
 Repository for the Stream Ciphering Project of the Network Security Course @ FCT-UNL.
 
 # TODO:
-- [ ] Both the server and the box will have a truststore  that should be saved on the `certs/common` and it will contain the CA cert.
+- [ ] Both the server and the proxy will have a truststore  that should be saved on the `certs/common` and it will contain the CA cert.
 
 ## Environment Variables
 - `CRYPTO_CONFIG_KEY`: The key to the AES key for the video sharing. **DEPRECATED**,
 - `CA_PASSWORD`: The password of the CA Keystore.
-- `BOX_PASSWORD`: The password of the Box Keystore.
+- `PROXY_PASSWORD`: The password of the Proxy Keystore.
 - `SERVER_PASSWORD`: The password of the Server Keystore.
 
 ## How To Compile
@@ -113,7 +113,7 @@ correctly detect that they're not present.
 
 ### Stream Cipher Suite
 
-The `config/box-cryptoconfig.json` contains the configuration file for the cipher suite to be used between the 
+The `config/proxy-cryptoconfig.json` contains the configuration file for the cipher suite to be used between the 
 stream server and the proxy.
 
 ```json
@@ -129,9 +129,9 @@ stream server and the proxy.
 
 The map entry starts with the IP and port of the proxy, and then the cipher suite.
 
-### Box Properties
+### Proxy Properties
 
-The box properties are contained in `config/proxy/config.properties` and are used to configure the proxy.
+The proxy properties are contained in `config/proxy/config.properties` and are used to configure the proxy.
 
 ```properties
 remote=127.0.0.1:9999
