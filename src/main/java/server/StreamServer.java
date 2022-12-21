@@ -4,6 +4,7 @@ import config.CipherConfig;
 import config.DecipherMoviesConfig;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.integrity.IntegrityTool;
+import org.bouncycastle.crypto.CryptoException;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.Stats;
@@ -36,7 +37,7 @@ public class StreamServer {
 
 	private InetSocketAddress clientAddress;
 
-	public StreamServer(String movie, String serverAddressStr, String serverPort) throws IOException {
+	public StreamServer(String movie, String serverAddressStr, String serverPort) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, CryptoException, InvalidKeyException, IntegrityException {
 		this.movie = movie;
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));
 		this.moviesConfig = new DecipherMoviesConfig(System.getenv(CIPHER_CONFIG_ENV), CIPHER_CONFIG_PATH).getCipherConfig();

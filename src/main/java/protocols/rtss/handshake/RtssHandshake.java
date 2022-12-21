@@ -1,6 +1,5 @@
 package protocols.rtss.handshake;
 
-import comms.TCPSocket;
 import config.AsymmetricConfig;
 import config.CipherConfig;
 import config.HandshakeIntegrityConfig;
@@ -11,14 +10,20 @@ import cryptotools.integrity.IntegrityException;
 import cryptotools.key_agreement.KeyAgreementExecutor;
 import cryptotools.repetition.exceptions.RepeatedMessageException;
 import cryptotools.signatures.SignatureTool;
+import protocols.rtss.RtssProtocol;
 import protocols.rtss.handshake.exceptions.AuthenticationException;
 import protocols.rtss.handshake.exceptions.NoCiphersuiteMatchException;
 import protocols.rtss.handshake.messages.FirstMessage;
 import protocols.rtss.handshake.messages.SecondMessage;
 import utils.Utils;
+import utils.comms.TCPSocket;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
@@ -92,9 +97,9 @@ public class RtssHandshake {
 	}
 
 	/**
-	 * Start handshake and send first message
+	 * Start handshake and send first message.
 	 *
-	 * @param targetAddress server address
+	 * @param targetAddress server address.
 	 */
 	public void start(InetSocketAddress targetAddress) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, RepeatedMessageException, CertPathValidatorException, InvalidAlgorithmParameterException, IntegrityException, CertificateException, KeyStoreException, InvalidKeySpecException, AuthenticationException {
 		socket.connect(targetAddress);
@@ -115,8 +120,8 @@ public class RtssHandshake {
 	/**
 	 * Wait client connection in given port and send second message.
 	 *
-	 * @param port to listen
-	 * @return InetSocketAddress of connecting client
+	 * @param port to listen.
+	 * @return InetSocketAddress of connecting client.
 	 */
 	public InetSocketAddress waitClientConnection(int port) throws IntegrityException, IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, KeyStoreException, CertPathValidatorException, InvalidAlgorithmParameterException, RepeatedMessageException, NoCiphersuiteMatchException, InvalidKeySpecException, SignatureException, AuthenticationException {
 		var clientSocket = socket.waitConnection(port);
@@ -150,7 +155,7 @@ public class RtssHandshake {
 
 
 	/**
-	 * Wait for handshake's second message
+	 * Wait for handshake's second message.
 	 */
 	private void waitServer() throws IOException, RepeatedMessageException, IntegrityException, NoSuchAlgorithmException, InvalidKeyException, CertPathValidatorException, InvalidAlgorithmParameterException, CertificateException, KeyStoreException, InvalidKeySpecException, AuthenticationException, SignatureException {
 		var secondMessageBytes = socket.receiveMessage();
@@ -177,18 +182,21 @@ public class RtssHandshake {
 	/**
 	 * Send movie request.
 	 *
-	 * @param movie name to request
+	 * @param movie name to request.
 	 */
-	public void requestMovie(String movie) {
-
+	public void requestMovie(String movie) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
+		var movieBytes = new RtssProtocol(decidedCipherSuite).encrypt(movie.getBytes(StandardCharsets.UTF_8));
+		socket.sendMessage(movieBytes);
 	}
 
 	/**
 	 * Wait for movie request.
 	 *
-	 * @return name of movie client requests
+	 * @return name of movie client requests.
 	 */
-	public String waitClientMovieRequest() {
-		return null;
+	public String waitClientMovieRequest() throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IntegrityException, RepeatedMessageException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		var message = socket.receiveMessage();
+		var movieBytes = new RtssProtocol(decidedCipherSuite).decrypt(message);
+		return new String(movieBytes, StandardCharsets.UTF_8);
 	}
 }

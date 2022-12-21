@@ -3,6 +3,7 @@ package utils.cipherutils;
 import config.CipherConfig;
 import config.parser.ParseCipherConfigMap;
 import cryptotools.encryption.EncryptionTool;
+import cryptotools.integrity.IntegrityException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
@@ -23,7 +24,7 @@ public class EncryptMovies {
 	public static final String CIPHERED_MOVIE_PATH = "movies/ciphered/";
 	public static final String MOVIE_CIPHER_CONFIG_PATH = "movies/plain/cryptoconfig.json";
 
-	public static byte[] decryptMovie(CipherConfig config, String filename) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+	public static byte[] decryptMovie(CipherConfig config, String filename) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
 		return EncryptionTool.decrypt(config, Files.readAllBytes(Path.of(filename)));
 	}
 

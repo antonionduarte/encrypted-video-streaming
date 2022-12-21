@@ -3,6 +3,7 @@ package utils.cipherutils;
 import config.CipherConfig;
 import config.parser.parser_objects.ParsedCipherConfig;
 import cryptotools.encryption.EncryptionTool;
+import cryptotools.integrity.IntegrityException;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -24,7 +25,7 @@ public class EncryptConfig {
 	private static final String ARGS_CIPHER = "cipher";
 	private static final String ARGS_DECIPHER = "decipher";
 
-	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
 		var config = new CipherConfig(new ParsedCipherConfig(CIPHER_SUITE, key, null, null, null, null));
 		return EncryptionTool.decrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}

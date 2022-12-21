@@ -33,8 +33,6 @@ public class RtssProtocol extends SecureProtocol {
         }
     }
 
-
-
     @Override
     public byte[] decrypt(byte[] encryptedData) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IntegrityException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, RepeatedMessageException {
         if (cipherConfig.getIntegrity() == null) {

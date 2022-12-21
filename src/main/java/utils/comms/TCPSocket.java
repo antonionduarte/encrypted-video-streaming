@@ -1,4 +1,4 @@
-package comms;
+package utils.comms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,13 +29,13 @@ public class TCPSocket {
 
 	// Receive a message from the remote host
 	public byte[] receiveMessage() throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
 		int bytesRead;
 		while ((bytesRead = inputStream.read(buffer)) != -1) {
-			baos.write(buffer, 0, bytesRead);
+			byteArrayOutputStream.write(buffer, 0, bytesRead);
 		}
-		return baos.toByteArray();
+		return byteArrayOutputStream.toByteArray();
 	}
 
 	// Wait for a connection from a remote host
