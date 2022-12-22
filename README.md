@@ -5,7 +5,7 @@ Repository for the Stream Ciphering Project of the Network Security Course @ FCT
 - [ ] Both the server and the proxy will have a truststore  that should be saved on the `certs/common` and it will contain the CA cert.
 
 ## Environment Variables
-- `CRYPTO_CONFIG_KEY`: The key to the AES key for the video sharing. **DEPRECATED**,
+- `CRYPTO_CONFIG_KEY`: The key to the AES key for the video sharing.
 - `CA_PASSWORD`: The password of the CA Keystore.
 - `PROXY_PASSWORD`: The password of the Proxy Keystore.
 - `SERVER_PASSWORD`: The password of the Server Keystore.

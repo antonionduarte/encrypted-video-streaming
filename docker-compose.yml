@@ -6,6 +6,7 @@ services:
       dockerfile: ./docker/server/Dockerfile
     environment:
       CRYPTO_CONFIG_KEY: "${CRYPTO_CONFIG_KEY}"
+      SERVER_PASSWORD: "${SERVER_PASSWORD}"
     network_mode: host
 
   # Proxy containers
@@ -14,3 +15,5 @@ services:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
     network_mode: host
+    environment: 
+      PROXY_PASSWORD: "${PROXY_PASSWORD}"
