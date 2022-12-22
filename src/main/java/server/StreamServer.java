@@ -8,6 +8,8 @@ import cryptotools.integrity.IntegrityTool;
 import cryptotools.keystore.KeyStoreTool;
 import protocols.rtss.RtssProtocol;
 import protocols.rtss.handshake.RtssHandshake;
+import protocols.rtss.handshake.RtssHandshakeExecutor;
+import protocols.rtss.handshake.RtssResultServer;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.Stats;
@@ -28,7 +30,6 @@ import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Map;
 
 public class StreamServer {
@@ -51,9 +52,6 @@ public class StreamServer {
 	private final InetSocketAddress serverAddress;
 	private final Map<String, CipherConfig> moviesConfig;
 
-	private String movie;
-	private InetSocketAddress clientAddress;
-
 	public StreamServer(String serverAddressStr, String serverPort) throws Exception {
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));
 		this.moviesConfig = new DecipherMoviesConfig(System.getenv(CIPHER_CONFIG_ENV), MOVIES_CIPHER_CONFIG_PATH).getCipherConfig();
@@ -69,7 +67,7 @@ public class StreamServer {
 	/**
 	 * Performs the handshake using the RTSS Handshake Class.
 	 */
-	private static CipherConfig performHandshake(InetSocketAddress serverAddress) throws Exception {
+	private static RtssResultServer performHandshake(int port) throws Exception {
 		var asymmetricConfigList = Loader.readAsymConfigList(ASYM_CONFIG_PATH);
 		var symmetricConfigList = Loader.readSymConfigList(SYM_CONFIG_PATH);
 		var integrityConfig = Loader.readIntegrityConfig(INTEGRITY_CONFIG_PATH);
@@ -82,27 +80,23 @@ public class StreamServer {
 				.setSymmetricConfigList(symmetricConfigList)
 				.setIntegrityConfig(integrityConfig)
 				.setCertificateVerifier(certificateVerifier).build();
-		handshake.start(serverAddress);
-
-		return handshake.getDecidedCipherSuite();
+		return RtssHandshakeExecutor.performHandshakeServer(handshake, port);
 	}
 
-	private byte[] getMovieBytes() throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
-		var movieCipherConfig = moviesConfig.get(movie.split("/")[2]);
+	private byte[] getMovieBytes(String moviePath) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
+		var movieCipherConfig = moviesConfig.get(moviePath.split("/")[2]);
 		// check integrity of dat.enc file
 		try {
-			IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(movie)));
+			IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(moviePath)));
 		} catch (IntegrityException ex) {
 			throw new RuntimeException(ex);
 		}
 
-		return EncryptMovies.decryptMovie(movieCipherConfig, movie);
+		return EncryptMovies.decryptMovie(movieCipherConfig, moviePath);
 	}
 
 	public void run() throws Exception {
 		System.out.println("Server running");
-
-		byte[] plainMovie = getMovieBytes();
 
 		int frameSize;
 		var cumulativeSize = 0;
@@ -110,10 +104,14 @@ public class StreamServer {
 		long frameTimestamp;
 
 		//var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
-		CipherConfig cipherConfig = null; //TODO performHandshake like Proxy
+		var result = performHandshake(serverAddress.getPort());
+		var cipherConfig = result.cipherConfig();
 		var rtss = new RtssProtocol(cipherConfig);
 
-		this.clientAddress = null;// TODO from handshake.waitClient()
+		InetSocketAddress clientAddress = result.clientAddress();
+		var movieName = result.movieName();
+
+		byte[] plainMovie = getMovieBytes(movieName);
 
 		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(plainMovie));
 

@@ -1,10 +1,9 @@
 FROM openjdk:17
 
-RUN mkdir -p config/proxy
-RUN mkdir -p certs/proxy
-
 COPY target/ciphered-video-server.jar ciphered-video-server.jar
-COPY config/proxy/config.properties config/proxy
-COPY config/proxy-cryptoconfig.json config/
+ADD config/proxy/ config/proxy/
+ADD config/common/ config/common/
+ADD certs/proxy/ certs/proxy/
+ADD certs/common/ certs/common/
 
-CMD java -cp ciphered-video-server.jar Proxy cars.dat
+CMD java -cp ciphered-video-server.jar Proxy movies/ciphered/cars.dat.enc

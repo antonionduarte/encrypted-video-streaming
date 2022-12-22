@@ -24,12 +24,12 @@ public class DecipherMoviesConfig {
 
 	public DecipherMoviesConfig(String key, String path) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, CryptoException, InvalidKeyException, IntegrityException {
 		var cryptoConfigCiphered = new File(path);
-		var deciphered = new String(EncryptConfig.decryptConfig(key, cryptoConfigCiphered));
-		var parseMoviesConfig = new ParseCipherConfigMap(deciphered);
+		var decipheredJson = new String(EncryptConfig.decryptConfig(key, cryptoConfigCiphered));
+		var parseMoviesConfig = ParseCipherConfigMap.parseConfig(decipheredJson);
 		this.cipherConfig = new HashMap<>();
 
-		for (var entry : parseMoviesConfig.parseConfig().entrySet()) {
-			this.cipherConfig.put(entry.getKey(), new CipherConfig(parseMoviesConfig.parseConfig().get(entry.getKey())));
+		for (var entry : parseMoviesConfig.entrySet()) {
+			this.cipherConfig.put(entry.getKey(), new CipherConfig(entry.getValue()));
 		}
 	}
 

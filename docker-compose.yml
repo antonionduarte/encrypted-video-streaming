@@ -6,6 +6,7 @@ services:
       dockerfile: ./docker/server/Dockerfile
     environment:
       CRYPTO_CONFIG_KEY: "${CRYPTO_CONFIG_KEY}"
+      TRUSTSTORE_PASSWORD: "${TRUSTSTORE_PASSWORD}"
       SERVER_PASSWORD: "${SERVER_PASSWORD}"
     network_mode: host
 
@@ -15,7 +16,9 @@ services:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
     network_mode: host
+    command: sleep 2
     depends_on:
       - server
-    environment: 
+    environment:
+      TRUSTSTORE_PASSWORD: "${TRUSTSTORE_PASSWORD}"
       PROXY_PASSWORD: "${PROXY_PASSWORD}"
