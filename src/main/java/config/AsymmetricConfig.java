@@ -25,14 +25,14 @@ public class AsymmetricConfig {
 	}
 
 	public AsymmetricConfig(ParsedAsymmetricConfig parsedConfig) {
-		this.authentication = parsedConfig.authentication();
-		this.keySize = parsedConfig.keySize();
-		this.keyExchange = parsedConfig.keyExchange();
-		this.numSize = parsedConfig.numSize();
+		this.authentication = parsedConfig.getAuthentication();
+		this.keySize = parsedConfig.getKeySize();
+		this.keyExchange = parsedConfig.getKeyExchange();
+		this.numSize = parsedConfig.getNumSize();
 
-		if (parsedConfig.g() != null && parsedConfig.p() != null) {
-			this.g = new BigInteger(parsedConfig.g(), 16);
-			this.p = new BigInteger(parsedConfig.p(), 16);
+		if (parsedConfig.getG() != null && parsedConfig.getP() != null) {
+			this.g = new BigInteger(parsedConfig.getG(), 16);
+			this.p = new BigInteger(parsedConfig.getP(), 16);
 		}
 	}
 

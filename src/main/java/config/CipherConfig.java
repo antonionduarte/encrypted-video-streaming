@@ -17,12 +17,12 @@ public class CipherConfig {
 	private final byte[] integrityCheck;
 
 	public CipherConfig(ParsedCipherConfig parsedCipherConfig) {
-		this.cipher = parsedCipherConfig.cipher();
-		this.key = new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.key()), algFromCipher(cipher));
-		this.iv = (parsedCipherConfig.iv() != null) ? new IvParameterSpec(Utils.hexToBytes(parsedCipherConfig.iv())) : null;
-		this.integrity = parsedCipherConfig.integrity();
-		this.macKey = (this.integrity != null) ? new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.macKey()), this.integrity) : null;
-		this.integrityCheck = (parsedCipherConfig.integrityCheck() != null) ? Utils.hexToBytes(parsedCipherConfig.integrityCheck()) : null;
+		this.cipher = parsedCipherConfig.getCipher();
+		this.key = new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getKey()), algFromCipher(cipher));
+		this.iv = (parsedCipherConfig.getIv() != null) ? new IvParameterSpec(Utils.hexToBytes(parsedCipherConfig.getIv())) : null;
+		this.integrity = parsedCipherConfig.getIntegrity();
+		this.macKey = (this.integrity != null) ? new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getMacKey()), this.integrity) : null;
+		this.integrityCheck = (parsedCipherConfig.getIntegrityCheck() != null) ? Utils.hexToBytes(parsedCipherConfig.getIntegrityCheck()) : null;
 	}
 
 	public CipherConfig(SymmetricConfig symmetricConfig, byte[] secret) {
