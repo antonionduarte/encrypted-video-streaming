@@ -1,4 +1,4 @@
 {
-  "algorithm": "HMAC256",
+  "algorithm": "HMAC-SHA256",
   "mac-key" : "b0a9b9f2b19d738d542c1e879b6d4b7a"
 }

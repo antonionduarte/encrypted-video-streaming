@@ -8,6 +8,7 @@ import protocols.rtss.handshake.RtssHandshake;
 import protocols.rtss.handshake.RtssHandshakeExecutor;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
+import server.StreamServer;
 import statistics.Stats;
 import utils.Loader;
 import utils.Utils;
@@ -37,12 +38,12 @@ public class Proxy {
 	private static final String KEYSTORE_PASSWORD_ENV = "PROXY_PASSWORD";
 	private static final String TRUSTSTORE_PASSWORD_ENV = "TRUSTSTORE_PASSWORD";
 
+	private static final String CA_ALIAS_MASK = "ca_%s_%d";
 	private static final String ALIAS_MASK = "proxy_%s_%d";
 
-	private static final String CERTIFICATE_PATH_MASK = "certs/proxy/proxy_%s_%d.cer";
+	private static final String CERTIFICATE_PATH_MASK = "certs/proxy/certs/proxy_%s_%d.cer";
 	private static final String KEYSTORE_PATH = "certs/proxy/proxy.pkcs12";
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
-
 
 	/**
 	 * Performs the handshake using the RTSS Handshake Class.
@@ -51,11 +52,12 @@ public class Proxy {
 		var asymmetricConfig = Loader.readAsymConfig(ASYM_CONFIG_PATH);
 		var symmetricConfigList = Loader.readSymConfigList(SYM_CONFIG_PATH);
 		var integrityConfig = Loader.readIntegrityConfig(INTEGRITY_CONFIG_PATH);
-		var keyStorePath = String.format(ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
-		var keyPair = Loader.readKeyPair(KEYSTORE_PATH, keyStorePath, System.getenv(KEYSTORE_PASSWORD_ENV));
+		var alias = String.format(ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		var keyPair = Loader.readKeyPair(KEYSTORE_PATH, alias, System.getenv(KEYSTORE_PASSWORD_ENV));
 		var trustStore = KeyStoreTool.getTrustStore(TRUSTSTORE_PATH, System.getenv(TRUSTSTORE_PASSWORD_ENV));
 		var certificatePath = String.format(CERTIFICATE_PATH_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
-		var certificateChain = Loader.readCertificates(certificatePath, trustStore);
+		var caAlias = String.format(CA_ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		var certificateChain = Loader.readCertificates(certificatePath, trustStore, caAlias);
 		var certificateVerifier = new CertificateVerifier(trustStore);
 
 		RtssHandshake.RtssHandshakeBuilder builder = new RtssHandshake.RtssHandshakeBuilder();
@@ -88,14 +90,14 @@ public class Proxy {
 		var remote = properties.getProperty(PROPERTY_REMOTE);
 		var destinations = properties.getProperty(PROPERTY_DESTINATIONS);
 
-		var inSocketAddress = Utils.parseSocketAddress(remote);
+		var serverAddress = Utils.parseSocketAddress(remote);
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
 
 		//var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
-		var cipherConfig = performHandshake(inSocketAddress, movieName);
+		var cipherConfig = performHandshake(serverAddress, movieName);
 		var rtss = new RtssProtocol(cipherConfig);
 
-		try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
+		try (SecureSocket inSocket = new SecureSocket(StreamServer.CLIENT_UDP_SOCKET_ADDRESS)) {
 			try (DatagramSocket outSocket = new DatagramSocket()) {
 				byte[] buffer = new byte[4096]; // prev 8192
 

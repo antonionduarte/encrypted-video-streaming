@@ -26,11 +26,9 @@ import java.util.Set;
 public class SecureSocket implements Closeable {
 
 	private final DatagramSocket datagramSocket;
-	private final Set<Integer> receivedNonces;
 
 	public SecureSocket(SocketAddress socketAddress) throws SocketException {
 		this.datagramSocket = new DatagramSocket(socketAddress);
-		this.receivedNonces = new HashSet<>();
 	}
 
 	public void send(SecureDatagramPacket secureDatagramPacket) throws IOException {

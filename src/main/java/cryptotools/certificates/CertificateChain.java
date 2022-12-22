@@ -18,37 +18,29 @@ public record CertificateChain(X509Certificate... certificates) {
 	public static final String CERT_TYPE = "X.509";
 	public static final String STORE_TYPE = "PKCS12";
 
-	public static CertificateChain deserialize(byte[] bytes) {
-		try {
-			// create a certificate factory
-			CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);
+	public static CertificateChain deserialize(byte[] bytes) throws CertificateException {
+		// create a certificate factory
+		CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);
 
-			// decode the certificates
-			var certPath = cf.generateCertPath(new ByteArrayInputStream(bytes));
-			var certList = certPath.getCertificates();
-			X509Certificate[] certificates = new X509Certificate[certList.size()];
-			for (int i = 0; i < certList.size(); i++) {
-				certificates[i] = (X509Certificate) certList.get(i);
-			}
-			return new CertificateChain(certificates);
-		} catch (CertificateException ex) {
-			throw new RuntimeException(ex);
+		// decode the certificates
+		var certPath = cf.generateCertPath(new ByteArrayInputStream(bytes));
+		var certList = certPath.getCertificates();
+		X509Certificate[] certificates = new X509Certificate[certList.size()];
+		for (int i = 0; i < certList.size(); i++) {
+			certificates[i] = (X509Certificate) certList.get(i);
 		}
+		return new CertificateChain(certificates);
 	}
 
-	public byte[] serialize() {
-		try {
-			// create a certificate factory
-			var cf = CertificateFactory.getInstance(CERT_TYPE);
+	public byte[] serialize() throws CertificateException {
+		// create a certificate factory
+		var cf = CertificateFactory.getInstance(CERT_TYPE);
 
-			// create a list of certificates
-			List<Certificate> certList = new ArrayList<>(Arrays.asList(certificates));
+		// create a list of certificates
+		List<Certificate> certList = new ArrayList<>(Arrays.asList(certificates));
 
-			// encode the certificates
-			return cf.generateCertPath(certList).getEncoded();
-		} catch (CertificateException ex) {
-			throw new RuntimeException(ex);
-		}
+		// encode the certificates
+		return cf.generateCertPath(certList).getEncoded();
 	}
 
 	public X509Certificate leafCertificate() {

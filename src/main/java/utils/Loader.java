@@ -50,10 +50,9 @@ public class Loader {
     /**
      * Reads the proxy and ca certificates, and returns a certificate certificates object.
      */
-    public static CertificateChain readCertificates(String path, KeyStore trustStore) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+    public static CertificateChain readCertificates(String path, KeyStore trustStore, String alias) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         var proxyCertificate = CertificateTool.certificateFromFile(path);
 
-        var alias = proxyCertificate.getIssuerX500Principal().getName();
         var caCertificate = CertificateTool.certificateFromTruststore(trustStore, alias);
         return new CertificateChain(proxyCertificate, caCertificate);
     }

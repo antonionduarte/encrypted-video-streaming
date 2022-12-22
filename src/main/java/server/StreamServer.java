@@ -43,11 +43,15 @@ public class StreamServer {
 	public static final String KEYSTORE_PASSWORD_ENV = "SERVER_PASSWORD";
 	private static final String TRUSTSTORE_PASSWORD_ENV = "TRUSTSTORE_PASSWORD";
 
+	public static final String CA_ALIAS_MASK = "ca_%s_%d";
 	public static final String ALIAS_MASK = "server_%s_%d";
 
-	public static final String CERTIFICATE_PATH_MASK = "certs/server/server_%s_%d.cer";
+	public static final String CERTIFICATE_PATH_MASK = "certs/server/certs/server_%s_%d.cer";
 	public static final String KEYSTORE_PATH = "certs/server/server.pkcs12";
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
+
+	public static final InetSocketAddress CLIENT_UDP_SOCKET_ADDRESS = new InetSocketAddress("localhost", 5000);
+
 
 	private final InetSocketAddress serverAddress;
 	private final Map<String, CipherConfig> moviesConfig;
@@ -108,7 +112,7 @@ public class StreamServer {
 		var cipherConfig = result.cipherConfig();
 		var rtss = new RtssProtocol(cipherConfig);
 
-		InetSocketAddress clientAddress = result.clientAddress();
+		InetSocketAddress clientAddress = CLIENT_UDP_SOCKET_ADDRESS; // result.clientAddress();
 		var movieName = result.movieName();
 
 		byte[] plainMovie = getMovieBytes(movieName);

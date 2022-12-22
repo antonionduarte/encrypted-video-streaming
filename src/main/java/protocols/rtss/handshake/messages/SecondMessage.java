@@ -10,11 +10,12 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 public record SecondMessage(SymmetricConfig symConfig, CertificateChain certChain,
 							byte[] pubNumBytes, byte[] signature) implements Message {
 
-	public static SecondMessage deserialize(String macAlg, Key macKey, byte[] bytes) throws IOException, IntegrityException, RepeatedMessageException, NoSuchAlgorithmException, InvalidKeyException {
+	public static SecondMessage deserialize(String macAlg, Key macKey, byte[] bytes) throws IOException, IntegrityException, RepeatedMessageException, NoSuchAlgorithmException, InvalidKeyException, CertificateException {
 		// integrity check
 		Message.checkMsgBytesIntegrity(macAlg, macKey, bytes);
 
@@ -43,7 +44,7 @@ public record SecondMessage(SymmetricConfig symConfig, CertificateChain certChai
 	}
 
 	@Override
-	public byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+	public byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException {
 		byte[] symConfigBytes = symConfig.serialize();
 		byte[] certChainBytes = certChain.serialize();
 

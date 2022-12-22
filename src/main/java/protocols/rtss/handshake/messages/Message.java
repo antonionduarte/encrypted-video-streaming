@@ -7,6 +7,7 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 public interface Message {
 
@@ -30,5 +31,5 @@ public interface Message {
 		IntegrityTool.checkMacIntegrity(macAlg, macKey, msg, integrityBytes);
 	}
 
-	byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException;
+	byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException;
 }

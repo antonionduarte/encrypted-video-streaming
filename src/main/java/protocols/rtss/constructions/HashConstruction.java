@@ -27,12 +27,9 @@ public class HashConstruction extends Construction {
     public byte[] encrypt(byte[] plainText) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         // Convert the nonce to a byte array
         int nonce = NonceProcessor.getInstance().generateNonce();
-        byte[] nonceBytes = ByteBuffer.allocate(4).putInt(nonce).array();
+        var buffer = ByteBuffer.allocate(4 + plainText.length).
+                putInt(nonce).put(plainText);
 
-        // Concatenate the nonce and plainText into a single byte array
-        ByteBuffer buffer = ByteBuffer.allocate(nonceBytes.length + plainText.length);
-        buffer.put(nonceBytes);
-        buffer.put(plainText);
         byte[] data = buffer.array();
 
         // Compute the hash of the data

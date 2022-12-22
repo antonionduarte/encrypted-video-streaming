@@ -1,12 +1,14 @@
 package config;
 
 import config.parser.parser_objects.ParsedCipherConfig;
+import org.bouncycastle.util.encoders.Base64;
 import utils.Utils;
 
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
-import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Random;
 
 public class CipherConfig {
 	private final String cipher;
@@ -21,19 +23,21 @@ public class CipherConfig {
 		this.key = new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getKey()), algFromCipher(cipher));
 		this.iv = (parsedCipherConfig.getIv() != null) ? new IvParameterSpec(Utils.hexToBytes(parsedCipherConfig.getIv())) : null;
 		this.integrity = parsedCipherConfig.getIntegrity();
-		this.macKey = (this.integrity != null) ? new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getMacKey()), this.integrity) : null;
-		this.integrityCheck = (parsedCipherConfig.getIntegrityCheck() != null) ? Utils.hexToBytes(parsedCipherConfig.getIntegrityCheck()) : null;
+		this.macKey = (this.integrity != null && parsedCipherConfig.getMacKey() != null) ?
+				new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getMacKey()), this.integrity) : null;
+		this.integrityCheck = (parsedCipherConfig.getIntegrityCheck() != null) ? Base64.decode(parsedCipherConfig.getIntegrityCheck()) : null;
 	}
 
 	public CipherConfig(SymmetricConfig symmetricConfig, byte[] secret) {
-		var random = new SecureRandom(secret);
-		var bytes = genBytes(random, symmetricConfig.getKeySize());
+		var random = new Random();
+		random.setSeed(Arrays.hashCode(secret));
+		var bytes = genBytes(random, symmetricConfig.getKeySize() / 8);
 
 		this.cipher = symmetricConfig.getCipher();
 		this.key = new SecretKeySpec(bytes, algFromCipher(cipher));
 
 		if (symmetricConfig.getIvSize() > 0) {
-			bytes = genBytes(random, symmetricConfig.getIvSize());
+			bytes = genBytes(random, symmetricConfig.getIvSize() / 8);
 			this.iv = new IvParameterSpec(bytes);
 		} else {
 			this.iv = null;
@@ -42,7 +46,7 @@ public class CipherConfig {
 		if (symmetricConfig.getIntegrity() != null) {
 			this.integrity = symmetricConfig.getIntegrity();
 			if (symmetricConfig.getMacKeySize() > 0) {
-				bytes = genBytes(random, symmetricConfig.getMacKeySize());
+				bytes = genBytes(random, symmetricConfig.getMacKeySize() / 8);
 				this.macKey = new SecretKeySpec(bytes, integrity);
 			} else {
 				this.macKey = null;
@@ -58,7 +62,7 @@ public class CipherConfig {
 		return cipher.split("/")[0];
 	}
 
-	private static byte[] genBytes(SecureRandom random, int size) {
+	private static byte[] genBytes(Random random, int size) {
 		var bytes = new byte[size];
 		random.nextBytes(bytes);
 		return bytes;

@@ -3,16 +3,13 @@
     "cipher": "AES/CBC/PKCS5Padding",
     "key-size": 256,
     "integrity": "SHA256",
-    "iv-size": 32
+    "iv-size": 128
   },
   {
-    "cipher": "AES/GCM/NoPadding",
-    "cipher-key-size": 256
-  },
-  {
-    "cipher": "RC6/CTR/NoPadding",
-    "key-size": 256,
-    "integrity": "HMAC-SHA1",
-    "mac-key-size": 160
+    "cipher": "AES/CTR/PKCS5Padding",
+    "key-size": 512,
+    "integrity": "HMAC-SHA256",
+    "mac-key-size": 256,
+    "iv-size": 128
   }
 ]

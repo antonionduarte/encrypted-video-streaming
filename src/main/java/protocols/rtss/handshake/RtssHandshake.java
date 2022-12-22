@@ -23,6 +23,7 @@ import utils.comms.TCPSocket;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -32,7 +33,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
-public class RtssHandshake {
+public class RtssHandshake implements Closeable {
 	public static class RtssHandshakeBuilder {
 		private CertificateChain certificateChain;
 		private List<AsymmetricConfig> asymmetricConfigList;
@@ -139,9 +140,10 @@ public class RtssHandshake {
 		var alias = String.format(StreamServer.ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
 		this.authenticationKeys = Loader.readKeyPair(StreamServer.KEYSTORE_PATH, alias, System.getenv(StreamServer.KEYSTORE_PASSWORD_ENV));
 		var path = String.format(StreamServer.CERTIFICATE_PATH_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
-		this.certificateChain = Loader.readCertificates(path, certificateVerifier.trustStore());
+		var caAlias = String.format(StreamServer.CA_ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		this.certificateChain = Loader.readCertificates(path, certificateVerifier.trustStore(), caAlias);
 
-		certificateVerifier.verifyCertificateChain(firstMessage.certChain());
+		certificateVerifier.verifyCertificateChain(asymmetricConfig.getAuthentication(), firstMessage.certChain());
 
 		SignatureTool.verifySignature(asymmetricConfig, firstMessage.certChain().leafCertificate().getPublicKey(), firstMessage.pubNumBytes(), firstMessage.signature());
 
@@ -169,9 +171,10 @@ public class RtssHandshake {
 		var secondMessage = SecondMessage.deserialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey(), secondMessageBytes);
 
 		// verify certificate chain
-		certificateVerifier.verifyCertificateChain(secondMessage.certChain());
 
 		var asymmetricConfig = asymmetricConfigList.get(0);
+
+		certificateVerifier.verifyCertificateChain(asymmetricConfig.getAuthentication(), secondMessage.certChain());
 
 		SignatureTool.verifySignature(asymmetricConfig, secondMessage.certChain().leafCertificate().getPublicKey(), secondMessage.pubNumBytes(), secondMessage.signature());
 
@@ -203,5 +206,10 @@ public class RtssHandshake {
 		var message = socket.receiveMessage();
 		var movieBytes = new RtssProtocol(decidedCipherSuite).decrypt(message);
 		return new String(movieBytes, StandardCharsets.UTF_8);
+	}
+
+	@Override
+	public void close() throws IOException {
+		socket.close();
 	}
 }

@@ -4,14 +4,14 @@
     "key": "91342609ae5435f69a23652476e67abc",
     "iv": "4524568176123498",
     "integrity": "SHA256",
-    "integrity-check": "4ad38c2929c7cfe2a2b840917112514051f06774e026e335d1be1722f713c4c6"
+    "integrity-check": "StOMKSnHz+KiuECRcRJRQFHwZ3TgJuM10b4XIvcTxMY="
   },
   "monsters.dat.enc": {
     "cipher": "RC6/CTR/NoPadding",
     "key": "476e67a34e5571897612391bcce24512",
     "iv": "8a451982e562c487",
     "integrity": "HMAC-SHA1",
-    "integrity-check": "90d5c2875661243caccb908de4b12122ac4d5db6",
+    "integrity-check": "nrRYtw+iTaZ6qYtE7cp3FhhQ44c=",
     "mackey": "6af53417a7f5e4321a65a31213048567"
   }
 }

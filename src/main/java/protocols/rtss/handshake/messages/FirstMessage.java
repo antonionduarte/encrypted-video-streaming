@@ -11,13 +11,14 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
 public record FirstMessage(AsymmetricConfig asymConfig, List<SymmetricConfig> symConfigList, CertificateChain certChain,
                            byte[] pubNumBytes, byte[] signature) implements Message {
 
-	public static FirstMessage deserialize(String macAlg, Key macKey, byte[] bytes) throws IntegrityException, IOException, RepeatedMessageException, NoSuchAlgorithmException, InvalidKeyException {
+	public static FirstMessage deserialize(String macAlg, Key macKey, byte[] bytes) throws IntegrityException, IOException, RepeatedMessageException, NoSuchAlgorithmException, InvalidKeyException, CertificateException {
 		// integrity check
 		Message.checkMsgBytesIntegrity(macAlg, macKey, bytes);
 
@@ -55,7 +56,7 @@ public record FirstMessage(AsymmetricConfig asymConfig, List<SymmetricConfig> sy
 	}
 
 	@Override
-	public byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+	public byte[] serialize(String macAlg, Key macKey) throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException {
 		var byteArrayOutputStream = new ByteArrayOutputStream();
 		var dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 

@@ -3,6 +3,7 @@ package config;
 import config.parser.parser_objects.ParsedSymmetricConfig;
 
 import java.io.*;
+import java.util.Objects;
 
 public class SymmetricConfig {
 	private final String cipher;
@@ -32,17 +33,13 @@ public class SymmetricConfig {
 
 		var cipher = dataInputStream.readUTF();
 		var keySize = dataInputStream.readInt();
+		var ivSize = dataInputStream.readInt();
+		var macKeySize = dataInputStream.readInt();
 
-		if (dataInputStream.available() == 0) {
-			return new SymmetricConfig(cipher, keySize, null, 0, 0);
-		} else if (dataInputStream.available() == 4) {
-			return new SymmetricConfig(cipher, keySize, null, 0, dataInputStream.readInt());
-		} else {
-			var integrity = dataInputStream.readUTF();
-			var macKeySize = dataInputStream.readInt();
-			var ivSize = dataInputStream.available() == 4 ? dataInputStream.readInt() : 0;
-			return new SymmetricConfig(cipher, keySize, integrity, macKeySize, ivSize);
-		}
+		if (dataInputStream.available() == 0)
+			return new SymmetricConfig(cipher, keySize, null, macKeySize, ivSize);
+		else
+			return new SymmetricConfig(cipher, keySize, dataInputStream.readUTF(), macKeySize, ivSize);
 	}
 
 	public byte[] serialize() throws IOException {
@@ -51,17 +48,9 @@ public class SymmetricConfig {
 
 		dataOutputStream.writeUTF(cipher);
 		dataOutputStream.writeInt(keySize);
-
-		if (integrity != null) {
-			dataOutputStream.writeUTF(integrity);
-			if (macKeySize == 0) {
-				dataOutputStream.writeInt(macKeySize);
-			}
-		}
-
-		if (ivSize == 0) {
-			dataOutputStream.writeInt(ivSize);
-		}
+		dataOutputStream.writeInt(ivSize);
+		dataOutputStream.writeInt(macKeySize);
+		if (integrity != null)  dataOutputStream.writeUTF(integrity);
 
 		return byteArrayOutputStream.toByteArray();
 	}
@@ -84,5 +73,18 @@ public class SymmetricConfig {
 
 	public int getIvSize() {
 		return ivSize;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		SymmetricConfig that = (SymmetricConfig) o;
+		return keySize == that.keySize && macKeySize == that.macKeySize && ivSize == that.ivSize && cipher.equals(that.cipher) && Objects.equals(integrity, that.integrity);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(cipher, integrity, keySize, macKeySize, ivSize);
 	}
 }

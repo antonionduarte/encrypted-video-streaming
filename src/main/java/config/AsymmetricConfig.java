@@ -4,6 +4,7 @@ import config.parser.parser_objects.ParsedAsymmetricConfig;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class AsymmetricConfig {
 
@@ -63,7 +64,7 @@ public class AsymmetricConfig {
 
 		if (g != null && p != null) {
 			var gBytes = g.toByteArray();
-			dataOutputStream.write(gBytes.length);
+			dataOutputStream.writeInt(gBytes.length);
 			dataOutputStream.write(gBytes);
 			dataOutputStream.write(p.toByteArray());
 		}
@@ -101,5 +102,18 @@ public class AsymmetricConfig {
 
 	public void setP(BigInteger p) {
 		this.p = p;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		AsymmetricConfig that = (AsymmetricConfig) o;
+		return keySize == that.keySize && numSize == that.numSize && authentication.equals(that.authentication) && keyExchange.equals(that.keyExchange);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(authentication, keyExchange, keySize, numSize);
 	}
 }
