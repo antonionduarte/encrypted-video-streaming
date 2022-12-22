@@ -20,11 +20,11 @@ public class SymmetricConfig {
 	}
 
 	public SymmetricConfig(ParsedSymmetricConfig parsedSymmetricConfig) {
-		this.cipher = parsedSymmetricConfig.cipher();
-		this.keySize = parsedSymmetricConfig.keySize();
-		this.integrity = parsedSymmetricConfig.integrity();
-		this.macKeySize = parsedSymmetricConfig.macKeySize();
-		this.ivSize = parsedSymmetricConfig.ivSize();
+		this.cipher = parsedSymmetricConfig.getCipher();
+		this.keySize = parsedSymmetricConfig.getKeySize();
+		this.integrity = parsedSymmetricConfig.getIntegrity();
+		this.macKeySize = parsedSymmetricConfig.getMacKeySize();
+		this.ivSize = parsedSymmetricConfig.getIvSize();
 	}
 
 	public static SymmetricConfig deserialize(byte[] bytes) throws IOException {

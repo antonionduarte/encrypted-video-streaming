@@ -12,8 +12,8 @@ public class HandshakeIntegrityConfig {
 	private final Key macKey;
 
 	public HandshakeIntegrityConfig(ParsedHandshakeIntegrityConfig config) {
-		this.algorithm = config.algorithm();
-		this.macKey = new SecretKeySpec(Utils.hexToBytes(config.macKey()), algorithm);
+		this.algorithm = config.getAlgorithm();
+		this.macKey = new SecretKeySpec(Utils.hexToBytes(config.getMacKey()), algorithm);
 	}
 
 	public String getAlgorithm() {
