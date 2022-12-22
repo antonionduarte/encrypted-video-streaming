@@ -3,12 +3,6 @@
 # example: DSA 2048
 # example: EC 256
 
-# change here to your own values
-export ca_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-export proxy_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-export server_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-export truststore_password="aaaaaaaabbbbbbbbccccccccdddddddd"
-
 config_folder="certs/"
 proxy_config_folder=$config_folder"proxy/"
 server_config_folder=$config_folder"server/"
@@ -53,13 +47,13 @@ keytool -genkeypair -noprompt \
   -storetype PKCS12 \
   -alias $ca_alias \
   -keystore $ca_ks \
-  -storepass $ca_password \
+  -storepass $CA_PASSWORD \
   -ext bc=ca:true
 
 # Generate CA root certificate
 keytool -export -noprompt \
   -alias $ca_alias \
-  -storepass $ca_password \
+  -storepass $CA_PASSWORD \
   -storetype PKCS12 \
   -file $ca_cert \
   -keystore $ca_ks
@@ -68,7 +62,7 @@ keytool -import -noprompt \
   -alias $ca_alias \
   -file $ca_cert \
   -storetype PKCS12 \
-  -storepass $truststore_password \
+  -storepass $TRUSTSTORE_PASSWORD \
   -keystore $truststore
 
 
@@ -80,7 +74,7 @@ keytool -genkeypair -noprompt \
   -storetype PKCS12 \
   -alias $proxy_alias \
   -keystore $proxy_ks \
-  -storepass $proxy_password
+  -storepass $PROXY_PASSWORD
 keytool -genkeypair -noprompt \
   -dname "CN=Server" \
   -keysize $key_size \
@@ -88,18 +82,18 @@ keytool -genkeypair -noprompt \
   -storetype PKCS12 \
   -alias $server_alias \
   -keystore $server_ks \
-  -storepass $server_password
+  -storepass $SERVER_PASSWORD
 
 # Next, a certificate request for the "CN=Leaf" certificate needs to be created.
 keytool -certreq -noprompt \
   -keystore $proxy_ks \
-  -storepass $proxy_password \
+  -storepass $PROXY_PASSWORD \
   -storetype PKCS12 \
   -alias $proxy_alias \
   -file $proxy_csr
 keytool -certreq -noprompt \
   -keystore $server_ks \
-  -storepass $server_password \
+  -storepass $SERVER_PASSWORD \
   -storetype PKCS12 \
   -alias $server_alias \
   -file $server_csr
@@ -108,14 +102,14 @@ keytool -certreq -noprompt \
 # Now creating the certificate with the certificate request generated above.
 keytool -gencert -noprompt \
   -keystore $ca_ks \
-  -storepass $ca_password \
+  -storepass $CA_PASSWORD \
   -storetype PKCS12 \
   -alias $ca_alias \
   -infile $proxy_csr \
   -outfile $proxy_cert
 keytool -gencert -noprompt \
   -keystore $ca_ks \
-  -storepass $ca_password \
+  -storepass $CA_PASSWORD \
   -storetype PKCS12 \
   -alias $ca_alias \
   -infile $server_csr \
@@ -129,5 +123,5 @@ keytool -printcert -file $server_cert
 # list truststore
 keytool -list \
   -keystore $truststore \
-  -storepass $truststore_password
+  -storepass $TRUSTSTORE_PASSWORD
 

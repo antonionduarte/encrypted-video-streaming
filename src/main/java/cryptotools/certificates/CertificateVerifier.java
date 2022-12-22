@@ -8,13 +8,7 @@ import java.security.cert.*;
 import java.util.Arrays;
 import java.util.Date;
 
-public class CertificateVerifier {
-
-	private final KeyStore trustStore;
-
-	public CertificateVerifier(KeyStore trustStore) {
-		this.trustStore = trustStore;
-	}
+public record CertificateVerifier(KeyStore trustStore) {
 
 	/**
 	 * Verify the validity of a certificate chain

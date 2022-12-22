@@ -15,6 +15,8 @@ import protocols.rtss.handshake.exceptions.AuthenticationException;
 import protocols.rtss.handshake.exceptions.NoCiphersuiteMatchException;
 import protocols.rtss.handshake.messages.FirstMessage;
 import protocols.rtss.handshake.messages.SecondMessage;
+import server.StreamServer;
+import utils.Loader;
 import utils.Utils;
 import utils.comms.TCPSocket;
 
@@ -74,19 +76,18 @@ public class RtssHandshake {
 		}
 	}
 
-	private final CertificateChain certificateChain;
 	private final List<AsymmetricConfig> asymmetricConfigList;
 	private final List<SymmetricConfig> symmetricConfigList;
-	private final KeyPair authenticationKeys;
 	private final HandshakeIntegrityConfig integrityConfig;
 	private final CertificateVerifier certificateVerifier;
 	private final TCPSocket socket;
 
+	private KeyPair authenticationKeys;
+	private CertificateChain certificateChain;
 	private KeyAgreementExecutor keyAgreementExecutor;
-
 	private CipherConfig decidedCipherSuite;
 
-	RtssHandshake(CertificateChain certificateChain, List<AsymmetricConfig> asymmetricConfigList, List<SymmetricConfig> symmetricConfigList, KeyPair authenticationKeys, HandshakeIntegrityConfig integrityConfig, CertificateVerifier certificateVerifier) {
+	private RtssHandshake(CertificateChain certificateChain, List<AsymmetricConfig> asymmetricConfigList, List<SymmetricConfig> symmetricConfigList, KeyPair authenticationKeys, HandshakeIntegrityConfig integrityConfig, CertificateVerifier certificateVerifier) {
 		this.certificateChain = certificateChain;
 		this.asymmetricConfigList = asymmetricConfigList;
 		this.symmetricConfigList = symmetricConfigList;
@@ -131,10 +132,14 @@ public class RtssHandshake {
 		var firstMessage = FirstMessage.deserialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey(), firstMessageBytes);
 		var asymmetricConfig = Utils.firstIntersection(List.of(firstMessage.asymConfig()), asymmetricConfigList);
 		var symmetricConfig = Utils.firstIntersection(firstMessage.symConfigList(), symmetricConfigList);
-
 		if (asymmetricConfig == null || symmetricConfig == null) {
 			throw new NoCiphersuiteMatchException();
 		}
+
+		var alias = String.format(StreamServer.ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		this.authenticationKeys = Loader.readKeyPair(StreamServer.KEYSTORE_PATH, alias, System.getenv(StreamServer.KEYSTORE_PASSWORD_ENV));
+		var path = String.format(StreamServer.CERTIFICATE_PATH_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		this.certificateChain = Loader.readCertificates(path, certificateVerifier.trustStore());
 
 		certificateVerifier.verifyCertificateChain(firstMessage.certChain());
 

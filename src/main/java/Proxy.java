@@ -1,32 +1,25 @@
-import config.AsymmetricConfig;
 import config.CipherConfig;
-import config.HandshakeIntegrityConfig;
-import config.SymmetricConfig;
-import config.parser.ParseAsymmetricConfigList;
-import config.parser.ParseHandshakeIntegrityConfig;
-import config.parser.ParseSymmetricConfigList;
-import cryptotools.certificates.CertificateChain;
-import cryptotools.certificates.CertificateTool;
 import cryptotools.certificates.CertificateVerifier;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.keystore.KeyStoreTool;
-import protocols.rtss.handshake.RtssHandshake;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import protocols.rtss.RtssProtocol;
+import protocols.rtss.handshake.RtssHandshake;
+import protocols.rtss.handshake.RtssHandshakeExecutor;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.Stats;
+import utils.Loader;
 import utils.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.security.*;
-import java.security.cert.CertificateException;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -41,73 +34,38 @@ public class Proxy {
 	private static final String SYM_CONFIG_PATH = "config/proxy/symmetric-config.json";
 	private static final String INTEGRITY_CONFIG_PATH = "config/common/handshake-integrity.json";
 
-	private static final String KEYSTORE_PASSWORD_ENV = "proxy_password";
-	private static final String TRUSTSTORE_PASSWORD_ENV = "truststore_password";
+	private static final String KEYSTORE_PASSWORD_ENV = "PROXY_PASSWORD";
+	private static final String TRUSTSTORE_PASSWORD_ENV = "TRUSTSTORE_PASSWORD";
 
-	private static final String PROXY_ALIAS_MASK = "proxy_%s_%d";
+	private static final String ALIAS_MASK = "proxy_%s_%d";
 
 	private static final String CERTIFICATE_PATH_MASK = "certs/proxy/proxy_%s_%d.cer";
 	private static final String KEYSTORE_PATH = "certs/proxy/proxy.pkcs12";
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
 
 
-	private static AsymmetricConfig readAsymConfig() throws IOException {
-		// only need the first one
-		var parsedConfig = new ParseAsymmetricConfigList(ASYM_CONFIG_PATH).parseConfig().get(0);
-		return new AsymmetricConfig(parsedConfig);
-	}
-
-	private static List<SymmetricConfig> readSymConfigList() throws IOException {
-		var parsedConfigList = new ParseSymmetricConfigList(SYM_CONFIG_PATH).parseConfig();
-		return parsedConfigList.stream().map(config -> new SymmetricConfig(config)).collect(Collectors.toList());
-	}
-
-	private static HandshakeIntegrityConfig readIntegrityConfig() throws IOException {
-		var parsedConfig = new ParseHandshakeIntegrityConfig(INTEGRITY_CONFIG_PATH).parseConfig();
-		return new HandshakeIntegrityConfig(parsedConfig);
-	}
-
-	private static KeyPair readKeyPair(AsymmetricConfig config) {
-		var alias = String.format(PROXY_ALIAS_MASK, config.getAuthentication(), config.getKeySize());
-		var password = System.getenv(KEYSTORE_PASSWORD_ENV);
-		return KeyStoreTool.keyPairFromKeyStore(KEYSTORE_PATH, alias, password);
-	}
-
-	/**
-	 * Reads the proxy and ca certificates, and returns a certificate certificates object.
-	 */
-	private static CertificateChain readCertificates(AsymmetricConfig config, KeyStore trustStore) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
-		var path = String.format(CERTIFICATE_PATH_MASK, config.getAuthentication(), config.getKeySize());
-		var proxyCertificate = CertificateTool.certificateFromFile(path);
-
-		var alias = proxyCertificate.getIssuerX500Principal().getName();
-		var caCertificate = CertificateTool.certificateFromTruststore(trustStore, alias);
-		return new CertificateChain(proxyCertificate, caCertificate);
-	}
-
 	/**
 	 * Performs the handshake using the RTSS Handshake Class.
 	 */
-	private static CipherConfig performHandshake(InetSocketAddress serverAddress) throws Exception {
-		var asymmetricConfig = readAsymConfig();
-		var symmetricConfigList = readSymConfigList();
-		var integrityConfig = readIntegrityConfig();
-		var keyPair = readKeyPair(asymmetricConfig);
+	private static CipherConfig performHandshake(InetSocketAddress serverAddress, String movieName) throws Exception {
+		var asymmetricConfig = Loader.readAsymConfig(ASYM_CONFIG_PATH);
+		var symmetricConfigList = Loader.readSymConfigList(SYM_CONFIG_PATH);
+		var integrityConfig = Loader.readIntegrityConfig(INTEGRITY_CONFIG_PATH);
+		var keyStorePath = String.format(ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		var keyPair = Loader.readKeyPair(KEYSTORE_PATH, keyStorePath, System.getenv(KEYSTORE_PASSWORD_ENV));
 		var trustStore = KeyStoreTool.getTrustStore(TRUSTSTORE_PATH, System.getenv(TRUSTSTORE_PASSWORD_ENV));
-		var certificateChain = readCertificates(asymmetricConfig, trustStore);
+		var certificatePath = String.format(CERTIFICATE_PATH_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
+		var certificateChain = Loader.readCertificates(certificatePath, trustStore);
 		var certificateVerifier = new CertificateVerifier(trustStore);
 
 		RtssHandshake.RtssHandshakeBuilder builder = new RtssHandshake.RtssHandshakeBuilder();
-
 		var handshake = builder.setCertificateChain(certificateChain)
 				.setAsymmetricConfigList(List.of(asymmetricConfig))
 				.setSymmetricConfigList(symmetricConfigList)
 				.setAuthenticationKeys(keyPair)
 				.setIntegrityConfig(integrityConfig)
 				.setCertificateVerifier(certificateVerifier).build();
-		handshake.start(serverAddress);
-
-		return handshake.getDecidedCipherSuite();
+		return RtssHandshakeExecutor.performHandshakeClient(handshake, serverAddress, movieName);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -127,7 +85,8 @@ public class Proxy {
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
 
 		//var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
-		var cipherConfig = performHandshake(inSocketAddress);
+		var cipherConfig = performHandshake(inSocketAddress, ); //TODO: put movieName
+		var rtss = new RtssProtocol(cipherConfig);
 
 		try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {
 			try (DatagramSocket outSocket = new DatagramSocket()) {
@@ -139,7 +98,7 @@ public class Proxy {
 				long beginningTime = -1; // ref. time
 
 				while (true) {
-					SecureDatagramPacket inPacket = new SecureDatagramPacket(cipherConfig);
+					SecureDatagramPacket inPacket = new SecureDatagramPacket(rtss);
 					try {
 						inSocket.receive(buffer, inPacket);
 
@@ -185,7 +144,6 @@ public class Proxy {
 				stats.printStats();
 			}
 		}
-
 
 		System.out.println("Stream ended.");
 	}

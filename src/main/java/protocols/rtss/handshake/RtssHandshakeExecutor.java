@@ -1,5 +1,6 @@
 package protocols.rtss.handshake;
 
+import config.CipherConfig;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.repetition.exceptions.RepeatedMessageException;
 import protocols.rtss.handshake.exceptions.AuthenticationException;
@@ -16,9 +17,10 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
 public class RtssHandshakeExecutor {
-	public static void performHandshakeClient(RtssHandshake handshake, InetSocketAddress serverAddress, String movieName) throws InvalidAlgorithmParameterException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, SignatureException, KeyStoreException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public static CipherConfig performHandshakeClient(RtssHandshake handshake, InetSocketAddress serverAddress, String movieName) throws InvalidAlgorithmParameterException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, SignatureException, KeyStoreException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		handshake.start(serverAddress);
 		handshake.requestMovie(movieName);
+		return handshake.getDecidedCipherSuite();
 	}
 
 	public static RtssResultServer performHandshakeServer(RtssHandshake handshake, int port) throws InvalidAlgorithmParameterException, NoCiphersuiteMatchException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, SignatureException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
