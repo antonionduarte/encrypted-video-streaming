@@ -69,10 +69,17 @@ public class Proxy {
 	}
 
 	public static void main(String[] args) throws Exception {
+		if (args.length != 1) {
+			System.out.println("Error, use: Proxy <movie>");
+			System.exit(-1);
+		}
+
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());
+
 		System.out.println("Proxy Running");
 
+		var movieName = args[0];
 		var inputStream = new FileInputStream(CONFIG_PATH);
 		var properties = new Properties();
 
@@ -85,7 +92,7 @@ public class Proxy {
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
 
 		//var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
-		var cipherConfig = performHandshake(inSocketAddress, ); //TODO: put movieName
+		var cipherConfig = performHandshake(inSocketAddress, movieName);
 		var rtss = new RtssProtocol(cipherConfig);
 
 		try (SecureSocket inSocket = new SecureSocket(inSocketAddress)) {

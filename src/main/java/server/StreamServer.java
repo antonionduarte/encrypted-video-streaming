@@ -49,13 +49,12 @@ public class StreamServer {
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
 
 	private final InetSocketAddress serverAddress;
-	private final String movie;
 	private final Map<String, CipherConfig> moviesConfig;
 
+	private String movie;
 	private InetSocketAddress clientAddress;
 
-	public StreamServer(String movie, String serverAddressStr, String serverPort) throws Exception {
-		this.movie = movie;
+	public StreamServer(String serverAddressStr, String serverPort) throws Exception {
 		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));
 		this.moviesConfig = new DecipherMoviesConfig(System.getenv(CIPHER_CONFIG_ENV), MOVIES_CIPHER_CONFIG_PATH).getCipherConfig();
 	}
