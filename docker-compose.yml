@@ -15,5 +15,7 @@ services:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
     network_mode: host
+    depends_on:
+      - server
     environment: 
       PROXY_PASSWORD: "${PROXY_PASSWORD}"
