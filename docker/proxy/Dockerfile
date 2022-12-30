@@ -6,4 +6,7 @@ ADD config/common/ config/common/
 ADD certs/proxy/ certs/proxy/
 ADD certs/common/ certs/common/
 
-CMD java -cp ciphered-video-server.jar Proxy movies/ciphered/cars.dat.enc
+# confirmed the value is passed correctly here
+ARG MOVIE
+
+CMD java -cp ciphered-video-server.jar Proxy $MOVIE

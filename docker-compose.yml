@@ -15,6 +15,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
+      args:
+        - MOVIE
     network_mode: host
     command: sleep 2
     depends_on:
