@@ -9,7 +9,7 @@ import cryptotools.keystore.KeyStoreTool;
 import protocols.rtss.RtssProtocol;
 import protocols.rtss.handshake.RtssHandshake;
 import protocols.rtss.handshake.RtssHandshakeExecutor;
-import protocols.rtss.handshake.RtssResultServer;
+import protocols.rtss.handshake.ResultServer;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
 import statistics.Stats;
@@ -50,8 +50,7 @@ public class StreamServer {
 	public static final String KEYSTORE_PATH = "certs/server/server.pkcs12";
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
 
-	public static final InetSocketAddress CLIENT_UDP_SOCKET_ADDRESS = new InetSocketAddress("localhost", 5000);
-
+	private static final String CIPHERED_MOVIE_MASK = "movies/ciphered/%s.dat.enc";
 
 	private final InetSocketAddress serverAddress;
 	private final Map<String, CipherConfig> moviesConfig;
@@ -71,7 +70,7 @@ public class StreamServer {
 	/**
 	 * Performs the handshake using the RTSS Handshake Class.
 	 */
-	private static RtssResultServer performHandshake(int port) throws Exception {
+	private static ResultServer performHandshake(int port) throws Exception {
 		var asymmetricConfigList = Loader.readAsymConfigList(ASYM_CONFIG_PATH);
 		var symmetricConfigList = Loader.readSymConfigList(SYM_CONFIG_PATH);
 		var integrityConfig = Loader.readIntegrityConfig(INTEGRITY_CONFIG_PATH);
@@ -112,7 +111,7 @@ public class StreamServer {
 		var cipherConfig = result.cipherConfig();
 		var rtss = new RtssProtocol(cipherConfig);
 
-		InetSocketAddress clientAddress = CLIENT_UDP_SOCKET_ADDRESS; // result.clientAddress();
+		InetSocketAddress clientAddress = result.clientAddress();
 		var movieName = result.movieName();
 
 		byte[] plainMovie = getMovieBytes(movieName);

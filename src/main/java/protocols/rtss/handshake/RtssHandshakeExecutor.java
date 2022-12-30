@@ -17,17 +17,17 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
 public class RtssHandshakeExecutor {
-	public static CipherConfig performHandshakeClient(RtssHandshake handshake, InetSocketAddress serverAddress, String movieName) throws InvalidAlgorithmParameterException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, SignatureException, KeyStoreException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		handshake.start(serverAddress);
+	public static ResultClient performHandshakeClient(RtssHandshake handshake, InetSocketAddress serverAddress, String movieName) throws InvalidAlgorithmParameterException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, SignatureException, KeyStoreException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		var clientAddress = handshake.start(serverAddress);
 		handshake.requestMovie(movieName);
 		handshake.close();
-		return handshake.getDecidedCipherSuite();
+		return new ResultClient(clientAddress, handshake.getDecidedCipherSuite());
 	}
 
-	public static RtssResultServer performHandshakeServer(RtssHandshake handshake, int port) throws InvalidAlgorithmParameterException, NoCiphersuiteMatchException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, SignatureException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public static ResultServer performHandshakeServer(RtssHandshake handshake, int port) throws InvalidAlgorithmParameterException, NoCiphersuiteMatchException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, SignatureException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		var clientAddress = handshake.waitClientConnection(port);
 		var movieName = handshake.waitClientMovieRequest();
 		handshake.close();
-		return new RtssResultServer(movieName, clientAddress, handshake.getDecidedCipherSuite());
+		return new ResultServer(movieName, clientAddress, handshake.getDecidedCipherSuite());
 	}
 }

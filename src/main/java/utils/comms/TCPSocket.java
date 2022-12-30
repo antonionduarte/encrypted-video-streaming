@@ -1,5 +1,7 @@
 package utils.comms;
 
+import protocols.rtss.handshake.ResultClient;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,13 +17,15 @@ public class TCPSocket implements Closeable {
 	private OutputStream outputStream;
 
 
-	// Connect to a remote host
-	public void connect(InetSocketAddress address) throws IOException {
+	// Connect to a remote host. Returns the socket used in the connection.
+	public InetSocketAddress connect(InetSocketAddress address) throws IOException {
 		System.out.println("Connecting to " + address);
 		socket = new Socket();
 		socket.connect(address);
 		inputStream = socket.getInputStream();
 		outputStream = socket.getOutputStream();
+
+		return (InetSocketAddress) socket.getLocalSocketAddress();
 	}
 
 	// Send a message to the remote host

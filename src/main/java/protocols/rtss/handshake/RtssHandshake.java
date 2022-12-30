@@ -103,8 +103,8 @@ public class RtssHandshake implements Closeable {
 	 *
 	 * @param targetAddress server address.
 	 */
-	public void start(InetSocketAddress targetAddress) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, RepeatedMessageException, CertPathValidatorException, InvalidAlgorithmParameterException, IntegrityException, CertificateException, KeyStoreException, InvalidKeySpecException, AuthenticationException {
-		socket.connect(targetAddress);
+	public InetSocketAddress start(InetSocketAddress targetAddress) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, RepeatedMessageException, CertPathValidatorException, InvalidAlgorithmParameterException, IntegrityException, CertificateException, KeyStoreException, InvalidKeySpecException, AuthenticationException {
+		var clientAddress = socket.connect(targetAddress);
 
 		// choose first one
 		var chosenAsymmetricConfig = asymmetricConfigList.get(0);
@@ -117,6 +117,8 @@ public class RtssHandshake implements Closeable {
 		socket.sendMessage(firstMessage.serialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey()));
 
 		waitServer();
+
+		return clientAddress;
 	}
 
 	/**

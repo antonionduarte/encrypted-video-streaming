@@ -4,6 +4,7 @@ import cryptotools.integrity.IntegrityException;
 import cryptotools.keystore.KeyStoreTool;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import protocols.rtss.RtssProtocol;
+import protocols.rtss.handshake.ResultClient;
 import protocols.rtss.handshake.RtssHandshake;
 import protocols.rtss.handshake.RtssHandshakeExecutor;
 import securesocket.SecureDatagramPacket;
@@ -48,7 +49,7 @@ public class Proxy {
 	/**
 	 * Performs the handshake using the RTSS Handshake Class.
 	 */
-	private static CipherConfig performHandshake(InetSocketAddress serverAddress, String movieName) throws Exception {
+	private static ResultClient performHandshake(InetSocketAddress serverAddress, String movieName) throws Exception {
 		var asymmetricConfig = Loader.readAsymConfig(ASYM_CONFIG_PATH);
 		var symmetricConfigList = Loader.readSymConfigList(SYM_CONFIG_PATH);
 		var integrityConfig = Loader.readIntegrityConfig(INTEGRITY_CONFIG_PATH);
@@ -94,10 +95,12 @@ public class Proxy {
 		var outSocketAddressSet = Arrays.stream(destinations.split(",")).map(Utils::parseSocketAddress).collect(Collectors.toSet());
 
 		//var cipherConfig = new CipherConfig(new ParseCipherConfigMap(json).parseConfig().values().iterator().next());
-		var cipherConfig = performHandshake(serverAddress, movieName);
+		var result = performHandshake(serverAddress, movieName);
+		var cipherConfig = result.cipherConfig();
+		var selfAddress = result.clientAddress();
 		var rtss = new RtssProtocol(cipherConfig);
 
-		try (SecureSocket inSocket = new SecureSocket(StreamServer.CLIENT_UDP_SOCKET_ADDRESS)) {
+		try (SecureSocket inSocket = new SecureSocket(selfAddress)) {
 			try (DatagramSocket outSocket = new DatagramSocket()) {
 				byte[] buffer = new byte[4096]; // prev 8192
 
