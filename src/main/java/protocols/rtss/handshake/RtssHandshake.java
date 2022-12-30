@@ -127,7 +127,7 @@ public class RtssHandshake implements Closeable {
 	 * @param port to listen.
 	 * @return InetSocketAddress of connecting client.
 	 */
-	public InetSocketAddress waitClientConnection(int port) throws IntegrityException, IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, KeyStoreException, CertPathValidatorException, InvalidAlgorithmParameterException, RepeatedMessageException, NoCiphersuiteMatchException, InvalidKeySpecException, SignatureException, AuthenticationException {
+	public InetSocketAddress waitClientConnection(int port) throws IntegrityException, IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, KeyStoreException, CertPathValidatorException, InvalidAlgorithmParameterException, RepeatedMessageException, NoCiphersuiteMatchException, InvalidKeySpecException, SignatureException, AuthenticationException, UnrecoverableKeyException {
 		var clientSocket = socket.waitConnection(port);
 		var firstMessageBytes = socket.receiveMessage();
 

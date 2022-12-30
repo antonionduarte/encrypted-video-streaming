@@ -5,7 +5,8 @@ import java.security.Security;
 
 public class Server {
 
-	private static final String ADDRESS = "127.0.0.1", PORT = "9999";
+	private static final String ADDRESS = "127.0.0.1";
+	private static final int PORT = 9999;
 
 	public static void main(String[] args) throws Exception {
 		Security.setProperty("crypto.policy", "unlimited");

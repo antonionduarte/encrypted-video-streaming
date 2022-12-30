@@ -24,7 +24,7 @@ public class RtssHandshakeExecutor {
 		return new ResultClient(clientAddress, handshake.getDecidedCipherSuite());
 	}
 
-	public static ResultServer performHandshakeServer(RtssHandshake handshake, int port) throws InvalidAlgorithmParameterException, NoCiphersuiteMatchException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, SignatureException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public static ResultServer performHandshakeServer(RtssHandshake handshake, int port) throws InvalidAlgorithmParameterException, NoCiphersuiteMatchException, AuthenticationException, IntegrityException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, SignatureException, InvalidKeyException, CertPathValidatorException, RepeatedMessageException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, UnrecoverableKeyException {
 		var clientAddress = handshake.waitClientConnection(port);
 		var movieName = handshake.waitClientMovieRequest();
 		handshake.close();

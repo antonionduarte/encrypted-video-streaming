@@ -24,11 +24,7 @@ public class CertificateTool {
 	/**
 	 * Gets a certificate from a truststore.
 	 */
-	public static X509Certificate certificateFromTruststore(KeyStore trustStore, String alias) {
-		try {
-			return (X509Certificate) trustStore.getCertificate(alias);
-		} catch (KeyStoreException ex) {
-			throw new RuntimeException(ex);
-		}
+	public static X509Certificate certificateFromTruststore(KeyStore trustStore, String alias) throws KeyStoreException {
+		return (X509Certificate) trustStore.getCertificate(alias);
 	}
 }

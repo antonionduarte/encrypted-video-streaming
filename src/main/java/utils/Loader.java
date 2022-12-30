@@ -11,10 +11,7 @@ import cryptotools.certificates.CertificateTool;
 import cryptotools.keystore.KeyStoreTool;
 
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +40,7 @@ public class Loader {
         return new HandshakeIntegrityConfig(parsedConfig);
     }
 
-    public static KeyPair readKeyPair(String path, String alias, String password) {
+    public static KeyPair readKeyPair(String path, String alias, String password) throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         return KeyStoreTool.keyPairFromKeyStore(path, alias, password);
     }
 

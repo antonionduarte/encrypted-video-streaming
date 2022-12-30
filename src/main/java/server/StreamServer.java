@@ -50,13 +50,14 @@ public class StreamServer {
 	public static final String KEYSTORE_PATH = "certs/server/server.pkcs12";
 	private static final String TRUSTSTORE_PATH = "certs/common/truststore.pkcs12";
 
-	private static final String CIPHERED_MOVIE_MASK = "movies/ciphered/%s.dat.enc";
+	private static final String CIPHERED_MOVIE_DIR = "movies/ciphered/";
+	private static final String MOVIE_SUFFIX = ".dat.enc";
 
 	private final InetSocketAddress serverAddress;
 	private final Map<String, CipherConfig> moviesConfig;
 
-	public StreamServer(String serverAddressStr, String serverPort) throws Exception {
-		this.serverAddress = new InetSocketAddress(serverAddressStr, Integer.parseInt(serverPort));
+	public StreamServer(String serverAddressStr, int serverPort) throws Exception {
+		this.serverAddress = new InetSocketAddress(serverAddressStr, serverPort);
 		this.moviesConfig = new DecipherMoviesConfig(System.getenv(CIPHER_CONFIG_ENV), MOVIES_CIPHER_CONFIG_PATH).getCipherConfig();
 	}
 
@@ -86,16 +87,14 @@ public class StreamServer {
 		return RtssHandshakeExecutor.performHandshakeServer(handshake, port);
 	}
 
-	private byte[] getMovieBytes(String moviePath) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
-		var movieCipherConfig = moviesConfig.get(moviePath.split("/")[2]);
-		// check integrity of dat.enc file
-		try {
-			IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(moviePath)));
-		} catch (IntegrityException ex) {
-			throw new RuntimeException(ex);
-		}
+	private byte[] getMovieBytes(String movieName) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
 
-		return EncryptMovies.decryptMovie(movieCipherConfig, moviePath);
+		var movieCipherConfig = moviesConfig.get(movieName + MOVIE_SUFFIX);
+		// check integrity of dat.enc file
+		var path = CIPHERED_MOVIE_DIR + movieName + MOVIE_SUFFIX;
+		IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(path)));
+
+		return EncryptMovies.decryptMovie(movieCipherConfig, path);
 	}
 
 	public void run() throws Exception {
