@@ -6,7 +6,7 @@ ADD config/common/ config/common/
 ADD certs/proxy/ certs/proxy/
 ADD certs/common/ certs/common/
 
-# confirmed the value is passed correctly here
 ARG MOVIE
+RUN echo "MOVIE=$MOVIE"
 
-CMD java -cp ciphered-video-server.jar Proxy $MOVIE
+CMD java -cp ciphered-video-server.jar Proxy "$MOVIE"
