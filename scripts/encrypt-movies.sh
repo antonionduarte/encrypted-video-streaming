@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp ../target/ciphered-video-server.jar cipherdata.EncryptMovies
+java -cp target/ciphered-video-server.jar utils.cipherutils.EncryptMovies

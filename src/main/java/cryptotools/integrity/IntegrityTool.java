@@ -34,14 +34,14 @@ public class IntegrityTool {
 	public static void checkMacIntegrity(String macAlg, Key macKey, byte[] data, byte[] integrity) throws IntegrityException, NoSuchAlgorithmException, InvalidKeyException {
 		var macBytes = buildMacIntegrity(macAlg, macKey, data);
 		if (!Arrays.equals(macBytes, integrity)) {
-			throw new IntegrityException();
+			throw new IntegrityException(integrity, macBytes);
 		}
 	}
 
 	public static void checkHashIntegrity(String digestAlg, byte[] data, byte[] integrity) throws NoSuchAlgorithmException, IntegrityException {
 		var hashBytes = buildHashIntegrity(digestAlg, data);
 		if (!Arrays.equals(hashBytes, integrity)) {
-			throw new IntegrityException();
+			throw new IntegrityException(integrity, hashBytes);
 		}
 	}
 

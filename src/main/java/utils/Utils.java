@@ -9,18 +9,21 @@ import java.util.List;
 public class Utils {
 
 	public static byte[] hexToBytes(String hex) {
-		String base64 = Base64.getEncoder().encodeToString(hex.getBytes());
-
-		// Convert the base64 string to a byte array
-		return Base64.getDecoder().decode(base64);
+		int len = hex.length();
+		byte[] data = new byte[len / 2];
+		for (int i = 0; i < len; i += 2) {
+			data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+					+ Character.digit(hex.charAt(i+1), 16));
+		}
+		return data;
 	}
 
 	public static String bytesToHex(byte[] bytes) {
-		// Encode the byte array as a base64 string
-		String base64 = Base64.getEncoder().encodeToString(bytes);
-
-		// Decode the base64 string to a hexadecimal string
-		return new String(Base64.getDecoder().decode(base64));
+		StringBuilder result = new StringBuilder();
+		for (byte b : bytes) {
+			result.append(String.format("%02x", b));
+		}
+		return result.toString();
 	}
 
 	public static <T> T firstIntersection(List<T> list1, List<T> list2) {

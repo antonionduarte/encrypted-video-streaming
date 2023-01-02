@@ -6,7 +6,7 @@ public class ParsedCipherConfig {
     private final String iv;
     private final String integrity;
     private final String mackey;
-    private final String integrityCheck;
+    private String integrityCheck;
 
     public ParsedCipherConfig(String cipher,
                               String key,
@@ -44,5 +44,9 @@ public class ParsedCipherConfig {
 
     public String getIntegrityCheck() {
         return integrityCheck;
+    }
+
+    public void setIntegrityCheck(String integrityCheck) {
+        this.integrityCheck = integrityCheck;
     }
 }

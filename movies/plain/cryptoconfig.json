@@ -2,16 +2,16 @@
   "cars.dat.enc": {
     "cipher": "AES/CBC/PKCS5Padding",
     "key": "91342609ae5435f69a23652476e67abc",
-    "iv": "4524568176123498",
+    "iv": "45245681761234984524568176123498",
     "integrity": "SHA256",
-    "integrity-check": "StOMKSnHz+KiuECRcRJRQFHwZ3TgJuM10b4XIvcTxMY="
+    "integrity-check": "7857c02e633edd92df139699d6f2e992062654fef85f7b47d1121037d466cc1f"
   },
   "monsters.dat.enc": {
     "cipher": "RC6/CTR/NoPadding",
     "key": "476e67a34e5571897612391bcce24512",
     "iv": "8a451982e562c487",
-    "integrity": "HMAC-SHA1",
-    "integrity-check": "nrRYtw+iTaZ6qYtE7cp3FhhQ44c=",
-    "mackey": "6af53417a7f5e4321a65a31213048567"
+    "integrity": "HMAC-SHA256",
+    "mackey": "6af53417a7f5e4321a65a31213048567",
+    "integrity-check": "a31152f48dfe65068d0dc821c1115580e0dcebc6483948d9c23f7c41c35f9e41"
   }
 }

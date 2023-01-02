@@ -32,18 +32,15 @@ public class EncryptMovies {
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());
 
-		try (FileInputStream fileInputStream = new FileInputStream(MOVIE_CIPHER_CONFIG_PATH)) {
-			var configJson = new String(fileInputStream.readAllBytes());
-			var config = new ParseCipherConfigMap(configJson).parseConfig();
+		var config = new ParseCipherConfigMap(MOVIE_CIPHER_CONFIG_PATH).parseConfig();
 
-			for (var cipheredName : config.keySet()) {
-				var split = cipheredName.split("\\.");
-				var filename = split[0] + "." + split[1];
-				var parsedConfig = config.get(cipheredName);
-				var cipherConfig = new CipherConfig(parsedConfig);
-				var outputBytes = EncryptionTool.encrypt(cipherConfig, Files.readAllBytes(Path.of(MOVIE_PATH + filename)));
-				EncryptConfig.writeToFile(outputBytes, new File(CIPHERED_MOVIE_PATH + cipheredName));
-			}
+		for (var cipheredName : config.keySet()) {
+			var split = cipheredName.split("\\.");
+			var filename = split[0] + "." + split[1];
+			var parsedConfig = config.get(cipheredName);
+			var cipherConfig = new CipherConfig(parsedConfig);
+			var outputBytes = EncryptionTool.encrypt(cipherConfig, Files.readAllBytes(Path.of(MOVIE_PATH + filename)));
+			EncryptConfig.writeToFile(outputBytes, new File(CIPHERED_MOVIE_PATH + cipheredName));
 		}
 	}
 }

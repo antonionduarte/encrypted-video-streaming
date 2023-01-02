@@ -90,11 +90,17 @@ public class StreamServer {
 	private byte[] getMovieBytes(String movieName) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
 
 		var movieCipherConfig = moviesConfig.get(movieName + MOVIE_SUFFIX);
-		// check integrity of dat.enc file
-		var path = CIPHERED_MOVIE_DIR + movieName + MOVIE_SUFFIX;
-		IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(path)));
 
-		return EncryptMovies.decryptMovie(movieCipherConfig, path);
+		var path = CIPHERED_MOVIE_DIR + movieName + MOVIE_SUFFIX;
+
+		if (movieCipherConfig.getMacKey() == null) {
+			var movieBytes = EncryptMovies.decryptMovie(movieCipherConfig, path);
+			IntegrityTool.checkMovieIntegrity(movieCipherConfig, movieBytes);
+			return movieBytes;
+		} else {
+			IntegrityTool.checkMovieIntegrity(movieCipherConfig, Files.readAllBytes(Path.of(path)));
+			return EncryptMovies.decryptMovie(movieCipherConfig, path);
+		}
 	}
 
 	public void run() throws Exception {

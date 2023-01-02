@@ -25,12 +25,12 @@ public class EncryptConfig {
 	private static final String ARGS_CIPHER = "cipher";
 	private static final String ARGS_DECIPHER = "decipher";
 
-	public static byte[] decryptConfig(String key, File inputFile) throws CryptoException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
+	public static byte[] decryptConfig(String key, File inputFile) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IntegrityException {
 		var config = new CipherConfig(new ParsedCipherConfig(CIPHER_SUITE, key, null, null, null, null));
 		return EncryptionTool.decrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}
 
-	public static byte[] encryptConfig(String key, File inputFile) throws CryptoException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+	public static byte[] encryptConfig(String key, File inputFile) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		var config = new CipherConfig(new ParsedCipherConfig(CIPHER_SUITE, key, null, null, null, null));
 		return EncryptionTool.encrypt(config, Files.readAllBytes(inputFile.toPath()));
 	}
