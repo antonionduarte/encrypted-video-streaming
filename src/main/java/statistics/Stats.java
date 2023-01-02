@@ -12,16 +12,6 @@ public class Stats {
 	private final int frameRate;
 	private final int throughPut;
 
-	public Stats(CipherConfig config, int numFrames, int avgFrameSize, int movieSize, int elapsedTime, int frameRate, int throughPut) {
-		this.config = config;
-		this.numFrames = numFrames;
-		this.avgFrameSize = avgFrameSize;
-		this.movieSize = movieSize;
-		this.elapsedTime = elapsedTime;
-		this.frameRate = frameRate;
-		this.throughPut = throughPut;
-	}
-
 	private Stats(StatsBuilder builder) {
 		this.config = builder.config;
 		this.numFrames = builder.numFrames;

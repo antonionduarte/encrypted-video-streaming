@@ -151,7 +151,7 @@ public class Proxy {
 						.withMovieSize(cumulativeSize)
 						.withElapsedTime(duration)
 						.withFrameRate(frameCount / duration)
-						.withThroughPut((8 * (cumulativeSize / duration)) / 1000000)
+						.withThroughPut((cumulativeSize / duration) / 1024)
 						.build();
 				stats.printStats();
 			}

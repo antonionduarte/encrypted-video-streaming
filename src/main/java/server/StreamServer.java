@@ -159,7 +159,15 @@ public class StreamServer {
 			long transmissionEndTime = System.nanoTime(); // "The end" time
 			int duration = (int) ((transmissionEndTime - beginningTime) / 1000000000); // duration of the transmission
 
-			var stats = new Stats.StatsBuilder().withConfig(cipherConfig).withNumFrames(frameCount).withAvgFrameSize(cumulativeSize / frameCount).withMovieSize(cumulativeSize).withElapsedTime(duration).withFrameRate(frameCount / duration).withThroughPut((8 * (cumulativeSize / duration)) / 1000000).build();
+			var stats = new Stats.StatsBuilder()
+					.withConfig(cipherConfig)
+					.withNumFrames(frameCount)
+					.withAvgFrameSize(cumulativeSize / frameCount)
+					.withMovieSize(cumulativeSize)
+					.withElapsedTime(duration)
+					.withFrameRate(frameCount / duration)
+					.withThroughPut((cumulativeSize / duration) / 1024)
+					.build();
 			stats.printStats();
 		}
 	}
