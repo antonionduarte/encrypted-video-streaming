@@ -5,20 +5,20 @@ public class ParsedCipherConfig {
     private final String key;
     private final String iv;
     private final String integrity;
-    private final String macKey;
+    private final String mackey;
     private final String integrityCheck;
 
     public ParsedCipherConfig(String cipher,
                               String key,
                               String iv,
                               String integrity,
-                              String macKey,
+                              String mackey,
                               String integrityCheck) {
         this.cipher = cipher;
         this.key = key;
         this.iv = iv;
         this.integrity = integrity;
-        this.macKey = macKey;
+        this.mackey = mackey;
         this.integrityCheck = integrityCheck;
     }
 
@@ -38,8 +38,8 @@ public class ParsedCipherConfig {
         return integrity;
     }
 
-    public String getMacKey() {
-        return macKey;
+    public String getMackey() {
+        return mackey;
     }
 
     public String getIntegrityCheck() {

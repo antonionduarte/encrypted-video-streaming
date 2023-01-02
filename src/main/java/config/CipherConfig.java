@@ -23,8 +23,8 @@ public class CipherConfig {
 		this.key = new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getKey()), algFromCipher(cipher));
 		this.iv = (parsedCipherConfig.getIv() != null) ? new IvParameterSpec(Utils.hexToBytes(parsedCipherConfig.getIv())) : null;
 		this.integrity = parsedCipherConfig.getIntegrity();
-		this.macKey = (this.integrity != null && parsedCipherConfig.getMacKey() != null) ?
-				new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getMacKey()), this.integrity) : null;
+		this.macKey = (this.integrity != null && parsedCipherConfig.getMackey() != null) ?
+				new SecretKeySpec(Utils.hexToBytes(parsedCipherConfig.getMackey()), this.integrity) : null;
 		this.integrityCheck = (parsedCipherConfig.getIntegrityCheck() != null) ? Base64.decode(parsedCipherConfig.getIntegrityCheck()) : null;
 	}
 
