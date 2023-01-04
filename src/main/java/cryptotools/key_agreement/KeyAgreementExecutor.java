@@ -1,6 +1,7 @@
 package cryptotools.key_agreement;
 
 import config.AsymmetricConfig;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.interfaces.DHPublicKey;
@@ -35,11 +36,14 @@ public class KeyAgreementExecutor {
 			keyPairGenerator.initialize(config.getNumSize());
 			var keyPair = keyPairGenerator.generateKeyPair();
 			// Get the public key
-			var publicKey = (DHPublicKey) keyPair.getPublic();
-			// Get the DHParameterSpec object from the public key
-			var dhParamSpec = publicKey.getParams();
-			config.setG(dhParamSpec.getG());
-			config.setP(dhParamSpec.getP());
+			try {
+				var publicKey = (DHPublicKey) keyPair.getPublic();
+				// Get the DHParameterSpec object from the public key
+				var dhParamSpec = publicKey.getParams();
+				config.setG(dhParamSpec.getG());
+				config.setP(dhParamSpec.getP());
+			} catch (ClassCastException ignored) {
+			}
 
 			return keyPair;
 		}

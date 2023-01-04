@@ -21,18 +21,18 @@ public record CertificateVerifier(KeyStore trustStore) {
 	 *
 	 * @param chain certificate chain to verify
 	 */
-	public void verifyCertificateChain(String authAlg, CertificateChain chain) throws CertificateException, NoSuchAlgorithmException, KeyStoreException {
-		checkAuthenticity(authAlg, chain);
+	public void verifyCertificateChain(CertificateChain chain) throws CertificateException, NoSuchAlgorithmException, KeyStoreException {
+		checkAuthenticity(chain);
 		checkDateValidity(chain);
 	}
 
-	private void checkAuthenticity(String authAlg, CertificateChain chain) throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
+	private void checkAuthenticity(CertificateChain chain) throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
 		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TRUSTMANAGER_TYPE);
 		trustManagerFactory.init(trustStore);
 		TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 		for (TrustManager trustManager : trustManagers) {
 			if (trustManager instanceof X509TrustManager) {
-				((X509TrustManager) trustManager).checkServerTrusted(chain.certificates(), authAlg);
+				((X509TrustManager) trustManager).checkServerTrusted(chain.certificates(), "RSA");
 				return;
 			}
 		}
