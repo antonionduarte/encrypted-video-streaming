@@ -1,11 +1,9 @@
 [
   {
-    "authentication": "EC",
-    "key-size": 256,
+    "authentication": "DSA",
+    "key-size": 2048,
     "key-exchange": "ECDH",
-    "num-size": 224,
-    "g": "069a2e6e38cccce3b251613b3dcd7d8514edebe5cb5b9dcf0251cb211f8e5f9c",
-    "p": "ffffffff00000001000000000000000000000000ffffffffffffffffffffffff"
+    "num-size": 256
   },
   {
     "authentication": "RSA",
