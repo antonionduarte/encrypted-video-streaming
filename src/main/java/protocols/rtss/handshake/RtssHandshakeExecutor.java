@@ -1,6 +1,5 @@
 package protocols.rtss.handshake;
 
-import config.CipherConfig;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.repetition.exceptions.RepeatedMessageException;
 import protocols.rtss.handshake.exceptions.AuthenticationException;

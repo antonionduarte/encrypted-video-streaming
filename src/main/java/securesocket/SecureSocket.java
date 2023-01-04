@@ -1,16 +1,12 @@
 package securesocket;
 
-import cryptotools.encryption.EncryptionTool;
 import cryptotools.integrity.IntegrityException;
-import cryptotools.integrity.IntegrityTool;
 import cryptotools.repetition.exceptions.RepeatedMessageException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,8 +16,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class SecureSocket implements Closeable {
 

@@ -1,4 +1,3 @@
-import config.CipherConfig;
 import cryptotools.certificates.CertificateVerifier;
 import cryptotools.integrity.IntegrityException;
 import cryptotools.keystore.KeyStoreTool;
@@ -9,7 +8,6 @@ import protocols.rtss.handshake.RtssHandshake;
 import protocols.rtss.handshake.RtssHandshakeExecutor;
 import securesocket.SecureDatagramPacket;
 import securesocket.SecureSocket;
-import server.StreamServer;
 import statistics.Stats;
 import utils.Loader;
 import utils.Utils;
@@ -76,6 +74,9 @@ public class Proxy {
 			System.out.println("Error, use: Proxy <movie>");
 			System.exit(-1);
 		}
+
+		Thread.sleep(3000);
+		System.out.println("Sleeping for 3 seconds...");
 
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());

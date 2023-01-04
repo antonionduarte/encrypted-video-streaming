@@ -1,7 +1,6 @@
 package config;
 
 import config.parser.parser_objects.ParsedCipherConfig;
-import org.bouncycastle.util.encoders.Base64;
 import utils.Utils;
 
 import javax.crypto.spec.IvParameterSpec;

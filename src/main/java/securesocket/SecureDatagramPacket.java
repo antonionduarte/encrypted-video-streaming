@@ -1,9 +1,6 @@
 package securesocket;
 
-import config.CipherConfig;
-import cryptotools.encryption.EncryptionTool;
 import cryptotools.integrity.IntegrityException;
-import cryptotools.integrity.IntegrityTool;
 import protocols.SecureProtocol;
 
 import javax.crypto.BadPaddingException;
@@ -11,11 +8,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 public class SecureDatagramPacket {
 

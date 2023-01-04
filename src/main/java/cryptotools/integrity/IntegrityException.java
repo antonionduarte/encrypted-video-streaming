@@ -2,8 +2,6 @@ package cryptotools.integrity;
 
 import utils.Utils;
 
-import java.util.Arrays;
-
 public class IntegrityException extends Exception {
 
 	public IntegrityException() {

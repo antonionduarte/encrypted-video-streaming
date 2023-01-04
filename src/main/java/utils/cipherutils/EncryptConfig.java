@@ -4,7 +4,6 @@ import config.CipherConfig;
 import config.parser.parser_objects.ParsedCipherConfig;
 import cryptotools.encryption.EncryptionTool;
 import cryptotools.integrity.IntegrityException;
-import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;

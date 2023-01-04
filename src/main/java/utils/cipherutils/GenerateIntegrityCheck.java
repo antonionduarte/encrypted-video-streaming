@@ -8,17 +8,13 @@ import cryptotools.integrity.IntegrityTool;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import utils.Utils;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.util.Base64;
 
 public class GenerateIntegrityCheck {
 
