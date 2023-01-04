@@ -145,7 +145,7 @@ public class RtssHandshake implements Closeable {
 		var caAlias = String.format(StreamServer.CA_ALIAS_MASK, asymmetricConfig.getAuthentication(), asymmetricConfig.getKeySize());
 		this.certificateChain = Loader.readCertificates(path, certificateVerifier.trustStore(), caAlias);
 
-		certificateVerifier.verifyCertificateChain(asymmetricConfig.getAuthentication(), firstMessage.certChain());
+		certificateVerifier.verifyCertificateChain(firstMessage.certChain());
 
 		SignatureTool.verifySignature(asymmetricConfig, firstMessage.certChain().leafCertificate().getPublicKey(), firstMessage.pubNumBytes(), firstMessage.signature());
 
@@ -176,7 +176,7 @@ public class RtssHandshake implements Closeable {
 
 		var asymmetricConfig = asymmetricConfigList.get(0);
 
-		certificateVerifier.verifyCertificateChain(asymmetricConfig.getAuthentication(), secondMessage.certChain());
+		certificateVerifier.verifyCertificateChain(secondMessage.certChain());
 
 		SignatureTool.verifySignature(asymmetricConfig, secondMessage.certChain().leafCertificate().getPublicKey(), secondMessage.pubNumBytes(), secondMessage.signature());
 
