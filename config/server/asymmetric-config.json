@@ -1,5 +1,11 @@
 [
   {
+    "authentication": "EC",
+    "key-size": 256,
+    "key-exchange": "ECDH",
+    "num-size": 256
+  },
+  {
     "authentication": "DSA",
     "key-size": 2048,
     "key-exchange": "ECDH",

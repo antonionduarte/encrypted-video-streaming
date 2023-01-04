@@ -111,7 +111,7 @@ public class RtssHandshake implements Closeable {
 		this.keyAgreementExecutor = new KeyAgreementExecutor(chosenAsymmetricConfig);
 
 		var pubNumBytes = keyAgreementExecutor.getPublicNum().getEncoded();
-		byte[] signature = SignatureTool.createSignature(chosenAsymmetricConfig, authenticationKeys.getPrivate(), pubNumBytes);
+		byte[] signature = SignatureTool.createSignature(certificateChain.leafCertificate().getSigAlgName(), authenticationKeys.getPrivate(), pubNumBytes);
 
 		var firstMessage = new FirstMessage(chosenAsymmetricConfig, symmetricConfigList, certificateChain, pubNumBytes, signature);
 		socket.sendMessage(firstMessage.serialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey()));
@@ -147,7 +147,9 @@ public class RtssHandshake implements Closeable {
 
 		certificateVerifier.verifyCertificateChain(firstMessage.certChain());
 
-		SignatureTool.verifySignature(asymmetricConfig, firstMessage.certChain().leafCertificate().getPublicKey(), firstMessage.pubNumBytes(), firstMessage.signature());
+		SignatureTool.verifySignature(firstMessage.certChain().leafCertificate().getSigAlgName(),
+				firstMessage.certChain().leafCertificate().getPublicKey(),
+				firstMessage.pubNumBytes(), firstMessage.signature());
 
 		this.keyAgreementExecutor = new KeyAgreementExecutor(asymmetricConfig);
 		var clientPubNum = KeyAgreementExecutor.getPubicNum(asymmetricConfig.getKeyExchange(), firstMessage.pubNumBytes());
@@ -155,7 +157,7 @@ public class RtssHandshake implements Closeable {
 		this.decidedCipherSuite = new CipherConfig(symmetricConfig, secret);
 
 		var pubNumBytes = keyAgreementExecutor.getPublicNum().getEncoded();
-		byte[] signature = SignatureTool.createSignature(asymmetricConfig, authenticationKeys.getPrivate(), pubNumBytes);
+		byte[] signature = SignatureTool.createSignature(certificateChain.leafCertificate().getSigAlgName(), authenticationKeys.getPrivate(), pubNumBytes);
 		var secondMessage = new SecondMessage(symmetricConfig, this.certificateChain, pubNumBytes, signature);
 		socket.sendMessage(secondMessage.serialize(integrityConfig.getAlgorithm(), integrityConfig.getMacKey()));
 
@@ -178,7 +180,7 @@ public class RtssHandshake implements Closeable {
 
 		certificateVerifier.verifyCertificateChain(secondMessage.certChain());
 
-		SignatureTool.verifySignature(asymmetricConfig, secondMessage.certChain().leafCertificate().getPublicKey(), secondMessage.pubNumBytes(), secondMessage.signature());
+		SignatureTool.verifySignature(secondMessage.certChain().leafCertificate().getSigAlgName(), secondMessage.certChain().leafCertificate().getPublicKey(), secondMessage.pubNumBytes(), secondMessage.signature());
 
 		var serverPubNum = KeyAgreementExecutor.getPubicNum(asymmetricConfig.getKeyExchange(), secondMessage.pubNumBytes());
 		var secret = keyAgreementExecutor.generateSecret(serverPubNum);

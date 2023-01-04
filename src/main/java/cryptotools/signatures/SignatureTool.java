@@ -7,9 +7,9 @@ import java.security.*;
 
 public class SignatureTool {
 
-	public static void verifySignature(AsymmetricConfig config, PublicKey publicKey, byte[] originalData, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, AuthenticationException {
+	public static void verifySignature(String sigAlg, PublicKey publicKey, byte[] originalData, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, AuthenticationException {
 		// Initialize the Signature object with the desired signature algorithm
-		Signature sig = Signature.getInstance("SHA256with" + config.getAuthentication());
+		Signature sig = Signature.getInstance(sigAlg);
 
 		// Initialize the Signature object for verification, passing in the public key
 		sig.initVerify(publicKey);
@@ -26,9 +26,9 @@ public class SignatureTool {
 	/**
 	 * Creates a digital signature.
 	 */
-	public static byte[] createSignature(AsymmetricConfig config, PrivateKey key, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public static byte[] createSignature(String sigAlg, PrivateKey key, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		// Create a Signature object and initialize it with the private key
-		Signature sig = Signature.getInstance("SHA256with" + config.getAuthentication());
+		Signature sig = Signature.getInstance(sigAlg);
 
 		sig.initSign(key);
 

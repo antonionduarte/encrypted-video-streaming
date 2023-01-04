@@ -7,6 +7,6 @@ fi
 
 movie=$1
 
-xterm -e "bash -c \"java -cp target/ciphered-video-server.jar Server; read -p 'Press enter to close terminal...'\"" &
+gnome-terminal -e "bash -c \"java -cp target/ciphered-video-server.jar Server; read -p 'Press enter to close terminal...'\"" &
 sleep 2
-xterm -e "bash -c \"java -cp target/ciphered-video-server.jar Proxy $movie; read -p 'Press enter to close terminal...'\"" &
+gnome-terminal -e "bash -c \"java -cp target/ciphered-video-server.jar Proxy $movie; read -p 'Press enter to close terminal...'\"" &
