@@ -19,8 +19,6 @@ services:
         - MOVIE
     network_mode: host
     command: sleep 2
-    depends_on:
-      - server
     environment:
       TRUSTSTORE_PASSWORD: "${TRUSTSTORE_PASSWORD}"
       PROXY_PASSWORD: "${PROXY_PASSWORD}"

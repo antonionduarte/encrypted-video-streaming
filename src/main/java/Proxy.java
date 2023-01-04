@@ -75,9 +75,6 @@ public class Proxy {
 			System.exit(-1);
 		}
 
-		Thread.sleep(3000);
-		System.out.println("Sleeping for 3 seconds...");
-
 		Security.setProperty("crypto.policy", "unlimited");
 		Security.addProvider(new BouncyCastleProvider());
 
