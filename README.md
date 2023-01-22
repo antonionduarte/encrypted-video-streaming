@@ -1,5 +1,5 @@
-# Video-Stream Ciphering
-Repository for the Stream Ciphering Project of the Network Security Course @ FCT-UNL.
+# Encrypted Video Streaming
+Streaming video between a server, containing video files, and a Box / Proxy, implemented in Java.
 
 ## How To Compile
 
